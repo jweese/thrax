@@ -1,0 +1,26 @@
+<project name="Thrax" basedir="." default="compile">
+
+    <target name="init">
+        <tstamp/>
+	<mkdir dir="${build}"/>
+    </target>
+
+    <property name="src" value="./src"/>
+    <property name="build" value="./bin"/>
+
+    <target name="compile" depends="init">
+        <javac srcdir="${src}" destdir="${build}"
+	       debug="on">
+	    <include name="**/*.java"/>
+	</javac>
+    </target>
+
+    <target name="clean">
+        <delete verbose="true" quiet="true">
+	    <fileset dir="${build}">
+	        <include name="**/*.class"/>
+	    </fileset>
+	</delete>
+    </target>
+
+</project>

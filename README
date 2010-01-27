@@ -1,0 +1,21 @@
+Thrax is designed to extract a synchronous context-free grammar (SCFG) from an
+aligned parallel corpus. If you don't know what that means, you probably don't
+need Thrax.
+
+COMPILING:
+At the moment there's no code, but once there is, it will be written in Java.
+To compile the code, type
+
+	ant
+
+At the end of the compilation, ant should report that the build was successful.
+
+RUNNING THRAX:
+Thrax can be invoked with
+
+	thrax
+
+COPYRIGHT AND LICENSE:
+Copyright (c) 2010 by Jonny Weese <jonny@cs.jhu.edu>
+
+See LICENSE.txt (included with this distribution) for the complete terms.
