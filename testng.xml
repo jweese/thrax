@@ -2,11 +2,17 @@
 
 <!-- test suite for thrax -->
 
-<suite name="TestSuite" verbose="1">
+<suite name="GetOpt" verbose="1">
+
+    <test name="Option">
+        <classes>
+	    <class name="edu.jhu.thrax.util.getopt.OptionTest"/>
+	</classes>
+    </test>
 
     <test name="GetOpt">
         <classes>
-	    <class name="edu.jhu.thrax.util.getopt.OptionTest"/>
+	    <class name="edu.jhu.thrax.util.getopt.GetOptTest"/>
 	</classes>
     </test>
 
