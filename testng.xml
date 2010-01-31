@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<!-- test suite for thrax -->
+
+<suite name="TestSuite" verbose="1">
+
+    <test name="GetOpt">
+        <classes>
+	    <class name="edu.jhu.thrax.util.getopt.OptionTest"/>
+	</classes>
+    </test>
+
+</suite>

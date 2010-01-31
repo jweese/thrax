@@ -1,18 +1,20 @@
 <project name="Thrax" basedir="." default="compile">
 
+    <property name="src" value="./src"/>
+    <property name="build" value="./bin"/>
+    <property name="lib" value="./lib"/>
+    <property name="test" value="./test"/>
+    
+    <property name="testng" value="${lib}/testng-5.8-jdk15.jar"/>
+
     <target name="init">
         <tstamp/>
 	<mkdir dir="${build}"/>
     </target>
 
-    <property name="src" value="./src"/>
-    <property name="build" value="./bin"/>
-
     <target name="compile" depends="init">
         <javac srcdir="${src}" destdir="${build}"
-	       debug="on">
-	    <include name="**/*.java"/>
-	</javac>
+	       debug="on"/>
     </target>
 
     <target name="clean">
@@ -23,4 +25,19 @@
 	</delete>
     </target>
 
+    <target name="compile-tests" depends="init"> 
+        <javac srcdir="${test}" destdir="${build}" 
+               classpath="${testng}" debug="on"/>
+    </target>
+
+    <taskdef resource="testngtasks" classpath="${testng}"/>
+
+    <target name="test" depends="compile,compile-tests">
+        <testng classpath="${build}" sourcedir="${test}">
+            <xmlfileset dir="." includes="testng.xml"/>
+        </testng>
+    </target>
+	
+
+	
 </project>
