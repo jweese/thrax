@@ -3,7 +3,10 @@ package edu.jhu.thrax.util.getopt;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
+import java.util.ArrayList;
+
 public class GetOptTest {
+	private static ArrayList<String> nonOptions;
 
 	@Test
 	public void IsSet_NotPresent_ReturnFalse()
@@ -42,7 +45,7 @@ public class GetOptTest {
 	{
 		String [] cmd = { "--charlie" };
 		GetOpt.registerOption("c", "charlie", false);
-		GetOpt.parse(cmd);
+		nonOptions = GetOpt.parse(cmd);
 		Assert.assertTrue(GetOpt.isSet("c"));
 		Assert.assertTrue(GetOpt.isSet("charlie"));
 		return;
@@ -53,7 +56,7 @@ public class GetOptTest {
 	{
 		String [] cmd = { "--delta=value" };
 		GetOpt.registerOption("d", "delta", true);
-		GetOpt.parse(cmd);
+		nonOptions = GetOpt.parse(cmd);
 		Assert.assertTrue(GetOpt.isSet("d"));
 		Assert.assertTrue(GetOpt.isSet("delta"));
 		Assert.assertEquals(GetOpt.valueOf("d"), "value");
@@ -66,7 +69,7 @@ public class GetOptTest {
 	{
 		String [] cmd = { "--echo" , "value" };
 		GetOpt.registerOption("e", "echo", true);
-		GetOpt.parse(cmd);
+		nonOptions = GetOpt.parse(cmd);
 		Assert.assertTrue(GetOpt.isSet("e"));
 		Assert.assertTrue(GetOpt.isSet("echo"));
 		Assert.assertEquals(GetOpt.valueOf("e"), "value");
