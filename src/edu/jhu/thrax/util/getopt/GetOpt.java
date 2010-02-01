@@ -69,7 +69,6 @@ public class GetOpt {
 			String curr = argv[i];
 			if (curr.startsWith("--")) {
 				// long-form GNU-style option
-				System.err.println(curr.substring(2));
 				i = handleLongFormOption(argv, i);
 			}
 			else if (curr.startsWith("-")) {
