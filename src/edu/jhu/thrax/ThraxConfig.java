@@ -3,6 +3,7 @@ package edu.jhu.thrax;
 import edu.jhu.thrax.util.getopt.GetOpt;
 import edu.jhu.thrax.util.getopt.OptionMissingArgumentException;
 
+import java.util.HashMap;
 import java.util.Scanner;
 import java.io.File;
 import java.io.IOException;
@@ -11,28 +12,21 @@ public class ThraxConfig {
 	public static final String VERSION_STRING = "0.1/alpha";
 
 	// the options themselves
-	public static String alignment;
-	public static String alignment_format;
-	public static String parse;
-	public static String parse_format;
-	public static String output_format;
-	public static String source;
-	public static String target;
-	public static String grammar;
-
+	public static final HashMap<String,String> opts = new HashMap<String,String>();
 	public static int verbosity = 0;
+
+	// some defaults
+	public static final String DEFAULT_GRAMMAR = "hiero";
+	public static final String DEFAULT_ALIGNMENT_FORMAT = "berkeley";
+	public static final String DEFAULT_PARSE_FORMAT = "stanford";
+	public static final String DEFAULT_OUTPUT_FORMAT = "joshua";
 
 	private static void printConfiguration()
 	{
 		System.err.println("--- THRAX CONFIGURATION ---");
-		System.err.println(String.format("grammar style: %s", grammar));
-		System.err.println(String.format("source-side file: %s", source));
-		System.err.println(String.format("target-side file: %s", target));
-		System.err.println(String.format("alignment file: %s", alignment));
-		System.err.println(String.format("alignment format: %s", alignment_format));
-		System.err.println(String.format("parse file: %s", parse));
-		System.err.println(String.format("parse format: %s", parse_format));
-		System.err.println(String.format("output format: %s", output_format));
+		for (String k : opts.keySet()) {
+			System.err.println(String.format("%s: %s", k, opts.get(k)));
+		}
 		return;
 	}
 
@@ -82,28 +76,28 @@ public class ThraxConfig {
 			System.exit(0);
 		}
 		if (GetOpt.isSet("a")) {
-			alignment = GetOpt.valueOf("a");
+			opts.put("alignment", GetOpt.valueOf("a"));
 		}
 		if (GetOpt.isSet("A")) {
-			alignment_format = GetOpt.valueOf("A");
+			opts.put("alignment_format", GetOpt.valueOf("A"));
 		}
 		if (GetOpt.isSet("p")) {
-			parse = GetOpt.valueOf("p");
+			opts.put("parse", GetOpt.valueOf("p"));
 		}
 		if (GetOpt.isSet("P")) {
-			parse_format = GetOpt.valueOf("P");
+			opts.put("parse_format", GetOpt.valueOf("P"));
 		}
 		if (GetOpt.isSet("o")) {
-			output_format = GetOpt.valueOf("o");
+			opts.put("output_format", GetOpt.valueOf("o"));
 		}
 		if (GetOpt.isSet("s")) {
-			source = GetOpt.valueOf("s");
+			opts.put("source", GetOpt.valueOf("s"));
 		}
 		if (GetOpt.isSet("t")) {
-			target = GetOpt.valueOf("t");
+			opts.put("target", GetOpt.valueOf("t"));
 		}
 		if (GetOpt.isSet("g")) {
-			grammar = GetOpt.valueOf("g");
+			opts.put("grammar", GetOpt.valueOf("g"));
 		}
 
 		if (GetOpt.isSet("c")) {
@@ -134,7 +128,10 @@ public class ThraxConfig {
 			if (content.equals("")) {
 				continue;
 			}
-			String [] opt = content.split("\\s+", 2);
+			String [] keyVal = content.split("\\s+", 2);
+			if (!opts.containsKey(keyVal[0])) {
+				opts.put(keyVal[0], keyVal[1]);
+			}
 		}
 
 		if (verbosity > 0) {
