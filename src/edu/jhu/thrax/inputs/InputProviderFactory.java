@@ -34,18 +34,18 @@ public class InputProviderFactory {
 			throw new MissingGrammarInputTypeException(inp);
 		}
 
-		if (inp.equals("source")) {
+		if (inp.equals(ThraxConfig.SOURCE)) {
 			return new PlainTextProvider(ThraxConfig.opts.get(inp));
 
 		}
 		// if you add a new input type, be sure to allow it to be
 		// created in this if/elseif block.
-		else if (inp.equals("target")) {
+		else if (inp.equals(ThraxConfig.TARGET)) {
 			return new PlainTextProvider(ThraxConfig.opts.get(inp));
 
 		}
-		else if (inp.equals("alignment")) {
-			String fmt = ThraxConfig.opts.containsKey("alignment-format") ? ThraxConfig.opts.get("alignment-format") : ThraxConfig.DEFAULT_ALIGNMENT_FORMAT;
+		else if (inp.equals(ThraxConfig.ALIGNMENT)) {
+			String fmt = ThraxConfig.opts.containsKey(ThraxConfig.ALIGNMENT_FORMAT) ? ThraxConfig.opts.get(ThraxConfig.ALIGNMENT_FORMAT) : ThraxConfig.DEFAULT_ALIGNMENT_FORMAT;
 			fmt = fmt.toLowerCase();
 			if (fmt.equals("berkeley")) {
 				return new BerkeleyAlignmentProvider(ThraxConfig.opts.get(inp));

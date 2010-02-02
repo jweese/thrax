@@ -19,9 +19,7 @@ public class Thrax {
 	{
 		try {
 			ThraxConfig.configure(argv);
-			String grammar = ThraxConfig.opts.containsKey("grammar")
-			               ? ThraxConfig.opts.get("grammar")
-				       : ThraxConfig.DEFAULT_GRAMMAR;
+			String grammar = ThraxConfig.opts.containsKey(ThraxConfig.GRAMMAR) ? ThraxConfig.opts.get(ThraxConfig.GRAMMAR) : ThraxConfig.DEFAULT_GRAMMAR;
 			RuleExtractor extractor = RuleExtractorFactory.create(grammar);
 
 			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());

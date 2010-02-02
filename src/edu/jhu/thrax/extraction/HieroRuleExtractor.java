@@ -3,6 +3,7 @@ package edu.jhu.thrax.extraction;
 import java.util.ArrayList;
 
 import edu.jhu.thrax.datatypes.*;
+import edu.jhu.thrax.ThraxConfig;
 
 /**
  * This class extract Hiero-style SCFG rules. The inputs that are needed
@@ -18,7 +19,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 
 	public String [] requiredInputs()
 	{
-		String [] reqs = { "source" , "target" , "alignment" };
+		String [] reqs = { ThraxConfig.SOURCE, ThraxConfig.TARGET, ThraxConfig.ALIGNMENT };
 		return reqs;
 	}
 

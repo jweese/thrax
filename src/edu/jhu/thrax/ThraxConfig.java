@@ -38,6 +38,19 @@ public class ThraxConfig {
 	public static final String DEFAULT_PARSE_FORMAT = "stanford";
 	public static final String DEFAULT_OUTPUT_FORMAT = "joshua";
 
+	// the names possible in opts.keySet()
+	// they are defined here to avoid spelling errors
+	// everything else like the factories can just refer to these
+	// names instead! only one place for things to be defined.
+	public static final String GRAMMAR = "grammar";
+	public static final String ALIGNMENT = "alignment";
+	public static final String ALIGNMENT_FORMAT = "alignment-format";
+	public static final String PARSE = "parse";
+	public static final String PARSE_FORMAT = "parse-format";
+	public static final String SOURCE = "source";
+	public static final String TARGET = "target";
+	public static final String OUTPUT_FORMAT = "output-format";
+
 	/**
 	 * Prints the current key-value pairs in <code>opts</code> to stderr.
 	 * Generally only included in debug output.
@@ -64,17 +77,17 @@ public class ThraxConfig {
 
 		// program operation switches
 
-		GetOpt.registerOption("a", "alignment", true);
-		GetOpt.registerOption("A", "alignment-format", true);
+		GetOpt.registerOption("a", ALIGNMENT, true);
+		GetOpt.registerOption("A", ALIGNMENT_FORMAT, true);
 		GetOpt.registerOption("c", "config", true);
 		GetOpt.registerOption("d", "debug", false);
-		GetOpt.registerOption("p", "parse", true);
-		GetOpt.registerOption("P", "parse-format", true);
-		GetOpt.registerOption("o", "output-format", true);
-		GetOpt.registerOption("s", "source", true);
-		GetOpt.registerOption("t", "target", true);
+		GetOpt.registerOption("p", PARSE, true);
+		GetOpt.registerOption("P", PARSE_FORMAT, true);
+		GetOpt.registerOption("o", OUTPUT_FORMAT, true);
+		GetOpt.registerOption("s", SOURCE, true);
+		GetOpt.registerOption("t", TARGET, true);
 		GetOpt.registerOption("v", "verbose", false);
-		GetOpt.registerOption("g", "grammar", true);
+		GetOpt.registerOption("g", GRAMMAR, true);
 
 		// if you want to add more command line options, register
 		// them here. Then don't forget to check for them in
@@ -108,28 +121,28 @@ public class ThraxConfig {
 			System.exit(0);
 		}
 		if (GetOpt.isSet("a")) {
-			opts.put("alignment", GetOpt.valueOf("a"));
+			opts.put(ALIGNMENT, GetOpt.valueOf("a"));
 		}
 		if (GetOpt.isSet("A")) {
-			opts.put("alignment_format", GetOpt.valueOf("A"));
+			opts.put(ALIGNMENT_FORMAT, GetOpt.valueOf("A"));
 		}
 		if (GetOpt.isSet("p")) {
-			opts.put("parse", GetOpt.valueOf("p"));
+			opts.put(PARSE, GetOpt.valueOf("p"));
 		}
 		if (GetOpt.isSet("P")) {
-			opts.put("parse_format", GetOpt.valueOf("P"));
+			opts.put(PARSE_FORMAT, GetOpt.valueOf("P"));
 		}
 		if (GetOpt.isSet("o")) {
-			opts.put("output_format", GetOpt.valueOf("o"));
+			opts.put(OUTPUT_FORMAT, GetOpt.valueOf("o"));
 		}
 		if (GetOpt.isSet("s")) {
-			opts.put("source", GetOpt.valueOf("s"));
+			opts.put(SOURCE, GetOpt.valueOf("s"));
 		}
 		if (GetOpt.isSet("t")) {
-			opts.put("target", GetOpt.valueOf("t"));
+			opts.put(TARGET, GetOpt.valueOf("t"));
 		}
 		if (GetOpt.isSet("g")) {
-			opts.put("grammar", GetOpt.valueOf("g"));
+			opts.put(GRAMMAR, GetOpt.valueOf("g"));
 		}
 
 		if (GetOpt.isSet("c")) {

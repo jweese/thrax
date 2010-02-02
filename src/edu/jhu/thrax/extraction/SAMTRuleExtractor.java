@@ -3,6 +3,7 @@ package edu.jhu.thrax.extraction;
 import java.util.ArrayList;
 
 import edu.jhu.thrax.datatypes.*;
+import edu.jhu.thrax.ThraxConfig;
 
 /**
  * This class extract syntax-aided machine translation rules from provided
@@ -19,7 +20,10 @@ public class SAMTRuleExtractor implements RuleExtractor {
 
 	public String [] requiredInputs()
 	{
-		String [] reqs = { "source", "target", "alignment", "parse" };
+		String [] reqs = { ThraxConfig.SOURCE,
+		                   ThraxConfig.TARGET,
+				   ThraxConfig.ALIGNMENT,
+				   ThraxConfig.PARSE };
 		return reqs;
 	}
 
