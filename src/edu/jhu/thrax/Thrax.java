@@ -12,7 +12,6 @@ import java.io.IOException;
 
 public class Thrax {
 
-
 	public static void main(String [] argv)
 	{
 		try {
@@ -39,7 +38,7 @@ public class Thrax {
 		return;
 	}
 
-	private static InputProvider [] getInputs(String [] inps) throws InvalidConfigurationException
+	private static InputProvider [] getInputs(String [] inps) throws InvalidConfigurationException, IOException
 	{
 		InputProvider [] ret = new InputProvider[inps.length];
 		for (int i = 0; i < inps.length; i++) {

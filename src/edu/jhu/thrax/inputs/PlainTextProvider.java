@@ -1,23 +1,18 @@
 package edu.jhu.thrax.inputs;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
+import edu.jhu.thrax.util.Vocabulary;
 
-public class PlainTextProvider implements InputProvider<int []> {
-	private Scanner scanner;
+import java.io.IOException;
+
+public class PlainTextProvider extends AbstractInputProvider<int []> {
 
 	public PlainTextProvider(String filename) throws IOException {
-		scanner = new Scanner(new File(filename));
+		super(filename);
 	}
 
 	public int [] next()
 	{
-		return null;
+		return Vocabulary.getWordIDs(scanner.nextLine().split("\\s+"));
 	}
 
-	public boolean hasNext()
-	{
-		return false;
-	}
 }
