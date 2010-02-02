@@ -13,6 +13,7 @@ import edu.jhu.thrax.datatypes.Alignment;
  */
 public class BerkeleyAlignmentProvider extends AbstractInputProvider<Alignment>
 {
+	public static String name = "berkeley";
 
 	public BerkeleyAlignmentProvider(String filename) throws IOException
 	{

@@ -47,7 +47,7 @@ public class InputProviderFactory {
 		else if (inp.equals(ThraxConfig.ALIGNMENT)) {
 			String fmt = ThraxConfig.opts.containsKey(ThraxConfig.ALIGNMENT_FORMAT) ? ThraxConfig.opts.get(ThraxConfig.ALIGNMENT_FORMAT) : ThraxConfig.DEFAULT_ALIGNMENT_FORMAT;
 			fmt = fmt.toLowerCase();
-			if (fmt.equals("berkeley")) {
+			if (fmt.equals(BerkeleyAlignmentProvider.name)) {
 				return new BerkeleyAlignmentProvider(ThraxConfig.opts.get(inp));
 			}
 			// if you add a new alignment format, put it here.
