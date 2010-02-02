@@ -3,6 +3,8 @@ package edu.jhu.thrax;
 import edu.jhu.thrax.util.getopt.GetOpt;
 import edu.jhu.thrax.util.getopt.OptionMissingArgumentException;
 
+import edu.jhu.thrax.extraction.*;
+
 import java.util.HashMap;
 import java.util.Scanner;
 import java.io.File;
@@ -33,7 +35,7 @@ public class ThraxConfig {
 	public static int verbosity = 0;
 
 	// some defaults
-	public static final String DEFAULT_GRAMMAR = "hiero";
+	public static final String DEFAULT_GRAMMAR = HieroRuleExtractor.name;
 	public static final String DEFAULT_ALIGNMENT_FORMAT = "berkeley";
 	public static final String DEFAULT_PARSE_FORMAT = "stanford";
 	public static final String DEFAULT_OUTPUT_FORMAT = "joshua";

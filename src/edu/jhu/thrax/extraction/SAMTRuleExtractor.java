@@ -18,14 +18,12 @@ public class SAMTRuleExtractor implements RuleExtractor {
 
 	}
 
-	public String [] requiredInputs()
-	{
-		String [] reqs = { ThraxConfig.SOURCE,
-		                   ThraxConfig.TARGET,
-				   ThraxConfig.ALIGNMENT,
-				   ThraxConfig.PARSE };
-		return reqs;
-	}
+	public static String name = "samt";
+
+	public static String [] requiredInputs = { ThraxConfig.SOURCE,
+	                                           ThraxConfig.TARGET,
+						   ThraxConfig.ALIGNMENT,
+						   ThraxConfig.PARSE };
 
 	public ArrayList<Rule> extract(Object [] inputs)
 	{

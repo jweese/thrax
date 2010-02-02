@@ -8,6 +8,7 @@ import edu.jhu.thrax.datatypes.Rule;
  * objects from certain inputs. 
  */
 public interface RuleExtractor {
+	public static String name = "";
 
 	/**
 	 * Returns an array of names of input sources. These names correspond
@@ -16,7 +17,7 @@ public interface RuleExtractor {
 	 *
 	 * @return an array of names of required input sources
 	 */
-	public String [] requiredInputs();
+	public static String [] requiredInputs = {};
 
 	/**
 	 * Extracts synchronous context-free production rules given some

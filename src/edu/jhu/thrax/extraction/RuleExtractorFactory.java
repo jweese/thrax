@@ -19,10 +19,10 @@ public class RuleExtractorFactory {
 	public static RuleExtractor create(String grammarType) throws UnknownGrammarTypeException
 	{
 		String gt = grammarType.toLowerCase();
-		if (gt.equals("hiero")) {
+		if (gt.equals(HieroRuleExtractor.name)) {
 			return new HieroRuleExtractor();
 		}
-		else if (gt.equals("samt")) {
+		else if (gt.equals(SAMTRuleExtractor.name)) {
 			return new SAMTRuleExtractor();
 		}
 		// when you create new grammars, add them here.
