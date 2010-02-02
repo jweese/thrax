@@ -3,6 +3,7 @@
     <property name="src" value="./src"/>
     <property name="build" value="./bin"/>
     <property name="lib" value="./lib"/>
+    <property name="doc" value="./doc"/>
     <property name="test" value="./test"/>
     
     <property name="testng" value="${lib}/testng-5.8-jdk15.jar"/>
@@ -38,6 +39,18 @@
         </testng>
     </target>
 	
-
+    <target name="javadoc">
+        <mkdir dir="${doc}"/>
+        <javadoc packagenames="edu.jhu.thrax.*"
+                 classpath="${cli}"
+                 sourcepath="${src}"
+                 destdir="${doc}"
+                 charset="utf-8"
+                 >
+            <link href="http://java.sun.com/j2se/1.5.0/docs/api" />
+            <link href="http://commons.apache.org/cli/api-release" />
+        </javadoc>
+    </target>
+	
 	
 </project>
