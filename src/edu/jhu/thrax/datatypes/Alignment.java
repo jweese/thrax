@@ -49,6 +49,11 @@ public class Alignment {
 					hasAlignment = true;
 				}
 			}
+			else {
+				if ((e >= a) && (e <= b)) {
+					return false;
+				}
+			}
 		}
 		return hasAlignment;
 	}

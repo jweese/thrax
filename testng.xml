@@ -2,18 +2,19 @@
 
 <!-- test suite for thrax -->
 
-<suite name="GetOpt" verbose="1">
-
-    <test name="Option">
-        <classes>
-	    <class name="edu.jhu.thrax.util.getopt.OptionTest"/>
-	</classes>
-    </test>
+<suite name="Thrax" verbose="1">
 
     <test name="GetOpt">
-        <classes>
-	    <class name="edu.jhu.thrax.util.getopt.GetOptTest"/>
-	</classes>
+        <packages>
+	    <package name="edu.jhu.thrax.util.getopt"/>
+	</packages>
+    </test>
+
+    <test name="Datatypes">
+        <packages>
+	    <package name="edu.jhu.thrax.datatypes"/>
+	</packages>
     </test>
 
 </suite>
+
