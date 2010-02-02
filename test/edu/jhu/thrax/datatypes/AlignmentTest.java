@@ -47,4 +47,17 @@ public class AlignmentTest {
 		Assert.assertFalse(al.isInitialPhrasePair(0, 4, 0, 2));
 		return;
 	}
+
+	@Test
+	public void IsAligned_Yes_ReturnTrue()
+	{
+
+		Assert.assertTrue(al.isAligned(0, 0));
+		Assert.assertTrue(al.isAligned(1, 2));
+		Assert.assertTrue(al.isAligned(2, 1));
+		Assert.assertTrue(al.isAligned(3, 1));
+		Assert.assertTrue(al.isAligned(4, 3));
+		Assert.assertTrue(al.isAligned(5, 4));
+		return;
+	}
 }

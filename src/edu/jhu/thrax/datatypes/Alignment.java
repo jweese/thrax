@@ -57,4 +57,23 @@ public class Alignment {
 		}
 		return hasAlignment;
 	}
+
+	/**
+	 * Determines if a particular source word is aligned to a particular
+	 * target word.
+	 *
+	 * @param source the index of the source word
+	 * @param target the index of the target word
+	 * @return true if the words are aligned under this Alignment, false
+	 * otherwise
+	 */
+	public boolean isAligned(int source, int target)
+	{
+		for (int [] link : map) {
+			if ((link[0] == source) && (link[1] == target)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }
