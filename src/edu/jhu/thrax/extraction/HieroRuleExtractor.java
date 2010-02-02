@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 import edu.jhu.thrax.datatypes.*;
 
+/**
+ * This class extract Hiero-style SCFG rules. The inputs that are needed
+ * are "source" "target" and "alignment", which are the source and target
+ * sides of a parallel corpus, and an alignment between each of the sentences.
+ */
 public class HieroRuleExtractor implements RuleExtractor {
 
 	public HieroRuleExtractor()

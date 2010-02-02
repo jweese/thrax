@@ -4,6 +4,12 @@ import java.util.ArrayList;
 
 import edu.jhu.thrax.datatypes.*;
 
+/**
+ * This class extract syntax-aided machine translation rules from provided
+ * inputs. The necessary inputs are source and target sides of a parallel
+ * corpus, the alignment between the parallel sentences, and target-side
+ * parse trees.
+ */
 public class SAMTRuleExtractor implements RuleExtractor {
 
 	public SAMTRuleExtractor()

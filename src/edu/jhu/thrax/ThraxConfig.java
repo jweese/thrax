@@ -8,11 +8,28 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * This class reads configuration options from several sources and aggregates
+ * them into a single <code>HashMap</code> that can be read from other parts
+ * of Thrax. Specifically, it uses the <code>GetOpt</code> class to read
+ * command-line options, and also can read options from a configuration file.
+ */
 public class ThraxConfig {
+	/**
+	 * Describes the version number of this copy of Thrax.
+	 */
 	public static final String VERSION_STRING = "0.1/alpha";
 
 	// the options themselves
+	/**
+	 * Holds all key-value pairs describing the configuration.
+	 */
 	public static final HashMap<String,String> opts = new HashMap<String,String>();
+
+	/**
+	 * Determines the verbosity level. 0 is the normal level, which is
+	 * quiet. 1 means verbose, and 2 includes debugging information.
+	 */
 	public static int verbosity = 0;
 
 	// some defaults
@@ -21,6 +38,10 @@ public class ThraxConfig {
 	public static final String DEFAULT_PARSE_FORMAT = "stanford";
 	public static final String DEFAULT_OUTPUT_FORMAT = "joshua";
 
+	/**
+	 * Prints the current key-value pairs in <code>opts</code> to stderr.
+	 * Generally only included in debug output.
+	 */
 	private static void printConfiguration()
 	{
 		System.err.println("--- THRAX CONFIGURATION ---");
@@ -30,6 +51,11 @@ public class ThraxConfig {
 		return;
 	}
 
+	/**
+	 * Tells <code>GetOpt</code> which command-line flags to look for.
+	 * If you add a new command line option that needs to be checked,
+	 * it should be included here.
+	 */
 	private static void registerAllOptions()
 	{
 		// necessary GNU-type switches
@@ -57,6 +83,12 @@ public class ThraxConfig {
 		return;
 	}
 
+	/**
+	 * Uses <code>GetOpt</code> to parse the command line and populate
+	 * the <code>opts</code> HashMap.
+	 *
+	 * @param argv	the command line as passed to the main function.
+	 */
 	public static void configure(String[] argv) throws OptionMissingArgumentException, IOException {
 		registerAllOptions();
 		GetOpt.parse(argv);
@@ -110,6 +142,13 @@ public class ThraxConfig {
 		return;
 	}
 
+	/**
+	 * Reads a configuration file and uses the key-value pairs there to
+	 * populate the <code>opts</code> HashMap.
+	 *
+	 * @param filename	the name of the configuration file to read
+	 * @throws IOException	if an input or output exception occurs
+	 */
 	private static void getConfigurationFromFile(String filename) throws IOException {
 		Scanner scanner = new Scanner(new File(filename));
 
@@ -141,6 +180,10 @@ public class ThraxConfig {
 		return;
 	}
 
+	/**
+	 * Prints the version information to stdout. The format of the version
+	 * message follows the GNU style guide.
+	 */
 	private static void printVersionInfo()
 	{
 		System.out.println(String.format("Thrax grammar extractor %s", VERSION_STRING));
@@ -151,9 +194,12 @@ public class ThraxConfig {
 		return;
 	}
 
+	/**
+	 * Prints a help message to stdout.
+	 */
 	private static void printHelpMessage() {
 		System.out.println("help message goes here.");
-		System.exit(0);
+		return;
 	}
 
 }

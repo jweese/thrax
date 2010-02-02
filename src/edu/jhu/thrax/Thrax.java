@@ -24,7 +24,7 @@ public class Thrax {
 				       : ThraxConfig.DEFAULT_GRAMMAR;
 			RuleExtractor extractor = RuleExtractorFactory.create(grammar);
 
-			InputProvider [] inputs = getInputs(extractor.requiredInputs());
+			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
 			Object [] currInputs = new Object[inputs.length];
 			while (allHaveNext(inputs)) {
 				for (int i = 0; i < inputs.length; i++)
@@ -48,15 +48,14 @@ public class Thrax {
 		return;
 	}
 
-	private static InputProvider [] getInputs(String [] inps) throws InvalidConfigurationException, IOException
-	{
-		InputProvider [] ret = new InputProvider[inps.length];
-		for (int i = 0; i < inps.length; i++) {
-			ret[i] = InputProviderFactory.create(inps[i]);
-		}
-		return ret;
-	}
-
+	/**
+	 * Determines if every <code>InputProvider</code> in the given
+	 * array has input left to provide.
+	 *
+	 * @param inps an array of <code>InputProvider</code> to check
+	 * @return <code>true</code> if every <code>InputProvider</code> has
+	 * more input; <code>false</code> otherwise.
+	 */
 	private static boolean allHaveNext(InputProvider [] inps)
 	{
 		for (InputProvider i : inps) {

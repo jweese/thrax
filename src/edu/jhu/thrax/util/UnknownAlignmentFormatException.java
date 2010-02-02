@@ -1,5 +1,9 @@
 package edu.jhu.thrax.util;
 
+/**
+ * This exception is thrown when the "alignment-format" option provided by the
+ * user is not known by Thrax.
+ */
 public class UnknownAlignmentFormatException extends InvalidConfigurationException {
 	private String format;
 
