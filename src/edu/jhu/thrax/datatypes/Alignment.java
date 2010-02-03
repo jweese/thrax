@@ -27,16 +27,20 @@ public class Alignment {
 	 * an initial phrase pair if (1) some source word is aligned to some
 	 * target word, (2) no source word is aligned outside the target phrase,
 	 * and (3) no target word is aligned outside the source phrase.
+	 * The phrase is represented by an array of int, where the first two
+	 * integers are the bounds of the source side, and the last two are
+	 * the bounds of the target side of the phrase.
 	 *
-	 * @param x the index of the start of the source phrase
-	 * @param y the index of the end of the source phrase
-	 * @param a the index of the start of the target phrase
-	 * @param b the index of the end of the target phrase
+	 * @param p a PhrasePair of interest
 	 * @return true if the two phrases form an initial phrase pair, false
 	 * otherwise
 	 */
-	public boolean isInitialPhrasePair(int x, int y, int a, int b)
+	public boolean isInitialPhrasePair(PhrasePair p)
 	{
+		int x = p.endpoints[0];
+		int y = p.endpoints[1];
+		int a = p.endpoints[2];
+		int b = p.endpoints[3];
 		boolean hasAlignment = false;
 		for (int i = 0; i < map.length; i++) {
 			int f = map[i][0];
@@ -76,4 +80,5 @@ public class Alignment {
 		}
 		return false;
 	}
+
 }

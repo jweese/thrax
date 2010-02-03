@@ -1,6 +1,6 @@
 package edu.jhu.thrax.extraction;
 
-import java.util.ArrayList;
+import java.util.Set;
 import edu.jhu.thrax.datatypes.Rule;
 
 /**
@@ -8,14 +8,17 @@ import edu.jhu.thrax.datatypes.Rule;
  * objects from certain inputs. 
  */
 public interface RuleExtractor {
+	/**
+	 * The unique name of the extractor. This corresponds to a value that
+	 * can be passed to the ThraxConfig.opts.get(ThraxConfig.GRAMMAR)
+	 * key.
+	 */
 	public static String name = "";
 
 	/**
-	 * Returns an array of names of input sources. These names correspond
+	 * An array of names of input sources. These names correspond
 	 * to configuration options that must be provided by the user (either
 	 * on the command line or in a configuration file).
-	 *
-	 * @return an array of names of required input sources
 	 */
 	public static String [] requiredInputs = {};
 
@@ -28,6 +31,6 @@ public interface RuleExtractor {
 	 * extractor
 	 * @return a list of <code>Rule</code> extracted from these inputs
 	 */
-	public ArrayList<Rule> extract(Object [] inputs);
+	public Set<Rule> extract(Object [] inputs);
 
 }

@@ -1,6 +1,6 @@
 package edu.jhu.thrax.extraction;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.ThraxConfig;
@@ -25,7 +25,7 @@ public class SAMTRuleExtractor implements RuleExtractor {
 						   ThraxConfig.ALIGNMENT,
 						   ThraxConfig.PARSE };
 
-	public ArrayList<Rule> extract(Object [] inputs)
+	public HashSet<Rule> extract(Object [] inputs)
 	{
 		if (inputs.length < 4) {
 			return null;
@@ -36,7 +36,7 @@ public class SAMTRuleExtractor implements RuleExtractor {
 		Alignment alignment = (Alignment) inputs[2];
 		ParseTree parse = (ParseTree) inputs[3];
 
-		return new ArrayList<Rule>();
+		return new HashSet<Rule>();
 	}
 
 }

@@ -11,7 +11,7 @@ import edu.jhu.thrax.extraction.RuleExtractorFactory;
 import edu.jhu.thrax.datatypes.Rule;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Set;
 
 public class Thrax {
 
@@ -34,7 +34,7 @@ public class Thrax {
 					currInputs[i] = inputs[i].next();
 				}
 				if (haveInput) {
-					ArrayList<Rule> rules = extractor.extract(currInputs);
+					Set<Rule> rules = extractor.extract(currInputs);
 				}
 			}
 
