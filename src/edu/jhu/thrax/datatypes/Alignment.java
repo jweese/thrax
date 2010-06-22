@@ -1,84 +1,104 @@
 package edu.jhu.thrax.datatypes;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
-/**
- * This class represents an alignment between two parallel sentences.
- */
 public class Alignment {
 
-	private int [][] map;
-	
-	/**
-	 * Constructor. It should be given an n-by-2 array of int m, where
-	 * the source word at m[i][0] is aligned with the target word at
-	 * m[i][1] for all i.
-	 *
-	 * @param m the alignment map
-	 */
-	public Alignment(int [][] m)
-	{
-		map = m;
-	}
+    public final int id;
 
-	/**
-	 * Determines if a source and target phrase form an initial phrase pair
-	 * (in the sense of Chiang). Chiang (2007) writes that two phrases are
-	 * an initial phrase pair if (1) some source word is aligned to some
-	 * target word, (2) no source word is aligned outside the target phrase,
-	 * and (3) no target word is aligned outside the source phrase.
-	 * The phrase is represented by an array of int, where the first two
-	 * integers are the bounds of the source side, and the last two are
-	 * the bounds of the target side of the phrase.
-	 *
-	 * @param p a PhrasePair of interest
-	 * @return true if the two phrases form an initial phrase pair, false
-	 * otherwise
-	 */
-	public boolean isInitialPhrasePair(PhrasePair p)
-	{
-		int x = p.endpoints[0];
-		int y = p.endpoints[1];
-		int a = p.endpoints[2];
-		int b = p.endpoints[3];
-		boolean hasAlignment = false;
-		for (int i = 0; i < map.length; i++) {
-			int f = map[i][0];
-			int e = map[i][1];
-			if ((f >= x) && (f <= y)) {
-				if ((e < a) || (e > b)) {
-					return false;
-				}
-				else {
-					hasAlignment = true;
-				}
-			}
-			else {
-				if ((e >= a) && (e <= b)) {
-					return false;
-				}
-			}
-		}
-		return hasAlignment;
-	}
+    private static int currentId = 0;
 
-	/**
-	 * Determines if a particular source word is aligned to a particular
-	 * target word.
-	 *
-	 * @param source the index of the source word
-	 * @param target the index of the target word
-	 * @return true if the words are aligned under this Alignment, false
-	 * otherwise
-	 */
-	public boolean isAligned(int source, int target)
-	{
-		for (int [] link : map) {
-			if ((link[0] == source) && (link[1] == target)) {
-				return true;
-			}
-		}
-		return false;
-	}
+    public int [][] f2e;
+    public int [][] e2f;
 
+    private static final int [] UNALIGNED = new int[0];
+
+    public Alignment(String s)
+    {
+        String [] ts = s.trim().split("\\s+");
+        IntPair [] ips = new IntPair[ts.length];
+        int i = 0;
+        for (String t : ts) {
+            ips[i++] = IntPair.alignmentFormat(t);
+        }
+
+        Arrays.sort(ips);
+        f2e = convertIntPairsTo2DArray(ips);
+        for (IntPair ip : ips)
+            ip.reverse();
+        Arrays.sort(ips);
+        e2f = convertIntPairsTo2DArray(ips);
+
+        this.id = currentId++;
+    }
+
+    private static int [][] convertIntPairsTo2DArray(IntPair [] ips)
+    {
+        int [][] ret = new int[ips[ips.length-1].fst + 1][];
+        ArrayList<IntPair> list = new ArrayList<IntPair>();
+        int currfst = 0;
+        for (IntPair ip : ips) {
+            if (ip.fst == currfst) {
+                list.add(ip);
+            }
+            else {
+                if (list.size() == 0) {
+                    ret[currfst] = UNALIGNED;
+                }
+                else {
+                    ret[currfst] = new int[list.size()];
+                }
+                int i = 0;
+                for (IntPair x : list)
+                    ret[currfst][i++] = x.snd;
+                for (int j = currfst + 1; j < ip.fst; j++)
+                    ret[j] = UNALIGNED;
+                list.clear();
+                list.add(ip);
+                currfst = ip.fst;
+            }
+        }
+        ret[currfst] = new int[list.size()];
+        int i = 0;
+        for (IntPair x : list)
+            ret[currfst][i++] = x.snd;
+        return ret;
+    }
+
+    public boolean sourceIsAligned(int i)
+    {
+        return i < f2e.length && f2e[i].length > 0;
+    }
+
+    public boolean targetIsAligned(int i)
+    {
+        return i < e2f.length && e2f[i].length > 0;
+    }
+
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < f2e.length; i++) {
+            if (f2e[i] == null) {
+                System.err.println("warning: null array in Alignment");
+                continue;
+            }
+            sb.append(String.format("%d->{", i));
+            for (int j : f2e[i]) {
+                sb.append(j);
+                sb.append(",");
+            }
+            sb.append("}\n");
+        }
+        return sb.toString();
+    }
+
+    public static void main(String [] argv)
+    {
+        Alignment a = new Alignment("3-3 2-4");
+        String x = a.toString();
+        System.out.print(a);
+        return;
+    }
 }

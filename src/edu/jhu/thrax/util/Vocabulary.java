@@ -2,63 +2,64 @@ package edu.jhu.thrax.util;
 
 import java.util.HashMap;
 
-/**
- * This class represents all words and nonterminals that are used in input
- * or output of Thrax as integers. It provides facilities for looking up the
- * word ID of a string, or looking up the String representation of an integer.
- */
 public class Vocabulary {
 
-	/**
-	 * This map maps words to unique integers.
-	 */
-	private static HashMap<String,Integer> ids = new HashMap<String,Integer>();
-	/**
-	 * This map maps integers to unique Strings.
-	 */
-	private static HashMap<Integer,String> words = new HashMap<Integer,String>();
+    private static HashMap<String,Integer> word2id = new HashMap<String,Integer>();
+    private static HashMap<Integer,String> id2word = new HashMap<Integer,String>();
 
-	/**
-	 * The number of words in the vocabulary.
-	 */
-	private static int size;
+    private static int size = 0;
 
-	/**
-	 * Looks up the unique integer associated with this String. If there
-	 * is no integer yet associated, the maps are updated with a new
-	 * String-integer pair.
-	 *
-	 * @param w the word to look up
-	 * @return the unique integer associated with that word
-	 */
-	public static int getWordID(String w)
-	{
-		if (ids.containsKey(w)) {
-			return ids.get(w);
-		}
-		else {
-			ids.put(w, size);
-			words.put(size, w);
-			size++;
-			return (size - 1);
-		}
-	}
+    private static boolean fixed = false;
+    
+    public static final String OOV = "OOV";
 
-	/**
-	 * Looks up the unique integer associated with each String in an array,
-	 * and returns those integers in an array. The first integer corresponds
-	 * to the first string, the second to the second, and so on.
-	 *
-	 * @param ws an array holding the Strings to look up
-	 * @return an array of integers corresponding to those Strings
-	 */
-	public static int [] getWordIDs(String [] ws)
-	{
-		int [] ret = new int[ws.length];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = getWordID(ws[i]);
-		}
-		return ret;
-	}
+    public static int getId(String word)
+    {
+        if (word2id.containsKey(word)) {
+            return word2id.get(word);
+        }
+        else if (fixed) {
+            return -1;
+        }
+        else {
+            word2id.put(word, size);
+            id2word.put(size, word);
+        }
+        int ret = size;
+        size++;
+        return ret;
+    }
+
+    public static String getWord(int id)
+    {
+        if (id2word.containsKey(id)) {
+            return id2word.get(id);
+        }
+        else {
+            return OOV;
+        }
+    }
+
+    public static void fix()
+    {
+        fixed = true;
+        return;
+    }
+
+    public static int [] getIds(String [] words)
+    {
+        int [] ret = new int[words.length];
+        for (int i = 0; i < words.length; i++)
+            ret[i] = getId(words[i]);
+        return ret;
+    }
+
+    public static String [] getWords(int [] ids)
+    {
+        String [] ret = new String[ids.length];
+        for (int i = 0; i < ids.length; i++)
+            ret[i] = getWord(ids[i]);
+        return ret;
+    }
 
 }

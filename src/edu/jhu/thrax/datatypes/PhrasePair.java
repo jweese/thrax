@@ -1,47 +1,46 @@
 package edu.jhu.thrax.datatypes;
 
-/**
- * This class represents a phrase pair -- that is, an aligned pair of subphrases
- * contained in an aligned pair of sentences. The representation is simple
- * and minimal, backed only by an integer array.
- */
 public class PhrasePair {
-	/**
-	 * The four endpoints of the phrase pair, in this order: start of source
-	 * span, end of source span, start of target span, end of target span.
-	 */
-	public int [] endpoints;
 
-	/**
-	 * Constructor.
-	 */
-	public PhrasePair(int [] ps)
-	{
-		endpoints = ps.clone();
-	}
+    public int sourceStart;
+    public int sourceEnd;
+    public int targetStart;
+    public int targetEnd;
 
-	/**
-	 * Determines if this PhrasePair is disjoint from another; that is,
-	 * determines if they intersect or not.
-	 *
-	 * @param other another PhrasePair of interest
-	 * @return true if the two PhraseParis are disjoint, false otherwise
-	 */
-	public boolean isDisjointFrom(PhrasePair other)
-	{
-		return false;
-	}
+    public PhrasePair(int ss, int se, int ts, int te)
+    {
+        sourceStart = ss;
+        sourceEnd = se;
+        targetStart = ts;
+        targetEnd = te;
+    }
 
-	/**
-	 * Determines if another PhrasePair is completely contained in this
-	 * PhrasePair.
-	 *
-	 * @param other another PhrasePair of interest
-	 * @return true if the other PhrasePair is completely contained in this
-	 * one, false otherwise
-	 */
-	public boolean contains(PhrasePair other)
-	{
-		return false;
-	}
+    public boolean consistentWith(Alignment a)
+    {
+        for (int i = sourceStart; i < sourceEnd; i++) {
+            if (i >= a.f2e.length)
+                break;
+            for (int x : a.f2e[i]) {
+                if (x < targetStart || x >= targetEnd)
+                    return false;
+            }
+        }
+
+        for (int j = targetStart; j < targetEnd; j++) {
+            if (j >= a.e2f.length)
+                break;
+            for (int x : a.e2f[j]) {
+                if (x < sourceStart || x >= sourceEnd)
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+    public String toString()
+    {
+        return String.format("[%d,%d)+[%d,%d)", sourceStart, sourceEnd, targetStart, targetEnd);
+    }
+
 }
