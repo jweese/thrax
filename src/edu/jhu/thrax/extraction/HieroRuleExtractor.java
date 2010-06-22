@@ -91,6 +91,16 @@ public class HieroRuleExtractor implements RuleExtractor {
             while (q.peek() != null) {
                 Rule r = q.poll();
 
+                if (isWellFormed(r)) {
+                    for (Rule s : getLabelVariants(r)) {
+                        for (Feature feat : features)
+                            feat.noteExtraction(s);
+                        rules.add(s);
+                    }
+                }
+                if (r.appendPoint > phrasesByStart.length - 1)
+                    continue;
+
                 for (PhrasePair pp : phrasesByStart[r.appendPoint]) {
                     if (pp.sourceEnd - r.rhs.sourceStart > INIT_LENGTH_LIMIT ||
                         (r.rhs.targetStart >= 0 &&
@@ -110,13 +120,6 @@ public class HieroRuleExtractor implements RuleExtractor {
                     }
                 }
 
-                if (isWellFormed(r)) {
-                    for (Rule s : getLabelVariants(r)) {
-                        for (Feature feat : features)
-                            feat.noteExtraction(s);
-                        rules.add(s);
-                    }
-                }
             }
             return rules;
         }
