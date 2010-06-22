@@ -4,6 +4,8 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class UnalignedWordCountFeature implements Feature {
 
+    public static int length = 2;
+
     public UnalignedWordCountFeature()
     {
         // do nothing
@@ -18,15 +20,11 @@ public class UnalignedWordCountFeature implements Feature {
     {
         double [] ret = new double[2];
         for (int i = 0; i < r.source.length; i++)
-            if (r.lexical.get(i) && r.alignment.f2e[i].length == 0) ret[0]++;
+            if (r.sourceLex[i] != 0 && r.alignment.f2e[i].length == 0) ret[0]++;
         for (int j = 0; j < r.target.length; j++)
-            if (r.targetLexical.get(j) && r.alignment.e2f[j].length == 0) ret[1]++;
+            if (r.targetLex[j] != 0 && r.alignment.e2f[j].length == 0) ret[1]++;
 
         return ret;
     }
 
-    public int length()
-    {
-        return 2;
-    }
 }

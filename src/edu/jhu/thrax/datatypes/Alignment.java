@@ -76,6 +76,29 @@ public class Alignment {
         return i < e2f.length && e2f[i].length > 0;
     }
 
+    public PhrasePair getPairFromSource(int sourceStart, int sourceEnd)
+    {
+        int targetStart = -1;
+        int targetEnd = -1;
+        for (int i = sourceStart; i < sourceEnd; i++) {
+            if (!sourceIsAligned(i))
+                continue;
+            int min = f2e[i][0];
+            int max = f2e[i][f2e[i].length-1] + 1;
+            if (targetStart < 0 || min < targetStart)
+                targetStart = min;
+            if (max > targetEnd)
+                targetEnd = max;
+        }
+        for (int j = targetStart; j < targetEnd; j++) {
+            for (int k : e2f[j]) {
+                if (k < sourceStart || k >= sourceEnd)
+                    return null;
+            }
+        }
+        return new PhrasePair(sourceStart, sourceEnd, targetStart, targetEnd);
+    }
+
     public String toString()
     {
         StringBuilder sb = new StringBuilder();

@@ -25,10 +25,9 @@ public interface Feature {
 	public double [] score(Rule r);
 
         /**
-         * Returns the length of the array returned by score.
+         * The length of the array returned by score.
          *
-         * @return the length of the array returned by score
          */
-        public int length();
+        public static int length = 0;
 
 }

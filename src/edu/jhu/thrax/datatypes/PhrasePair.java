@@ -1,6 +1,6 @@
 package edu.jhu.thrax.datatypes;
 
-public class PhrasePair {
+public class PhrasePair implements Cloneable {
 
     public int sourceStart;
     public int sourceEnd;
@@ -41,6 +41,11 @@ public class PhrasePair {
     public String toString()
     {
         return String.format("[%d,%d)+[%d,%d)", sourceStart, sourceEnd, targetStart, targetEnd);
+    }
+
+    public Object clone()
+    {
+        return new PhrasePair(sourceStart, sourceEnd, targetStart, targetEnd);
     }
 
 }

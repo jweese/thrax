@@ -4,6 +4,9 @@ import java.util.HashMap;
 import edu.jhu.thrax.datatypes.Rule;
 
 public class RelativeFrequencyFeature implements Feature {
+
+        public static int length = 1;
+
 	private HashMap<Integer,Integer> lhsCounts;
 	private HashMap<Rule,Integer> ruleCounts;
 
@@ -30,9 +33,4 @@ public class RelativeFrequencyFeature implements Feature {
             ret[0] = (double) ruleCounts.get(r) / lhsCounts.get(r.lhs);
             return ret;
 	}
-
-        public int length()
-        {
-            return 1;
-        }
 }

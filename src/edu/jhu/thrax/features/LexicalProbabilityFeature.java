@@ -4,6 +4,7 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class LexicalProbabilityFeature implements Feature {
 
+    public static int length = 2;
     private CollocationTable table;
 
     public LexicalProbabilityFeature()
@@ -25,16 +26,13 @@ public class LexicalProbabilityFeature implements Feature {
         return ret;
     }
 
-    public int length()
-    {
-        return 2;
-    }
+
 
     private double targetGivenSource(Rule r)
     {
         double ret = 1.0;
         for (int i = 0; i < r.target.length; i++) {
-            if (!r.targetLexical.get(i))
+            if (r.targetLex[i] != 0)
                 continue;
             if (i >= r.alignment.e2f.length || r.alignment.e2f[i].length == 0)
                 ret *= table.targetGivenSource(CollocationTable.ID_UNALIGNED,
@@ -54,7 +52,7 @@ public class LexicalProbabilityFeature implements Feature {
     {
         double ret = 1.0;
         for (int i = 0; i < r.source.length; i++) {
-            if (!r.lexical.get(i))
+            if (r.sourceLex[i] != 0)
                 continue;
             if (i >= r.alignment.f2e.length || r.alignment.f2e[i].length == 0)
                 ret *= table.sourceGivenTarget(r.source[i],
