@@ -3,7 +3,6 @@ aligned parallel corpus. If you don't know what that means, you probably don't
 need Thrax.
 
 COMPILING:
-At the moment there's no code, but once there is, it will be written in Java.
 To compile the code, type
 
 	ant

@@ -20,10 +20,14 @@ import edu.jhu.thrax.ThraxConfig;
  */
 public class HieroRuleExtractor implements RuleExtractor {
 
-	public static String name = "hiero";
-	public static String [] requiredInputs = { ThraxConfig.SOURCE,
-	                                           ThraxConfig.TARGET,
-						   ThraxConfig.ALIGNMENT };
+        public static String name = "hiero";
+
+	public String [] requiredInputs()
+        {
+           return new String [] { ThraxConfig.SOURCE,
+                                  ThraxConfig.TARGET,
+				  ThraxConfig.ALIGNMENT };
+        }
 
 	public int INIT_LENGTH_LIMIT = 10;
 	public int SOURCE_LENGTH_LIMIT = 5;
@@ -72,7 +76,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         public void addFeature(Feature f)
         {
             features.add(f);
-            featureLength += f.length;
+            featureLength += f.length();
         }
 
         public void score(Rule r)
@@ -80,8 +84,8 @@ public class HieroRuleExtractor implements RuleExtractor {
             r.scores = new double[featureLength];
             int idx = 0;
             for (Feature f : features) {
-                System.arraycopy(f.score(r), 0, r.scores, idx, f.length);
-                idx += f.length;
+                System.arraycopy(f.score(r), 0, r.scores, idx, f.length());
+                idx += f.length();
             }
         }
 	

@@ -4,7 +4,10 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class UnalignedWordCountFeature implements Feature {
 
-    public static int length = 2;
+    public int length()
+    {
+        return 2;
+    }
 
     public UnalignedWordCountFeature()
     {

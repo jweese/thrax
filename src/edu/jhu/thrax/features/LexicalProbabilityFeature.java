@@ -4,7 +4,11 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class LexicalProbabilityFeature implements Feature {
 
-    public static int length = 2;
+    public int length()
+    {
+        return 2;
+    }
+
     private CollocationTable table;
 
     public LexicalProbabilityFeature()

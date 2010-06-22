@@ -5,7 +5,10 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class RelativeFrequencyFeature implements Feature {
 
-        public static int length = 1;
+        public int length()
+        {
+            return 1;
+        }
 
 	private HashMap<Integer,Integer> lhsCounts;
 	private HashMap<Rule,Integer> ruleCounts;

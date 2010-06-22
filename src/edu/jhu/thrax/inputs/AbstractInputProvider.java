@@ -5,6 +5,8 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.IOException;
 
+import edu.jhu.thrax.ThraxConfig;
+
 /**
  * A common implementation of <code>InputProvider</code> based on wrapping
  * a Scanner that can read the input line by line from some source.
@@ -28,5 +30,12 @@ public abstract class AbstractInputProvider<T> implements InputProvider<T> {
 		return scanner.hasNextLine();
 	}
 
-	abstract public T next();
+	public T next() {
+            String line = scanner.nextLine();
+            if (ThraxConfig.verbosity > 1)
+                System.err.println(String.format("%s: %s", name, line));
+            return convert(line);
+        }
+
+        abstract public T convert(String line);
 }

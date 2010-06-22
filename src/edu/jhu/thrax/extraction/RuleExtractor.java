@@ -9,19 +9,13 @@ import edu.jhu.thrax.features.Feature;
  * objects from certain inputs. 
  */
 public interface RuleExtractor {
-	/**
-	 * The unique name of the extractor. This corresponds to a value that
-	 * can be passed to the ThraxConfig.opts.get(ThraxConfig.GRAMMAR)
-	 * key.
-	 */
-	public static String name = "";
 
 	/**
 	 * An array of names of input sources. These names correspond
 	 * to configuration options that must be provided by the user (either
 	 * on the command line or in a configuration file).
 	 */
-	public static String [] requiredInputs = {};
+	public String [] requiredInputs();
 
 	/**
 	 * Extracts synchronous context-free production rules given some

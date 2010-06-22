@@ -20,9 +20,9 @@ public class BerkeleyAlignmentProvider extends AbstractInputProvider<Alignment>
 		super(filename);
 	}
 
-	public Alignment next()
+	public Alignment convert(String line)
 	{
-		return new Alignment(scanner.nextLine());
+		return new Alignment(line);
 	}
 
 }

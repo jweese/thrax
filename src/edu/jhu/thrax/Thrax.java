@@ -12,6 +12,7 @@ import edu.jhu.thrax.datatypes.Rule;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.HashSet;
 
 public class Thrax {
 
@@ -22,7 +23,9 @@ public class Thrax {
 			String grammar = ThraxConfig.opts.containsKey(ThraxConfig.GRAMMAR) ? ThraxConfig.opts.get(ThraxConfig.GRAMMAR) : ThraxConfig.DEFAULT_GRAMMAR;
 			RuleExtractor extractor = RuleExtractorFactory.create(grammar);
 
-			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs);
+			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
+
+                        Set<Rule> rules = new HashSet<Rule>();
 			Object [] currInputs = new Object[inputs.length];
 			boolean haveInput = true;
 			while (haveInput) {
@@ -34,9 +37,16 @@ public class Thrax {
 					currInputs[i] = inputs[i].next();
 				}
 				if (haveInput) {
-					Set<Rule> rules = extractor.extract(currInputs);
+					Set<Rule> rs = extractor.extract(currInputs);
+                                        if (rs != null)
+                                            rules.addAll(rs);
 				}
 			}
+                        
+                        for (Rule r : rules) {
+                            extractor.score(r);
+                            System.out.println(r);
+                        }
 
 		}
 		catch (OptionMissingArgumentException e) {
