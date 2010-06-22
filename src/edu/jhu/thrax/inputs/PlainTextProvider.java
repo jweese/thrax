@@ -18,7 +18,7 @@ public class PlainTextProvider extends AbstractInputProvider<int []> {
 
 	public int [] next()
 	{
-		return Vocabulary.getWordIDs(scanner.nextLine().split("\\s+"));
+		return Vocabulary.getIds(scanner.nextLine().split("\\s+"));
 	}
 
 }
