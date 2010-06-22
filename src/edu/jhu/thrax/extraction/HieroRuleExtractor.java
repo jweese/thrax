@@ -64,7 +64,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 		int [] target = (int []) inputs[1];
 		Alignment alignment = (Alignment) inputs[2];
 
-                ArrayList<PhrasePair> [] phrasesByStart = initialPhrasePairs(source, target, alignment);
+                PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
 
                 Queue<Rule> q = new LinkedList<Rule>();
                 for (int i = 0; i < source.length - 1; i++)
@@ -89,7 +89,7 @@ public class HieroRuleExtractor implements RuleExtractor {
             }
         }
 	
-        protected Set<Rule> processQueue(Queue<Rule> q, ArrayList<PhrasePair> [] phrasesByStart)
+        protected Set<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart)
         {
             Set<Rule> rules = new HashSet<Rule>();
             while (q.peek() != null) {
@@ -149,24 +149,24 @@ public class HieroRuleExtractor implements RuleExtractor {
             return variantSet;
         }
 
-        private ArrayList<PhrasePair> [] initialPhrasePairs(int [] f, int [] e, Alignment a)
+        private PhrasePair [][] initialPhrasePairs(int [] f, int [] e, Alignment a)
         {
             
-            ArrayList<ArrayList<PhrasePair>> result = new ArrayList<ArrayList<PhrasePair>>();
-            for (int j = 0; j < f.length; j++)
-                result.add(new ArrayList<PhrasePair>());
+            PhrasePair [][] result = new PhrasePair[f.length][];
 
             int maxlen = f.length < INIT_LENGTH_LIMIT ? f.length : INIT_LENGTH_LIMIT;
+
+            ArrayList<PhrasePair> list = new ArrayList<PhrasePair>();
             for (int len = 1; len < maxlen; len++) {
                 for (int i = 0; i < f.length - len + 1; i++) {
                     if (!ALLOW_LOOSE_BOUNDS && !a.sourceIsAligned(i) || !a.sourceIsAligned(i+len-1))
                         continue;
                     PhrasePair pp = a.getPairFromSource(i, i+len);
-                    if (pp != null && pp.targetEnd - pp.targetStart <= INIT_LENGTH_LIMIT)
-                        result.get(i).add(pp);
+                    if (pp != null && pp.targetEnd - pp.targetStart <= INIT_LENGTH_LIMIT);
+                        // somehow build the array here
                 }
             }
-            return (ArrayList<PhrasePair> []) result.toArray();
+            return result;
         }
 
 }
