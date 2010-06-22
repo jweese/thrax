@@ -30,6 +30,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 	public int NT_LIMIT = 2;
         public int LEXICAL_MINIMUM = 1;
         public boolean ALLOW_ADJACENT_NTS = false;
+        public boolean ALLOW_LOOSE_BOUNDS = false;
 
         public static final String X = "X";
         public static final int X_ID = Vocabulary.getId(X);
@@ -45,6 +46,8 @@ public class HieroRuleExtractor implements RuleExtractor {
         {
             features = new ArrayList<Feature>();
             featureLength = 0;
+            ALLOW_ADJACENT_NTS = ThraxConfig.opts.containsKey(ThraxConfig.ADJACENT);
+            ALLOW_LOOSE_BOUNDS = ThraxConfig.opts.containsKey(ThraxConfig.LOOSE);
         }
 
 	public Set<Rule> extract(Object [] inputs)
@@ -149,7 +152,7 @@ public class HieroRuleExtractor implements RuleExtractor {
             int maxlen = f.length < INIT_LENGTH_LIMIT ? f.length : INIT_LENGTH_LIMIT;
             for (int len = 1; len < maxlen; len++) {
                 for (int i = 0; i < f.length - len + 1; i++) {
-                    if (!a.sourceIsAligned(i) || !a.sourceIsAligned(i+len-1))
+                    if (!ALLOW_LOOSE_BOUNDS && !a.sourceIsAligned(i) || !a.sourceIsAligned(i+len-1))
                         continue;
                     PhrasePair pp = a.getPairFromSource(i, i+len);
                     if (pp != null && pp.targetEnd - pp.targetStart <= INIT_LENGTH_LIMIT)

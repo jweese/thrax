@@ -21,7 +21,7 @@ public class ThraxConfig {
 	/**
 	 * Describes the version number of this copy of Thrax.
 	 */
-	public static final String VERSION_STRING = "0.1/alpha";
+	public static final String VERSION_STRING = "0.2/alpha";
 
 	// the options themselves
 	/**
@@ -53,6 +53,9 @@ public class ThraxConfig {
 	public static final String SOURCE = "source";
 	public static final String TARGET = "target";
 	public static final String OUTPUT_FORMAT = "output-format";
+
+        public static final String ADJACENT = "adjacent";
+        public static final String LOOSE = "loose";
 
 	/**
 	 * Prints the current key-value pairs in <code>opts</code> to stderr.
@@ -95,6 +98,11 @@ public class ThraxConfig {
 		// if you want to add more command line options, register
 		// them here. Then don't forget to check for them in
 		// configure()!
+
+                // allow adjacent terminals
+                GetOpt.registerOption("j", ADJACENT, false);
+                // allow loose bounds for phrase extraction
+                GetOpt.registerOption("L", LOOSE, false);
 
 		return;
 	}
