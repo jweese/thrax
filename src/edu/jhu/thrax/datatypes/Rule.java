@@ -129,8 +129,32 @@ public class Rule {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("[%s]", Vocabulary.getWord(lhs)));
         sb.append(FIELD_SEPARATOR);
+        int last = -1;
+        for (int i = 0; i < sourceLex.length; i++) {
+            int x = sourceLex[i];
+            if (x < 0)
+                continue;
+            if (x == 0)
+                sb.append(String.format(" %s", Vocabulary.getWord(source[i])));
+            else if (x != last) {
+                sb.append(String.format(" [%s,%d]", Vocabulary.getWord(nts[x-1]), x));
+                last = x;
+            }
+        }
 
         sb.append(FIELD_SEPARATOR);
+        last = -1;
+        for (int i = 0; i < targetLex.length; i++) {
+            int x = targetLex[i];
+            if (x < 0)
+                continue;
+            if (x == 0)
+                sb.append(String.format(" %s", Vocabulary.getWord(target[i])));
+            else if (x != last) {
+                sb.append(String.format(" [%s,%d", Vocabulary.getWord(nts[x-1]), x));
+                last = x;
+            }
+        }
 
         sb.append(FIELD_SEPARATOR);
         for (double s : scores)
@@ -139,11 +163,52 @@ public class Rule {
         return sb.toString();
     }
 
+    /**
+     * Two rules are considered equal if they have the same textual
+     * representation.
+     *
+     * @param o the object to compare to
+     * @return true if these objects are equal, false otherwise
+     */
     public boolean equals(Object o)
     {
         if (!(o instanceof Rule))
             return false;
+        Rule other = (Rule) o;
+        if (this.lhs != other.lhs)
+            return false;
+        if (!sameRepresentation(this.source, other.source, this.sourceLex, other.sourceLex))
+            return false;
+        if (!sameRepresentation(this.target, other.target, this.targetLex, other.targetLex))
+            return false;
         return true;
+    }
+
+    private boolean sameRepresentation(int [] a, int [] b, byte [] alex, byte [] blex) {
+        int last = -1;
+        int i = 0;
+        int j = 0;
+        while (alex[i] < 0) i++;
+        while (blex[j] < 0) j++;
+        while (alex[i] >= 0) {
+            if (alex[i] == 0) {
+                if (a[i] != b[j])
+                    return false;
+                i++;
+                j++;
+            }
+            else {
+                if (alex[i] != blex[j])
+                    return false;
+                while (blex[j] == alex[i])
+                    j++;
+                last = alex[i];
+                while (alex[i] == last)
+                    i++;
+            }
+
+        }
+        return (blex[j] < 0);
     }
 
 }
