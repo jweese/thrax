@@ -1,0 +1,4 @@
+#!/bin/bash
+
+java -cp bin edu.jhu.thrax.Thrax $*
+
