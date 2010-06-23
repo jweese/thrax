@@ -55,6 +55,12 @@ public class InputProviderFactory {
 				throw new UnknownAlignmentFormatException(fmt);
 			}
 		}
+
+                else if (inp.equals(ThraxConfig.PARSE)) {
+                    // looks lame, but we can just give the string to Juri's
+                    // lattice code once we're at the SAMT extractor
+                    return new StringProvider(ThraxConfig.opts.get(inp));
+                }
 		return null;
 	}
 

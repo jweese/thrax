@@ -132,7 +132,7 @@ public class HieroRuleExtractor implements RuleExtractor {
             return rules;
         }
 
-        protected boolean isWellFormed(Rule r)
+        private boolean isWellFormed(Rule r)
         {
             if (r.rhs.targetStart < 0)
                 return false;
@@ -170,7 +170,7 @@ public class HieroRuleExtractor implements RuleExtractor {
             return variantSet;
         }
 
-        private PhrasePair [][] initialPhrasePairs(int [] f, int [] e, Alignment a)
+        protected PhrasePair [][] initialPhrasePairs(int [] f, int [] e, Alignment a)
         {
             
             PhrasePair [][] result = new PhrasePair[f.length][];
