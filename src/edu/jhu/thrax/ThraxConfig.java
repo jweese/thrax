@@ -166,6 +166,12 @@ public class ThraxConfig {
                 if (GetOpt.isSet("f")) {
                         opts.put(FEATURES, GetOpt.valueOf("f"));
                 }
+                if (GetOpt.isSet("j")) {
+                    opts.put(ADJACENT, GetOpt.valueOf("j"));
+                }
+                if (GetOpt.isSet("L")) {
+                    opts.put(LOOSE, GetOpt.valueOf("L"));
+                }
 
 		if (GetOpt.isSet("c")) {
 			getConfigurationFromFile(GetOpt.valueOf("c"));

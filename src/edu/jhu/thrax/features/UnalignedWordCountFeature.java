@@ -25,9 +25,9 @@ public class UnalignedWordCountFeature implements Feature {
     {
         double [] ret = new double[2];
         for (int i = 0; i < r.source.length; i++)
-            if (r.sourceLex[i] != 0 && r.alignment.f2e[i].length == 0) ret[0]++;
+            if (r.sourceLex[i] == 0 && !r.alignment.sourceIsAligned(i)) ret[0]++;
         for (int j = 0; j < r.target.length; j++)
-            if (r.targetLex[j] != 0 && r.alignment.e2f[j].length == 0) ret[1]++;
+            if (r.targetLex[j] == 0 && !r.alignment.targetIsAligned(j)) ret[1]++;
 
         return ret;
     }
