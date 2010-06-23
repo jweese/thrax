@@ -5,6 +5,8 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class RelativeFrequencyFeature implements Feature {
 
+        public static final String name = "rf";
+
         public int length()
         {
             return 1;

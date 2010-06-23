@@ -21,7 +21,12 @@ public class ThraxConfig {
 	/**
 	 * Describes the version number of this copy of Thrax.
 	 */
-	public static final String VERSION_STRING = "0.2/alpha";
+	public static final String VERSION_STRING = "0.25/alpha";
+
+        /**
+         * Used to separate values in multi-value options.
+         */
+        public static final String SEPARATOR = ":";
 
 	// the options themselves
 	/**
@@ -56,6 +61,8 @@ public class ThraxConfig {
 
         public static final String ADJACENT = "adjacent";
         public static final String LOOSE = "loose";
+
+        public static final String FEATURES = "features";
 
 	/**
 	 * Prints the current key-value pairs in <code>opts</code> to stderr.
@@ -94,6 +101,7 @@ public class ThraxConfig {
 		GetOpt.registerOption("t", TARGET, true);
 		GetOpt.registerOption("v", "verbose", false);
 		GetOpt.registerOption("g", GRAMMAR, true);
+                GetOpt.registerOption("f", FEATURES, true);
 
 		// if you want to add more command line options, register
 		// them here. Then don't forget to check for them in
@@ -155,6 +163,9 @@ public class ThraxConfig {
 		if (GetOpt.isSet("g")) {
 			opts.put(GRAMMAR, GetOpt.valueOf("g"));
 		}
+                if (GetOpt.isSet("f")) {
+                        opts.put(FEATURES, GetOpt.valueOf("f"));
+                }
 
 		if (GetOpt.isSet("c")) {
 			getConfigurationFromFile(GetOpt.valueOf("c"));

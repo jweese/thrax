@@ -7,6 +7,8 @@ import edu.jhu.thrax.inputs.InputProvider;
 import edu.jhu.thrax.inputs.InputProviderFactory;
 import edu.jhu.thrax.extraction.RuleExtractor;
 import edu.jhu.thrax.extraction.RuleExtractorFactory;
+import edu.jhu.thrax.features.Feature;
+import edu.jhu.thrax.features.FeatureFactory;
 
 import edu.jhu.thrax.datatypes.Rule;
 
@@ -24,6 +26,16 @@ public class Thrax {
 			RuleExtractor extractor = RuleExtractorFactory.create(grammar);
 
 			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
+
+                        if (ThraxConfig.opts.containsKey(ThraxConfig.FEATURES)) {
+                            String [] feats = ThraxConfig.opts.get(ThraxConfig.FEATURES).split(ThraxConfig.SEPARATOR);
+                            for (Feature f : FeatureFactory.createAll(feats)) {
+                                extractor.addFeature(f);
+                            }
+                        }
+                        else {
+                            System.err.println("WARNING: no feature functions provided");
+                        }
 
                         Set<Rule> rules = new HashSet<Rule>();
 			Object [] currInputs = new Object[inputs.length];

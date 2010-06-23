@@ -4,6 +4,8 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class UnalignedWordCountFeature implements Feature {
 
+    public static final String name = "unaligned";
+
     public int length()
     {
         return 2;

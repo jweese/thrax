@@ -4,6 +4,8 @@ import edu.jhu.thrax.datatypes.Rule;
 
 public class LexicalProbabilityFeature implements Feature {
 
+    public static final String name = "lex";
+
     public int length()
     {
         return 2;
