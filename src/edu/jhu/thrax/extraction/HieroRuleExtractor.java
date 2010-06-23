@@ -107,6 +107,14 @@ public class HieroRuleExtractor implements RuleExtractor {
                 if (phrasesByStart[r.appendPoint] == null)
                     continue;
 
+                if (!r.alignment.sourceIsAligned(r.appendPoint) &&
+                    r.numNTs + r.numTerminals + 1 <= SOURCE_LENGTH_LIMIT &&
+                    r.appendPoint != r.rhs.sourceStart) {
+                    Rule s = r.copy();
+                    s.extendWithUnalignedTerminal();
+                    q.offer(s);
+                }
+
                 for (PhrasePair pp : phrasesByStart[r.appendPoint]) {
                     if (pp.sourceEnd - r.rhs.sourceStart > INIT_LENGTH_LIMIT ||
                         (r.rhs.targetStart >= 0 &&
@@ -114,7 +122,8 @@ public class HieroRuleExtractor implements RuleExtractor {
                         continue;
                     if (r.numNTs < NT_LIMIT &&
                         r.numNTs + r.numTerminals < SOURCE_LENGTH_LIMIT &&
-                        (!r.sourceEndsWithNT || ALLOW_ADJACENT_NTS)) {
+                        (!r.sourceEndsWithNT || ALLOW_ADJACENT_NTS ||
+                         !r.alignment.sourceIsAligned(r.appendPoint-1))) {
                         Rule s = r.copy();
                         s.extendWithNonterminal(pp);
                         q.offer(s);
@@ -123,13 +132,6 @@ public class HieroRuleExtractor implements RuleExtractor {
                         (r.appendPoint == r.rhs.sourceStart || r.sourceEndsWithNT)) {
                         Rule s = r.copy();
                         s.extendWithTerminals(pp);
-                        q.offer(s);
-                    }
-                    if (!r.alignment.sourceIsAligned(r.appendPoint) &&
-                        r.numNTs + r.numTerminals + 1 <= SOURCE_LENGTH_LIMIT &&
-                        r.appendPoint != r.rhs.sourceStart) {
-                        Rule s = r.copy();
-                        s.extendWithUnalignedTerminal();
                         q.offer(s);
                     }
                 }
