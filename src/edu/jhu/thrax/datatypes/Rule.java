@@ -124,9 +124,8 @@ public class Rule {
     {
         sourceLex[appendPoint] = 0;
         appendPoint++;
-        alignedWords++;
+        numTerminals++;
         rhs.sourceEnd++;
-        sourceEndsWithNT = false;
     }
 
     public static final String FIELD_SEPARATOR = " |||";

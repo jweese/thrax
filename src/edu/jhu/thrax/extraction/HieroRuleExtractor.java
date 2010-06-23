@@ -140,9 +140,12 @@ public class HieroRuleExtractor implements RuleExtractor {
 
         protected boolean isWellFormed(Rule r)
         {
-            if (!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1))
-                return false;
             if (r.rhs.targetStart < 0)
+                return false;
+            if (!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1) ||
+                !r.alignment.sourceIsAligned(r.rhs.sourceStart) ||
+                !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
+                !r.alignment.targetIsAligned(r.rhs.targetStart))
                 return false;
             for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
                 if (r.targetLex[i] < 0) {
