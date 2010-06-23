@@ -129,7 +129,7 @@ public class HieroRuleExtractor implements RuleExtractor {
                         q.offer(s);
                     }
                     if (r.numNTs + r.numTerminals + pp.sourceEnd - pp.sourceStart <= SOURCE_LENGTH_LIMIT &&
-                        (r.appendPoint == r.rhs.sourceStart || r.sourceEndsWithNT)) {
+                        (r.appendPoint == r.rhs.sourceStart || r.sourceEndsWithNT || r.targetLex[pp.targetStart-1] != 0)) {
                         Rule s = r.copy();
                         s.extendWithTerminals(pp);
                         q.offer(s);
