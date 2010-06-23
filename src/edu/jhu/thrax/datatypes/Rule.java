@@ -102,30 +102,22 @@ public class Rule {
         sourceEndsWithNT = true;
     }
 
-    public void extendWithTerminals(PhrasePair pp)
-    {
-        for (; appendPoint < pp.sourceEnd; appendPoint++) {
-            sourceLex[appendPoint] = 0;
-            numTerminals++;
-            if (alignment.sourceIsAligned(appendPoint))
-                alignedWords++;
-        }
-        for (int idx = pp.targetStart; idx < pp.targetEnd; idx++)
-            targetLex[idx] = 0;
-        rhs.sourceEnd = pp.sourceEnd;
-        if (rhs.targetStart < 0 || pp.targetStart < rhs.targetStart)
-            rhs.targetStart = pp.targetStart;
-        if (pp.targetEnd > rhs.targetEnd)
-            rhs.targetEnd = pp.targetEnd;
-        sourceEndsWithNT = false;
-    }
-
-    public void extendWithUnalignedTerminal()
+    public void extendWithTerminal()
     {
         sourceLex[appendPoint] = 0;
-        appendPoint++;
+        for (int j : alignment.f2e[appendPoint]) {
+            targetLex[j] = 0;
+            if (rhs.targetEnd < 0 || j + 1 > rhs.targetEnd)
+                rhs.targetEnd = j + 1;
+            if (rhs.targetStart < 0 || j < rhs.targetStart)
+                rhs.targetStart = j;
+        }
         numTerminals++;
-        rhs.sourceEnd++;
+        if (alignment.sourceIsAligned(appendPoint))
+            alignedWords++;
+        appendPoint++;
+        rhs.sourceEnd = appendPoint;
+        sourceEndsWithNT = false;
     }
 
     public static final String FIELD_SEPARATOR = " |||";
