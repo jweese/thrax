@@ -125,6 +125,13 @@ public class HieroRuleExtractor implements RuleExtractor {
                         s.extendWithTerminals(pp);
                         q.offer(s);
                     }
+                    if (!r.alignment.sourceIsAligned(r.appendPoint) &&
+                        r.numNTs + r.numTerminals + 1 <= SOURCE_LENGTH_LIMIT &&
+                        r.appendPoint != r.rhs.sourceStart) {
+                        Rule s = r.copy();
+                        s.extendWithUnalignedTerminal();
+                        q.offer(s);
+                    }
                 }
 
             }
@@ -133,11 +140,17 @@ public class HieroRuleExtractor implements RuleExtractor {
 
         protected boolean isWellFormed(Rule r)
         {
+            if (!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1))
+                return false;
             if (r.rhs.targetStart < 0)
                 return false;
             for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
-                if (r.targetLex[i] < 0)
-                    return false;
+                if (r.targetLex[i] < 0) {
+                    if (r.alignment.targetIsAligned(i))
+                        return false;
+                    else
+                        r.targetLex[i] = 0;
+                }
             }
             return (r.alignedWords >= LEXICAL_MINIMUM);
         }

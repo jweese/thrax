@@ -120,6 +120,15 @@ public class Rule {
         sourceEndsWithNT = false;
     }
 
+    public void extendWithUnalignedTerminal()
+    {
+        sourceLex[appendPoint] = 0;
+        appendPoint++;
+        alignedWords++;
+        rhs.sourceEnd++;
+        sourceEndsWithNT = false;
+    }
+
     public static final String FIELD_SEPARATOR = " |||";
     public String toString()
     {
