@@ -22,6 +22,9 @@ public class RuleExtractorFactory {
 		if (gt.equals(HieroRuleExtractor.name)) {
 			return new HieroRuleExtractor();
 		}
+                else if (gt.equals(SAMTExtractor.name)) {
+                    return new SAMTExtractor();
+                }
 		// when you create new grammars, add them here.
 
 		else {
