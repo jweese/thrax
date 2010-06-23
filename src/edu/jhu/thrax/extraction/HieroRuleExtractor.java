@@ -67,7 +67,7 @@ public class HieroRuleExtractor implements RuleExtractor {
                 PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
 
                 Queue<Rule> q = new LinkedList<Rule>();
-                for (int i = 0; i < source.length - 1; i++)
+                for (int i = 0; i < source.length; i++)
                     q.offer(new Rule(source, target, alignment, i, NT_LIMIT));
 
                 return processQueue(q, phrasesByStart);
@@ -103,6 +103,8 @@ public class HieroRuleExtractor implements RuleExtractor {
                     }
                 }
                 if (r.appendPoint > phrasesByStart.length - 1)
+                    continue;
+                if (phrasesByStart[r.appendPoint] == null)
                     continue;
 
                 for (PhrasePair pp : phrasesByStart[r.appendPoint]) {
@@ -154,18 +156,21 @@ public class HieroRuleExtractor implements RuleExtractor {
             
             PhrasePair [][] result = new PhrasePair[f.length][];
 
-            int maxlen = f.length < INIT_LENGTH_LIMIT ? f.length : INIT_LENGTH_LIMIT;
-
             ArrayList<PhrasePair> list = new ArrayList<PhrasePair>();
-            for (int len = 1; len < maxlen; len++) {
-                for (int i = 0; i < f.length - len + 1; i++) {
+            for (int i = 0; i < f.length - 1; i++) {
+                list.clear();
+                int maxlen = f.length - i < INIT_LENGTH_LIMIT ? f.length - i : INIT_LENGTH_LIMIT;
+                for (int len = 1; len < maxlen; len++) {
                     if (!ALLOW_LOOSE_BOUNDS && 
                         (!a.sourceIsAligned(i) || !a.sourceIsAligned(i+len-1)))
                         continue;
                     PhrasePair pp = a.getPairFromSource(i, i+len);
-                    if (pp != null && pp.targetEnd - pp.targetStart <= INIT_LENGTH_LIMIT);
-                        // somehow build the array here
+                    if (pp != null && pp.targetEnd - pp.targetStart <= INIT_LENGTH_LIMIT) {
+                        list.add(pp);
+                    }
                 }
+                result[i] = new PhrasePair[list.size()];
+                list.toArray(result[i]);
             }
             return result;
         }

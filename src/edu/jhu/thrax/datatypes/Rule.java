@@ -53,10 +53,7 @@ public class Rule {
         alignedWords = 0;
         numTerminals = 0;
 
-        rhs.sourceStart = appendPoint;
-        rhs.sourceEnd = appendPoint;
-        rhs.targetStart = -1;
-        rhs.targetEnd = -1;
+        rhs = new PhrasePair(start, start + 1, -1, -1);
     }
 
     /**
@@ -151,7 +148,7 @@ public class Rule {
             if (x == 0)
                 sb.append(String.format(" %s", Vocabulary.getWord(target[i])));
             else if (x != last) {
-                sb.append(String.format(" [%s,%d", Vocabulary.getWord(nts[x-1]), x));
+                sb.append(String.format(" [%s,%d]", Vocabulary.getWord(nts[x-1]), x));
                 last = x;
             }
         }

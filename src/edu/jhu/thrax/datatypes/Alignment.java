@@ -3,17 +3,37 @@ package edu.jhu.thrax.datatypes;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+/**
+ * This class represents a word-level alignment of a sentence.
+ */
 public class Alignment {
 
+    /**
+     * A unique identifier for this Alignment.
+     */
     public final int id;
 
     private static int currentId = 0;
 
+    /**
+     * A list of alignment points, arranged by source-side index.
+     */
     public int [][] f2e;
+    /**
+     * A list of alignment points, arranged by target-side index.
+     */
     public int [][] e2f;
 
     private static final int [] UNALIGNED = new int[0];
 
+    /**
+     * This constructor takes a String in Berkeley alignment format. That is,
+     * the string "0-0 1-2" means that the first word of the source is aligned
+     * to the first word of the target, and the second word of the source is
+     * aligned to the third word of the target.
+     *
+     * @param s a string in Berkeley alignment format
+     */
     public Alignment(String s)
     {
         String [] ts = s.trim().split("\\s+");
@@ -66,16 +86,37 @@ public class Alignment {
         return ret;
     }
 
+    /**
+     * Determines whether the given word of the source side is aligned.
+     *
+     * @param i the index of the word on the source side
+     * @return true if the word is aligned, false if it is unaligned
+     */
     public boolean sourceIsAligned(int i)
     {
         return i < f2e.length && f2e[i].length > 0;
     }
 
+    /**
+     * Determines whether the given word of the target side is aligned.
+     *
+     * @param i the index of the word on the target side
+     * @return true if the word is aligned, false otherwise
+     */
     public boolean targetIsAligned(int i)
     {
         return i < e2f.length && e2f[i].length > 0;
     }
 
+    /**
+     * Returns a phrase pair with the given source side, that is consistent
+     * with this alignment.
+     *
+     * @param sourceStart the index of the first word of the source side
+     * @param sourceEnd 1 + the index of the last word of the source side
+     * @return a consistent phrase pair with the given source, or null if no
+     * such phrase pair exists.
+     */
     public PhrasePair getPairFromSource(int sourceStart, int sourceEnd)
     {
         int targetStart = -1;
