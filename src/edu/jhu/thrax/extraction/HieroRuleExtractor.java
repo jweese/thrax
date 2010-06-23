@@ -157,10 +157,10 @@ public class HieroRuleExtractor implements RuleExtractor {
             PhrasePair [][] result = new PhrasePair[f.length][];
 
             ArrayList<PhrasePair> list = new ArrayList<PhrasePair>();
-            for (int i = 0; i < f.length - 1; i++) {
+            for (int i = 0; i < f.length; i++) {
                 list.clear();
                 int maxlen = f.length - i < INIT_LENGTH_LIMIT ? f.length - i : INIT_LENGTH_LIMIT;
-                for (int len = 1; len < maxlen; len++) {
+                for (int len = 1; len <= maxlen; len++) {
                     if (!ALLOW_LOOSE_BOUNDS && 
                         (!a.sourceIsAligned(i) || !a.sourceIsAligned(i+len-1)))
                         continue;
