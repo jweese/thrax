@@ -173,43 +173,50 @@ public class Rule {
      */
     public boolean equals(Object o)
     {
+        if (o == this)
+            return true;
         if (!(o instanceof Rule))
             return false;
         Rule other = (Rule) o;
         if (this.lhs != other.lhs)
             return false;
-        if (!sameRepresentation(this.source, other.source, this.sourceLex, other.sourceLex))
+        if (!Arrays.equals(this.nts, other.nts))
             return false;
-        if (!sameRepresentation(this.target, other.target, this.targetLex, other.targetLex))
+        if (!sameYield(other))
             return false;
         return true;
     }
 
-    private boolean sameRepresentation(int [] a, int [] b, byte [] alex, byte [] blex) {
-        int last = -1;
-        int i = 0;
-        int j = 0;
-        while (alex[i] < 0) i++;
-        while (blex[j] < 0) j++;
-        while (alex[i] >= 0) {
-            if (alex[i] == 0) {
-                if (a[i] != b[j])
-                    return false;
-                i++;
-                j++;
-            }
-            else {
-                if (alex[i] != blex[j])
-                    return false;
-                while (blex[j] == alex[i])
-                    j++;
-                last = alex[i];
-                while (alex[i] == last)
-                    i++;
-            }
+    private boolean sameYield(Rule other)
+    {
+        return false;
+    }
 
+    public int hashCode()
+    {
+        int result = 17;
+        int last = -1;
+        result = result * 37 + lhs;
+        for (int i = 0; i < sourceLex.length; i++) {
+            int x = sourceLex[i];
+            if (x == 0)
+                result = result * 37 + source[i];
+            else if (x != last && x > 0) {
+                last = x;
+                result = result * 37 + nts[last-1];
+            }
         }
-        return (blex[j] < 0);
+        last = -1;
+        for (int j = 0; j < targetLex.length; j++) {
+            int x = targetLex[j];
+            if (x == 0)
+                result = result * 37 + target[j];
+            else if (x != last && x > 0) {
+                last = x;
+                result = result * 37 + nts[last-1];
+            }
+        }
+        return result;
     }
 
 }
