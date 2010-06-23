@@ -105,6 +105,13 @@ public class Rule {
     public void extendWithTerminal()
     {
         sourceLex[appendPoint] = 0;
+        numTerminals++;
+        sourceEndsWithNT = false;
+        if (!alignment.sourceIsAligned(appendPoint)) {
+            appendPoint++;
+            rhs.sourceEnd = appendPoint;
+            return;
+        }
         for (int j : alignment.f2e[appendPoint]) {
             targetLex[j] = 0;
             if (rhs.targetEnd < 0 || j + 1 > rhs.targetEnd)
@@ -112,12 +119,9 @@ public class Rule {
             if (rhs.targetStart < 0 || j < rhs.targetStart)
                 rhs.targetStart = j;
         }
-        numTerminals++;
-        if (alignment.sourceIsAligned(appendPoint))
-            alignedWords++;
+        alignedWords++;
         appendPoint++;
         rhs.sourceEnd = appendPoint;
-        sourceEndsWithNT = false;
     }
 
     public static final String FIELD_SEPARATOR = " |||";
