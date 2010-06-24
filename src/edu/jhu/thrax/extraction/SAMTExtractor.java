@@ -61,6 +61,8 @@ public class SAMTExtractor extends HieroRuleExtractor {
     {
         Collection<Rule> result = new HashSet<Rule>();
         Queue<Rule> q = new LinkedList<Rule>();
+        for (int i = 0; i < r.numNTs; i++)
+            r.setNT(i, -1);
         for (int lhs : labelsBySpan.get(new IntPair(r.rhs.targetStart, r.rhs.targetEnd))) {
             Rule s = r.copy();
             s.setLhs(lhs);
@@ -68,7 +70,16 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
         for (int i = 0; i < r.numNTs; i++) {
             Collection<Integer> labels = labelsBySpan.get(r.ntSpan(i));
-            for (Rule s = q.poll(); s.getNT(i) != -1; s = q.poll()) {
+            if (labels == null || labels.isEmpty()) {
+                System.err.println("WARNING: no labels for target-side span of " + r.ntSpan(i));
+            }
+            else if (ThraxConfig.verbosity > 1) {
+                System.err.println("labels for span " + r.ntSpan(i));
+                for (int l : labels)
+                    System.err.print(String.format(" %s", Vocabulary.getWord(l)));
+                System.err.println();
+            }
+            for (Rule s = q.poll(); s != null && s.getNT(i) == -1; s = q.poll()) {
                 for (int l : labels) {
                     Rule t = s.copy();
                     t.setNT(i, l);
@@ -92,7 +103,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
             else if (")".equals(t));
                 // do nothing
             else
-                result.add(Vocabulary.getId(t));
+                result.add(Vocabulary.getId(t.toLowerCase()));
         }
         int [] ret = new int[result.size()];
         for (int j = 0; j < ret.length; j++)

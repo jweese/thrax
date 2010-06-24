@@ -40,7 +40,13 @@ public class Thrax {
                         Set<Rule> rules = new HashSet<Rule>();
 			Object [] currInputs = new Object[inputs.length];
 			boolean haveInput = true;
+                        int lineNumber = 0;
 			while (haveInput) {
+                                if (ThraxConfig.verbosity > 0) {
+                                    lineNumber++;
+                                    if (lineNumber % 10000 == 0)
+                                        System.err.println(String.format("[line %d]", lineNumber));
+                                }
 				for (int i = 0; i < inputs.length; i++) {
 					if (!inputs[i].hasNext()) {
 						haveInput = false;

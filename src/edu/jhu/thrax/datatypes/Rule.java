@@ -285,9 +285,9 @@ public class Rule {
         for (int i = rhs.targetStart; i < rhs.targetEnd; i++) {
             int x = targetLex[i];
             if (x == index + 1 && start == -1)
-                start = x;
+                start = i;
             if (start != -1 && x != index + 1)
-                return new IntPair(start, x);
+                return new IntPair(start, i);
         }
         return new IntPair(start, rhs.targetEnd);
     }
