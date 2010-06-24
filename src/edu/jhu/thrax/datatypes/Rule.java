@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 public class Rule {
 
-    public int lhs;
+    int lhs;
     public PhrasePair rhs;
 
     // backing data, from sentence. shared among all rules extracted from
@@ -16,7 +16,7 @@ public class Rule {
     public int [] target;
     public Alignment alignment;
 
-    public int [] nts;
+    int [] nts;
     public byte numNTs;
 
     public boolean sourceEndsWithNT;
@@ -94,6 +94,28 @@ public class Rule {
         ret.yield = (ArrayList<Integer>) this.yield.clone();
         ret.yieldChanged = this.yieldChanged;
         return ret;
+    }
+
+    public int getLhs()
+    {
+        return lhs;
+    }
+
+    public void setLhs(int label)
+    {
+        yieldChanged = (lhs == label);
+        lhs = label;
+    }
+
+    public int getNT(int index)
+    {
+        return nts[index];
+    }
+
+    public void setNT(int index, int label)
+    {
+        yieldChanged = (nts[index] == label);
+        nts[index] = label;
     }
 
     public void extendWithNonterminal(PhrasePair pp)
@@ -254,4 +276,19 @@ public class Rule {
         return result;
     }
 
+    public IntPair ntSpan(int index)
+    {
+        if (index < 0 || index > numNTs - 1)
+            return null;
+        int start = -1;
+        
+        for (int i = rhs.targetStart; i < rhs.targetEnd; i++) {
+            int x = targetLex[i];
+            if (x == index + 1 && start == -1)
+                start = x;
+            if (start != -1 && x != index + 1)
+                return new IntPair(start, x);
+        }
+        return new IntPair(start, rhs.targetEnd);
+    }
 }

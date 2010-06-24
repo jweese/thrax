@@ -22,12 +22,12 @@ public class RelativeFrequencyFeature implements Feature {
 
 	public void noteExtraction(Rule r)
 	{
-		int currLhsCount = lhsCounts.containsKey(r.lhs)
-		                 ? lhsCounts.get(r.lhs) : 0;
+		int currLhsCount = lhsCounts.containsKey(r.getLhs())
+		                 ? lhsCounts.get(r.getLhs()) : 0;
 		int currRuleCount = ruleCounts.containsKey(r)
 		                  ? ruleCounts.get(r) : 0;
 
-		lhsCounts.put(r.lhs, currLhsCount + 1);
+		lhsCounts.put(r.getLhs(), currLhsCount + 1);
 		ruleCounts.put(r, currRuleCount + 1);
 		return;
 	}
@@ -35,7 +35,7 @@ public class RelativeFrequencyFeature implements Feature {
 	public double [] score(Rule r)
 	{
             double [] ret = new double[1];
-            ret[0] = (double) ruleCounts.get(r) / lhsCounts.get(r.lhs);
+            ret[0] = (double) ruleCounts.get(r) / lhsCounts.get(r.getLhs());
             return ret;
 	}
 }

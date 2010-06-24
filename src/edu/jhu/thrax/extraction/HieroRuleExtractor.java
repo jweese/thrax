@@ -164,8 +164,9 @@ public class HieroRuleExtractor implements RuleExtractor {
         protected Collection<Rule> getLabelVariants(Rule r)
         {
             variantSet.clear();
-            r.lhs = X_ID;
-            Arrays.fill(r.nts, X_ID);
+            r.setLhs(X_ID);
+            for (int i = 0; i < r.numNTs; i++)
+                r.setNT(i, X_ID);
             variantSet.add(r);
             return variantSet;
         }
