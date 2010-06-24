@@ -58,17 +58,6 @@ public class ThraxConfig {
         public static String FEATURES = "";
 
 	/**
-	 * Prints the current key-value pairs in <code>opts</code> to stderr.
-	 * Generally only included in debug output.
-	 */
-	private static void printConfiguration()
-	{
-		System.err.println("--- THRAX CONFIGURATION ---");
-                System.err.println("configuration listing not implemented");
-		return;
-	}
-
-	/**
 	 * Tells <code>GetOpt</code> which command-line flags to look for.
 	 * If you add a new command line option that needs to be checked,
 	 * it should be included here.
@@ -123,10 +112,10 @@ public class ThraxConfig {
 	public static void configure(String[] argv) throws OptionMissingArgumentException, IOException {
 		registerAllOptions();
 		GetOpt.parse(argv);
+
 		if (GetOpt.isSet("c")) {
 			getConfigurationFromFile(GetOpt.valueOf("c"));
 		}
-
 		if (GetOpt.isSet("v")) { // verbose
 			verbosity = 1;
 		}
@@ -143,36 +132,57 @@ public class ThraxConfig {
 		}
 		if (GetOpt.isSet("a")) {
 			ALIGNMENT = GetOpt.valueOf("a");
+                        if (verbosity > 1)
+                            System.err.println("alignment: " + ALIGNMENT);
 		}
 		if (GetOpt.isSet("A")) {
 			ALIGNMENT_FORMAT = GetOpt.valueOf("A");
+                        if (verbosity > 1)
+                            System.err.println("alignment format: " + ALIGNMENT_FORMAT);
 		}
 		if (GetOpt.isSet("p")) {
 			PARSE = GetOpt.valueOf("p");
+                        if (verbosity > 1)
+                            System.err.println("parse: " + PARSE);
 		}
 		if (GetOpt.isSet("P")) {
 			PARSE_FORMAT = GetOpt.valueOf("P");
+                        if (verbosity > 1)
+                            System.err.println("parse format: " + PARSE_FORMAT);
 		}
 		if (GetOpt.isSet("o")) {
 			OUTPUT_FORMAT = GetOpt.valueOf("o");
+                        if (verbosity > 1)
+                            System.err.println("output format: " + OUTPUT_FORMAT);
+
 		}
 		if (GetOpt.isSet("s")) {
 			SOURCE = GetOpt.valueOf("s");
+                        if (verbosity > 1)
+                            System.err.println("source: " + SOURCE);
 		}
 		if (GetOpt.isSet("t")) {
 			TARGET = GetOpt.valueOf("t");
+                        if (verbosity > 1)
+                            System.err.println("target: " + TARGET);
 		}
 		if (GetOpt.isSet("g")) {
 			GRAMMAR = GetOpt.valueOf("g");
+                        if (verbosity > 1)
+                            System.err.println("grammar: " + GRAMMAR);
 		}
                 if (GetOpt.isSet("f")) {
                         FEATURES = GetOpt.valueOf("f");
+                        if (verbosity > 1)
+                            System.err.println("features: " + FEATURES);
                 }
                 if (GetOpt.isSet("j")) {
                     if ("".equals(GetOpt.valueOf("j")))
                         ADJACENT = true;
                     else
                         ADJACENT = Boolean.parseBoolean(GetOpt.valueOf("j"));
+                    if (verbosity > 1)
+                        System.err.println("adjacent NTs: " + ADJACENT);
 
                 }
                 if (GetOpt.isSet("L")) {
@@ -180,23 +190,30 @@ public class ThraxConfig {
                         LOOSE = true;
                     else
                         LOOSE = Boolean.parseBoolean(GetOpt.valueOf("L"));
+                    if (verbosity > 1)
+                        System.err.println("loose phrase bounds: " + LOOSE);
                 }
                 if (GetOpt.isSet("i")) {
                     INITIAL_PHRASE_LIMIT = Integer.parseInt(GetOpt.valueOf("i"));
+                    if (verbosity > 1)
+                        System.err.println("initial phrase limit: " + INITIAL_PHRASE_LIMIT);
                 }
                 if (GetOpt.isSet("S")) {
                     SOURCE_LENGTH_LIMIT = Integer.parseInt(GetOpt.valueOf("S"));
+                    if (verbosity > 1)
+                        System.err.println("source length limit: " + SOURCE_LENGTH_LIMIT);
                 }
                 if (GetOpt.isSet("r")) {
                     ARITY = Integer.parseInt(GetOpt.valueOf("r"));
+                    if (verbosity > 1)
+                        System.err.println("arity: " + ARITY);
                 }
                 if (GetOpt.isSet("l")) {
                     LEXICALITY = Integer.parseInt(GetOpt.valueOf("l"));
+                    if (verbosity > 1)
+                        System.err.println("lexicality: " + LEXICALITY);
                 }
 
-		if (verbosity > 0) {
-			printConfiguration();
-		}
 		return;
 	}
 
