@@ -26,14 +26,14 @@
 	</delete>
     </target>
 
-    <target name="compile-tests" depends="init"> 
+    <target name="compile-tests" depends="compile"> 
         <javac srcdir="${test}" destdir="${build}" 
                classpath="${testng}" debug="on"/>
     </target>
 
     <taskdef resource="testngtasks" classpath="${testng}"/>
 
-    <target name="test" depends="compile,compile-tests">
+    <target name="test" depends="compile-tests">
         <testng classpath="${build}" sourcedir="${test}">
             <xmlfileset dir="." includes="testng.xml"/>
         </testng>

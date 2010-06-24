@@ -3,6 +3,7 @@ package edu.jhu.thrax.datatypes;
 import edu.jhu.thrax.util.Vocabulary;
 
 import java.util.Arrays;
+import java.util.ArrayList;
 
 public class Rule {
 
@@ -29,6 +30,8 @@ public class Rule {
     public int alignedWords;
     public int numTerminals;
 
+    ArrayList<Integer> yield;
+    boolean yieldChanged;
 
     private Rule()
     {
@@ -54,6 +57,9 @@ public class Rule {
         numTerminals = 0;
 
         rhs = new PhrasePair(start, start + 1, -1, -1);
+
+        yield = new ArrayList<Integer>();
+        yieldChanged = true;
     }
 
     /**
@@ -84,6 +90,9 @@ public class Rule {
         ret.appendPoint = this.appendPoint;
         ret.alignedWords = this.alignedWords;
         ret.numTerminals = this.numTerminals;
+
+        ret.yield = (ArrayList<Integer>) this.yield.clone();
+        ret.yieldChanged = this.yieldChanged;
         return ret;
     }
 
@@ -100,6 +109,7 @@ public class Rule {
         if (pp.targetEnd > rhs.targetEnd)
             rhs.targetEnd = pp.targetEnd;
         sourceEndsWithNT = true;
+        yieldChanged = true;
     }
 
     public void extendWithTerminal()
@@ -122,6 +132,7 @@ public class Rule {
         alignedWords++;
         appendPoint++;
         rhs.sourceEnd = appendPoint;
+        yieldChanged = true;
     }
 
     public static final String FIELD_SEPARATOR = " |||";
@@ -180,61 +191,40 @@ public class Rule {
         Rule other = (Rule) o;
         if (this.lhs != other.lhs)
             return false;
-        if (!equalYield(other))
+        if (!this.yield().equals(other.yield()))
             return false;
         return true;
     }
 
-    private boolean equalYield(Rule other)
+    public ArrayList<Integer> yield()
     {
-        int [] yield = new int[source.length + target.length];
+        if (!yieldChanged)
+            return yield;
+        yield.clear();
         int last = -1;
-        int idx = 0;
         for (int i = rhs.sourceStart; i < rhs.sourceEnd; i++) {
             int x = sourceLex[i];
             if (x == 0)
-                yield[idx++] = source[i];
+                yield.add(source[i]);
             if (x > 0 && x != last) {
                 last = x;
-                yield[idx++] = nts[last-1];
+                yield.add(nts[last-1]);
             }
         }
         last = -1;
         for (int j = rhs.targetStart; j < rhs.targetEnd; j++) {
             int y = targetLex[j];
+            if (y < 0)
+                yield.add(y);
             if (y == 0)
-                yield[idx++] = target[j];
+                yield.add(target[j]);
             if (y > 0 && y != last) {
                 last = y;
-                yield[idx++] = nts[last-1];
+                yield.add(nts[last-1]);
             }
         }
-        last = -1;
-        idx = 0;
-        for (int i = other.rhs.sourceStart; i < other.rhs.sourceEnd; i++) {
-            int x = other.sourceLex[i];
-            if (x > 0 && x != last) {
-                last = x;
-                if (yield[idx++] != other.nts[last-1])
-                    return false;
-                continue;
-            }
-            if (yield[idx++] != other.source[i])
-                return false;
-        }
-        last = -1;
-        for (int j = other.rhs.targetStart; j < other.rhs.targetEnd; j++) {
-            int y = other.targetLex[j];
-            if (y > 0 && y != last) {
-                last = y;
-                if (yield[idx++] != other.nts[last-1])
-                    return false;
-                continue;
-            }
-            if (yield[idx++] != other.target[j])
-                return false;
-        }
-        return true;
+        yieldChanged = false;
+        return yield;
     }
 
     public int hashCode()
