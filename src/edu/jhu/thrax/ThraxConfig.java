@@ -21,7 +21,7 @@ public class ThraxConfig {
 	/**
 	 * Describes the version number of this copy of Thrax.
 	 */
-	public static final String VERSION_STRING = "0.25/alpha";
+	public static final String VERSION_STRING = "0.5/alpha";
 
         /**
          * Used to separate values in multi-value options.
