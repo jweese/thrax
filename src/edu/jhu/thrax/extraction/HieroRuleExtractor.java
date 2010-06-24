@@ -24,9 +24,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 
 	public String [] requiredInputs()
         {
-           return new String [] { ThraxConfig.SOURCE,
-                                  ThraxConfig.TARGET,
-				  ThraxConfig.ALIGNMENT };
+           return new String [] { "source", "target", "alignment" };
         }
 
 	public int INIT_LENGTH_LIMIT = 10;
@@ -50,8 +48,12 @@ public class HieroRuleExtractor implements RuleExtractor {
         {
             features = new ArrayList<Feature>();
             featureLength = 0;
-            ALLOW_ADJACENT_NTS = ThraxConfig.opts.containsKey(ThraxConfig.ADJACENT);
-            ALLOW_LOOSE_BOUNDS = ThraxConfig.opts.containsKey(ThraxConfig.LOOSE);
+            INIT_LENGTH_LIMIT = ThraxConfig.INITIAL_PHRASE_LIMIT;
+            SOURCE_LENGTH_LIMIT = ThraxConfig.SOURCE_LENGTH_LIMIT;
+            NT_LIMIT = ThraxConfig.ARITY;
+            LEXICAL_MINIMUM = ThraxConfig.LEXICALITY;
+            ALLOW_ADJACENT_NTS = ThraxConfig.ADJACENT;
+            ALLOW_LOOSE_BOUNDS = ThraxConfig.LOOSE;
         }
 
 	public Set<Rule> extract(Object [] inputs)

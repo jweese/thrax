@@ -211,11 +211,7 @@ public class Rule {
         if (!(o instanceof Rule))
             return false;
         Rule other = (Rule) o;
-        if (this.lhs != other.lhs)
-            return false;
-        if (!this.yield().equals(other.yield()))
-            return false;
-        return true;
+        return (this.lhs == other.lhs && this.yield().equals(other.yield()));
     }
 
     public ArrayList<Integer> yield()
@@ -252,27 +248,8 @@ public class Rule {
     public int hashCode()
     {
         int result = 17;
-        int last = -1;
         result = result * 37 + lhs;
-        for (int i = 0; i < sourceLex.length; i++) {
-            int x = sourceLex[i];
-            if (x == 0)
-                result = result * 37 + source[i];
-            else if (x != last && x > 0) {
-                last = x;
-                result = result * 37 + nts[last-1];
-            }
-        }
-        last = -1;
-        for (int j = 0; j < targetLex.length; j++) {
-            int x = targetLex[j];
-            if (x == 0)
-                result = result * 37 + target[j];
-            else if (x != last && x > 0) {
-                last = x;
-                result = result * 37 + nts[last-1];
-            }
-        }
+        result = result * 37 + yield().hashCode();
         return result;
     }
 

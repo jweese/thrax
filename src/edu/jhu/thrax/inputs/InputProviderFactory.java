@@ -30,25 +30,21 @@ public class InputProviderFactory {
 	public static InputProvider create(String inputType) throws InvalidConfigurationException, IOException {
 
 		String inp = inputType.toLowerCase();
-		if (!ThraxConfig.opts.containsKey(inp)) {
-			throw new MissingGrammarInputTypeException(inp);
-		}
 
-		if (inp.equals(ThraxConfig.SOURCE)) {
-			return new PlainTextProvider(ThraxConfig.opts.get(inp));
+		if (inp.equals("source")) {
+			return new PlainTextProvider(ThraxConfig.SOURCE);
 
 		}
 		// if you add a new input type, be sure to allow it to be
 		// created in this if/elseif block.
-		else if (inp.equals(ThraxConfig.TARGET)) {
-			return new PlainTextProvider(ThraxConfig.opts.get(inp));
+		else if (inp.equals("target")) {
+			return new PlainTextProvider(ThraxConfig.TARGET);
 
 		}
-		else if (inp.equals(ThraxConfig.ALIGNMENT)) {
-			String fmt = ThraxConfig.opts.containsKey(ThraxConfig.ALIGNMENT_FORMAT) ? ThraxConfig.opts.get(ThraxConfig.ALIGNMENT_FORMAT) : ThraxConfig.DEFAULT_ALIGNMENT_FORMAT;
-			fmt = fmt.toLowerCase();
+		else if (inp.equals("alignment")) {
+			String fmt = ThraxConfig.ALIGNMENT_FORMAT.toLowerCase();
 			if (fmt.equals(BerkeleyAlignmentProvider.name)) {
-				return new BerkeleyAlignmentProvider(ThraxConfig.opts.get(inp));
+				return new BerkeleyAlignmentProvider(ThraxConfig.ALIGNMENT);
 			}
 			// if you add a new alignment format, put it here.
 			else {
@@ -56,11 +52,12 @@ public class InputProviderFactory {
 			}
 		}
 
-                else if (inp.equals(ThraxConfig.PARSE)) {
+                else if (inp.equals("parse")) {
                     // looks lame, but we can just give the string to Juri's
                     // lattice code once we're at the SAMT extractor
-                    return new StringProvider(ThraxConfig.opts.get(inp));
+                    return new StringProvider(ThraxConfig.PARSE);
                 }
+                System.err.println("WARNING: unknown input type: " + inp);
 		return null;
 	}
 

@@ -20,9 +20,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
 
     public String [] requiredInputs()
     {
-        return new String [] { ThraxConfig.SOURCE,
-                               ThraxConfig.PARSE,
-                               ThraxConfig.ALIGNMENT };
+        return new String [] { "source", "parse", "alignment" };
     }
 
     private LatticeArray lattice;

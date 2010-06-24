@@ -22,13 +22,12 @@ public class Thrax {
 	{
 		try {
 			ThraxConfig.configure(argv);
-			String grammar = ThraxConfig.opts.containsKey(ThraxConfig.GRAMMAR) ? ThraxConfig.opts.get(ThraxConfig.GRAMMAR) : ThraxConfig.DEFAULT_GRAMMAR;
-			RuleExtractor extractor = RuleExtractorFactory.create(grammar);
+			RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
 
 			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
 
-                        if (ThraxConfig.opts.containsKey(ThraxConfig.FEATURES)) {
-                            String [] feats = ThraxConfig.opts.get(ThraxConfig.FEATURES).split(ThraxConfig.SEPARATOR);
+                        if (!"".equals(ThraxConfig.FEATURES)) {
+                            String [] feats = ThraxConfig.FEATURES.split(ThraxConfig.SEPARATOR);
                             for (Feature f : FeatureFactory.createAll(feats)) {
                                 extractor.addFeature(f);
                             }
