@@ -180,16 +180,61 @@ public class Rule {
         Rule other = (Rule) o;
         if (this.lhs != other.lhs)
             return false;
-        if (!Arrays.equals(this.nts, other.nts))
-            return false;
-        if (!sameYield(other))
+        if (!equalYield(other))
             return false;
         return true;
     }
 
-    private boolean sameYield(Rule other)
+    private boolean equalYield(Rule other)
     {
-        return false;
+        int [] yield = new int[source.length + target.length];
+        int last = -1;
+        int idx = 0;
+        for (int i = rhs.sourceStart; i < rhs.sourceEnd; i++) {
+            int x = sourceLex[i];
+            if (x == 0)
+                yield[idx++] = source[i];
+            if (x > 0 && x != last) {
+                last = x;
+                yield[idx++] = nts[last-1];
+            }
+        }
+        last = -1;
+        for (int j = rhs.targetStart; j < rhs.targetEnd; j++) {
+            int y = targetLex[j];
+            if (y == 0)
+                yield[idx++] = target[j];
+            if (y > 0 && y != last) {
+                last = y;
+                yield[idx++] = nts[last-1];
+            }
+        }
+        last = -1;
+        idx = 0;
+        for (int i = other.rhs.sourceStart; i < other.rhs.sourceEnd; i++) {
+            int x = other.sourceLex[i];
+            if (x > 0 && x != last) {
+                last = x;
+                if (yield[idx++] != other.nts[last-1])
+                    return false;
+                continue;
+            }
+            if (yield[idx++] != other.source[i])
+                return false;
+        }
+        last = -1;
+        for (int j = other.rhs.targetStart; j < other.rhs.targetEnd; j++) {
+            int y = other.targetLex[j];
+            if (y > 0 && y != last) {
+                last = y;
+                if (yield[idx++] != other.nts[last-1])
+                    return false;
+                continue;
+            }
+            if (yield[idx++] != other.target[j])
+                return false;
+        }
+        return true;
     }
 
     public int hashCode()
