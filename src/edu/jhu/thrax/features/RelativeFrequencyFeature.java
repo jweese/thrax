@@ -35,7 +35,7 @@ public class RelativeFrequencyFeature implements Feature {
 	public double [] score(Rule r)
 	{
             double [] ret = new double[1];
-            ret[0] = (double) ruleCounts.get(r) / lhsCounts.get(r.getLhs());
+            ret[0] = -Math.log((double) ruleCounts.get(r) / lhsCounts.get(r.getLhs()));
             return ret;
 	}
 }

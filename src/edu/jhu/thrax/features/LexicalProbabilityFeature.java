@@ -27,8 +27,8 @@ public class LexicalProbabilityFeature implements Feature {
     public double [] score(Rule r)
     {
         double [] ret = new double[2];
-        ret[0] = targetGivenSource(r);
-        ret[1] = sourceGivenTarget(r);
+        ret[0] = -Math.log(targetGivenSource(r));
+        ret[1] = -Math.log(sourceGivenTarget(r));
         return ret;
     }
 
