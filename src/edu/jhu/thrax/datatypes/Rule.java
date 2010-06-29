@@ -44,6 +44,7 @@ public class Rule {
         alignment = a;
 
         nts = new int[arity];
+        Arrays.fill(nts, -1);
         numNTs = 0;
         sourceEndsWithNT = false;
 
@@ -91,7 +92,9 @@ public class Rule {
         ret.alignedWords = this.alignedWords;
         ret.numTerminals = this.numTerminals;
 
-        ret.yield = (ArrayList<Integer>) this.yield.clone();
+        ret.yield = new ArrayList<Integer>(this.yield.size());
+        for (int x : this.yield())
+            ret.yield.add(x);
         ret.yieldChanged = this.yieldChanged;
         return ret;
     }
@@ -189,6 +192,9 @@ public class Rule {
                 last = x;
             }
         }
+
+        if (scores == null)
+            return sb.toString();
 
         sb.append(FIELD_SEPARATOR);
         for (double s : scores)

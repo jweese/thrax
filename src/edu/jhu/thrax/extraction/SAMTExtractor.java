@@ -24,12 +24,10 @@ public class SAMTExtractor extends HieroRuleExtractor {
     }
 
     private LatticeArray lattice;
-    private HashMap<IntPair,Collection<Integer>> labelsBySpan;
 
     public SAMTExtractor()
     {
         super();
-        labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
     }
 
     public Set<Rule> extract(Object [] inputs)
@@ -55,40 +53,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         return processQueue(q, phrasesByStart);
     }
 
-    protected Collection<Rule> getLabelVariants(Rule r)
-    {
-        Collection<Rule> result = new HashSet<Rule>();
-        Queue<Rule> q = new LinkedList<Rule>();
-        for (int i = 0; i < r.numNTs; i++)
-            r.setNT(i, -1);
-        for (int lhs : labelsBySpan.get(new IntPair(r.rhs.targetStart, r.rhs.targetEnd))) {
-            Rule s = r.copy();
-            s.setLhs(lhs);
-            q.offer(s);
-        }
-        for (int i = 0; i < r.numNTs; i++) {
-            Collection<Integer> labels = labelsBySpan.get(r.ntSpan(i));
-            if (labels == null || labels.isEmpty()) {
-                System.err.println("WARNING: no labels for target-side span of " + r.ntSpan(i));
-            }
-            else if (ThraxConfig.verbosity > 1) {
-                System.err.println("labels for span " + r.ntSpan(i));
-                for (int l : labels)
-                    System.err.print(String.format(" %s", Vocabulary.getWord(l)));
-                System.err.println();
-            }
-            for (Rule s = q.poll(); s != null && s.getNT(i) == -1; s = q.poll()) {
-                for (int l : labels) {
-                    Rule t = s.copy();
-                    t.setNT(i, l);
-                    q.offer(t);
-                }
-            }
-        }
-        result.addAll(q);
-        return result;
-    }
-                
+               
     private int [] yield(String parse)
     {
         String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
@@ -109,7 +74,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         return ret;
     }
 
-    private void computeAllLabels(PhrasePair [][] phrases)
+    protected void computeAllLabels(PhrasePair [][] phrases)
     {
         for (PhrasePair [] plist : phrases) {
             for (PhrasePair pp : plist) {
@@ -117,13 +82,14 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 int to = pp.targetEnd;
                 IntPair span = new IntPair(from, to);
                 Collection<Integer> c = new HashSet<Integer>();
-                c.add(HieroRuleExtractor.X_ID);
                 for (int l : lattice.getConstituentLabels(from, to))
                     c.add(l);
                 for (int l : lattice.getConcatenatedLabels(from, to))
                     c.add(l);
                 for (int l : lattice.getCcgLabels(from, to))
                     c.add(l);
+                if (c.isEmpty())
+                    c = HieroRuleExtractor.HIERO_LABELS;
                 labelsBySpan.put(span, c);
             }
         }
