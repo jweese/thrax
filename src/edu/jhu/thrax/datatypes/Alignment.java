@@ -131,6 +131,8 @@ public class Alignment {
             if (max > targetEnd)
                 targetEnd = max;
         }
+        if (targetStart < 0) // there are no aligned words on the source side
+            return null;
         for (int j = targetStart; j < targetEnd; j++) {
             for (int k : e2f[j]) {
                 if (k < sourceStart || k >= sourceEnd)
