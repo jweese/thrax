@@ -5,17 +5,17 @@
     <property name="lib" value="./lib"/>
     <property name="doc" value="./doc"/>
     <property name="test" value="./test"/>
-    
+
     <property name="testng" value="${lib}/testng-5.8-jdk15.jar"/>
 
     <target name="init">
         <tstamp/>
-	<mkdir dir="${build}"/>
+        <mkdir dir="${build}"/>
     </target>
 
     <target name="compile" depends="init">
         <javac srcdir="${src}" destdir="${build}"
-               debug="on" includeantruntime="false" />
+            debug="on" includeantruntime="false" />
     </target>
 
     <target name="jar" depends="compile">
@@ -24,18 +24,26 @@
                 <attribute name="Main-Class" value="edu.jhu.thrax.Thrax"/>
             </manifest>
             <fileset dir="${build}">
-                    <include name="**/*.class"/>
+                <include name="**/*.class"/>
             </fileset>
         </jar>
     </target>
-	
+
+    <target name="source-jar">
+        <jar destfile="${build}/thrax-src.jar">
+            <fileset dir="${src}">
+                <include name="**/*.java"/>
+            </fileset>
+        </jar>
+    </target>
+
     <target name="clean">
         <delete verbose="true" quiet="true" dir="${build}"/>
     </target>
 
     <target name="compile-tests" depends="compile"> 
         <javac srcdir="${test}" destdir="${build}" 
-               classpath="${testng}" debug="on"/>
+            classpath="${testng}" debug="on"/>
     </target>
 
     <taskdef resource="testngtasks" classpath="${testng}"/>
@@ -45,19 +53,19 @@
             <xmlfileset dir="." includes="testng.xml"/>
         </testng>
     </target>
-	
+
     <target name="javadoc">
         <mkdir dir="${doc}"/>
         <javadoc packagenames="edu.jhu.thrax.*"
-                 classpath="${cli}"
-                 sourcepath="${src}"
-                 destdir="${doc}"
-                 charset="utf-8"
-                 >
+            classpath="${cli}"
+            sourcepath="${src}"
+            destdir="${doc}"
+            charset="utf-8"
+            >
             <link href="http://java.sun.com/j2se/1.5.0/docs/api" />
             <link href="http://commons.apache.org/cli/api-release" />
         </javadoc>
     </target>
-	
-	
+
+
 </project>
