@@ -43,6 +43,9 @@ public class ThraxConfig {
 
     public static int THREADS = 1;
 
+    public static boolean HADOOP = false;
+    // put hadoop options here
+
     public static void configure(String filename) throws IOException
     {
         Map<String,String> configMap = ConfFileParser.parse(filename);
@@ -111,6 +114,9 @@ public class ThraxConfig {
             }
             else if ("threads".equals(key)) {
                 THREADS = Integer.parseInt(value);
+            }
+            else if ("hadoop".equals(key)) {
+                HADOOP = Boolean.parseBoolean(value);
             }
         }
     }

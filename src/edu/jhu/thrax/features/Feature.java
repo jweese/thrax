@@ -30,5 +30,13 @@ public interface Feature {
      * @return the length of the array returned by score
      */
     public int length();
+    
+    /**
+     * Returns the aggregation style for each part of the score array.
+     *
+     * @return an array of AggregationStyle corresponding to the entries in a
+     * score array.
+     */
+    public AggregationStyle [] aggregationStyles();
 
 }

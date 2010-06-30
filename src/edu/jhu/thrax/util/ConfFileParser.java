@@ -30,7 +30,7 @@ public class ConfFileParser {
 
             String [] keyVal = line.split("\\s+", 2);
             if (keyVal.length > 1)
-                opts.put(keyVal[0], keyVal[1]);
+                opts.put(keyVal[0].trim(), keyVal[1].trim());
         }
         return opts;
     }

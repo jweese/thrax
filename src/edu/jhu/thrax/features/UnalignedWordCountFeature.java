@@ -11,6 +11,13 @@ public class UnalignedWordCountFeature implements Feature {
         return 2;
     }
 
+    public AggregationStyle [] aggregationStyles()
+    {
+        return aggregationStyles;
+    }
+
+    private static final AggregationStyle [] aggregationStyles = new AggregationStyle [] { AggregationStyle.NONE };
+
     public UnalignedWordCountFeature()
     {
         // do nothing

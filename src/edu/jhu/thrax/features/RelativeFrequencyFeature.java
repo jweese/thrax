@@ -12,6 +12,13 @@ public class RelativeFrequencyFeature implements Feature {
         return 1;
     }
 
+    public AggregationStyle [] aggregationStyles()
+    {
+        return aggregationStyles;
+    }
+
+    private static final AggregationStyle [] aggregationStyles = new AggregationStyle [] { AggregationStyle.NONE };
+
     private HashMap<Integer,Integer> lhsCounts;
     private HashMap<Rule,Integer> ruleCounts;
 

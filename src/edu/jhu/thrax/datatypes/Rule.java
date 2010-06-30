@@ -21,8 +21,6 @@ public class Rule {
 
     public boolean sourceEndsWithNT;
 
-    public double [] scores;
-
     public int appendPoint;
     public byte [] sourceLex;
     public byte [] targetLex; 
@@ -192,13 +190,6 @@ public class Rule {
                 last = x;
             }
         }
-
-        if (scores == null)
-            return sb.toString();
-
-        sb.append(FIELD_SEPARATOR);
-        for (double s : scores)
-            sb.append(String.format(" %.6f", s));
 
         return sb.toString();
     }

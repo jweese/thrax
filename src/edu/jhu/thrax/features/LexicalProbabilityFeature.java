@@ -14,6 +14,13 @@ public class LexicalProbabilityFeature implements Feature {
         return 2;
     }
 
+    public AggregationStyle [] aggregationStyles()
+    {
+        return aggregationStyles;
+    }
+
+    private static final AggregationStyle [] aggregationStyles = new AggregationStyle[] { AggregationStyle.MIN, AggregationStyle.MIN };
+
     private CollocationTable table;
     private Map<Rule,Double> maxf2e;
     private Map<Rule,Double> maxe2f;
