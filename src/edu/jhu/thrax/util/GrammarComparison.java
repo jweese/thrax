@@ -28,6 +28,7 @@ public class GrammarComparison {
 
         try {
             HashSet<String> grammar1 = getRulesFromFile(file1);
+            HashSet<String> alsoGrammar1 = getRulesFromFile(file1);
             HashSet<String> grammar2 = getRulesFromFile(file2);
 
             Set<String> smaller = grammar1.size() < grammar2.size()
@@ -40,13 +41,11 @@ public class GrammarComparison {
                 if (larger.contains(s))
                     intersection.add(s);
             }
-            Set<String> only1 = (HashSet<String>) grammar1.clone();
-            only1.removeAll(grammar2);
-            Set<String> only2 = (HashSet<String>) grammar2.clone();
-            only2.removeAll(grammar1);
+            alsoGrammar1.removeAll(grammar2);
+            grammar2.removeAll(grammar1);
 
-            printRules(only1, outputBase + ".1");
-            printRules(only2, outputBase + ".2");
+            printRules(alsoGrammar1, outputBase + ".1");
+            printRules(grammar2, outputBase + ".2");
             printRules(intersection, outputBase + ".both");
         }
         catch (Exception e) {
