@@ -41,11 +41,13 @@ public class ThraxConfig {
     public static int MAX_CCG_LABELS = -1;
     public static int MAX_CAT_LABELS = -1;
 
+    public static int THREADS = 1;
+
     public static void configure(String filename) throws IOException
     {
         Map<String,String> configMap = ConfFileParser.parse(filename);
         for (String key : configMap.keySet()) {
-            String value = configMap.get(key);
+            String value = configMap.get(key).toLowerCase();
 
             if ("grammar".equals(key)) {
                 GRAMMAR = value;
@@ -106,6 +108,9 @@ public class ThraxConfig {
             }
             else if ("max-cat-labels".equals(key)) {
                 MAX_CAT_LABELS = Integer.parseInt(value);
+            }
+            else if ("threads".equals(key)) {
+                THREADS = Integer.parseInt(value);
             }
         }
     }

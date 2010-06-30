@@ -21,6 +21,8 @@ usage () {
 Usage: `basename $0` [options] <configuration file>
 Options:
   -m AMOUNT, --mem AMOUNT:          maximum memory for Java VM (gigabytes)
+  -h, --help                        print this help message and exit
+  -V, --version                     print version information and exit
 END_USAGE
 }
 
