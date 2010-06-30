@@ -35,8 +35,6 @@ public class Scorer {
 
     public void noteExtraction(Rule r)
     {
-        if (!rules.containsKey(r))
-            rules.put(r, null);
         for (Feature f : features)
             f.noteExtraction(r);
     }

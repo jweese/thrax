@@ -13,15 +13,17 @@ import edu.jhu.thrax.features.Scorer;
 import edu.jhu.thrax.datatypes.Rule;
 
 import java.io.IOException;
-import java.util.Set;
+import java.util.Queue;
+import java.util.LinkedList;
 import java.util.concurrent.Executors;
 
 public class Thrax {
 
     public static void main(String [] argv)
     {
+        String confFile = argv.length > 0 ? argv[0] : "NO_THRAX_CONF_FILE";
         try {
-            ThraxConfig.configure(argv[0]);
+            ThraxConfig.configure(confFile);
             RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
 
             InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
@@ -35,6 +37,8 @@ public class Thrax {
             else {
                 System.err.println("WARNING: no feature functions provided");
             }
+
+            Queue<Rule> allRules = new LinkedList<Rule>();
 
             Object [] currInputs = new Object[inputs.length];
             boolean haveInput = true;
@@ -55,11 +59,12 @@ public class Thrax {
                 if (haveInput) {
                     for (Rule r : extractor.extract(currInputs)) {
                         scorer.noteExtraction(r);
+                        allRules.offer(r);
                     }
                 }
             }
-            for (Rule r : scorer.rules()) {
-                scorer.score(r);
+            while (allRules.peek() != null) {
+                scorer.score(allRules.poll());
             }
 
             for (Rule r : scorer.rules()) {

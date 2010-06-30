@@ -4,12 +4,6 @@
 
 <suite name="Thrax" verbose="1">
 
-    <test name="GetOpt">
-        <packages>
-	    <package name="edu.jhu.thrax.util.getopt"/>
-	</packages>
-    </test>
-
     <test name="Datatypes">
         <packages>
 	    <package name="edu.jhu.thrax.datatypes"/>
