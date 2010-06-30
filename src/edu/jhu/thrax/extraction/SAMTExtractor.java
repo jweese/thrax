@@ -6,6 +6,7 @@ import edu.jhu.thrax.syntax.LatticeArray;
 import edu.jhu.thrax.datatypes.*;
 
 import java.util.Set;
+import java.util.List;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Queue;
@@ -30,7 +31,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         super();
     }
 
-    public Set<Rule> extract(Object [] inputs)
+    public List<Rule> extract(Object [] inputs)
     {
         if (inputs.length < 3) {
             return null;

@@ -1,6 +1,6 @@
 package edu.jhu.thrax.extraction;
 
-import java.util.Set;
+import java.util.List;
 import edu.jhu.thrax.datatypes.Rule;
 import edu.jhu.thrax.features.Feature;
 
@@ -26,24 +26,6 @@ public interface RuleExtractor {
 	 * extractor
 	 * @return a list of <code>Rule</code> extracted from these inputs
 	 */
-	public Set<Rule> extract(Object [] inputs);
+	public List<Rule> extract(Object [] inputs);
 
-        /**
-         * Adds a feature function to this extractor. When the rules are
-         * extracted, they will be scored using all of the features that were
-         * added.
-         *
-         * @param f the feature function to add to this extractor
-         */
-        public void addFeature(Feature f);
-
-        /**
-         * Compute feature function scores for a rule using the features
-         * that were added to this extractor. This should be called on all
-         * rules in the corpus after all rules have been extracted (since
-         * some features may depend on corpus-wide statistics).
-         *
-         * @param r the rule to score
-         */
-        public void score(Rule r);
 }

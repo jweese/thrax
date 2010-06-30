@@ -20,17 +20,18 @@ public class Thrax {
 	public static void main(String [] argv)
 	{
 		try {
-                    System.err.println(argv[0]);
 			ThraxConfig.configure(argv[0]);
 			RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
 
 			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
+                        Feature [] features = new Feature[0];
+                        int featureLength = 0;
 
                         if (!"".equals(ThraxConfig.FEATURES)) {
                             String [] feats = ThraxConfig.FEATURES.split("\\s+");
-                            for (Feature f : FeatureFactory.createAll(feats)) {
-                                extractor.addFeature(f);
-                            }
+                            features = FeatureFactory.createAll(feats);
+                            for (Feature f : features)
+                                featureLength += f.length();
                         }
                         else {
                             System.err.println("WARNING: no feature functions provided");
@@ -54,14 +55,16 @@ public class Thrax {
 					currInputs[i] = inputs[i].next();
 				}
 				if (haveInput) {
-					Set<Rule> rs = extractor.extract(currInputs);
-                                        if (rs != null)
-                                            rules.addAll(rs);
+                                    for (Rule r : extractor.extract(currInputs)) {
+                                        rules.add(r);
+                                        for (Feature f : features)
+                                            f.noteExtraction(r);
+                                    }
 				}
 			}
                         
                         for (Rule r : rules) {
-                            extractor.score(r);
+                            score(features, featureLength, r);
                             System.out.println(r);
                         }
 
@@ -76,5 +79,15 @@ public class Thrax {
 		}
 		return;
 	}
+
+        private static void score(Feature [] features, int len, Rule r)
+        {
+            r.scores = new double[len];
+            int idx = 0;
+            for (Feature f : features) {
+                System.arraycopy(f.score(r), 0, r.scores, idx, f.length());
+                idx += f.length();
+            }
+        }
 
 }

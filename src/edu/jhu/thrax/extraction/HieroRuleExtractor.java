@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
@@ -62,7 +63,7 @@ public class HieroRuleExtractor implements RuleExtractor {
                 HIERO_LABELS.add(X_ID);
         }
 
-	public Set<Rule> extract(Object [] inputs)
+	public List<Rule> extract(Object [] inputs)
 	{
 		if (inputs.length < 3) {
 			return null;
@@ -82,34 +83,16 @@ public class HieroRuleExtractor implements RuleExtractor {
                 return processQueue(q, phrasesByStart);
 	}
 
-        public void addFeature(Feature f)
-        {
-            features.add(f);
-            featureLength += f.length();
-        }
-
-        public void score(Rule r)
-        {
-            r.scores = new double[featureLength];
-            int idx = 0;
-            for (Feature f : features) {
-                System.arraycopy(f.score(r), 0, r.scores, idx, f.length());
-                idx += f.length();
-            }
-        }
-	
-        protected Set<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart)
+        protected List<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart)
         {
             int numPrototypes = 0;
-            Set<Rule> rules = new HashSet<Rule>();
+            List<Rule> rules = new ArrayList<Rule>();
             while (q.peek() != null) {
                 Rule r = q.poll();
 
                 if (isWellFormed(r)) {
                     numPrototypes++;
                     for (Rule s : getLabelVariants(r)) {
-                        for (Feature feat : features)
-                            feat.noteExtraction(s);
                         rules.add(s);
                     }
                 }
