@@ -61,10 +61,11 @@ then
     mem="1"
 fi
 
+JVM_OPTS="-Dfile.encoding=utf8"
 if [[ -f $THRAX/bin/thrax.jar ]]
 then
-    java -Xmx${mem}g -jar $THRAX/bin/thrax.jar $config
+    java -Xmx${mem}g $JVM_OPTS -jar $THRAX/bin/thrax.jar $config
 else
-    java -Xmx${mem}g -cp $THRAX/bin edu.jhu.thrax.Thrax $config
+    java -Xmx${mem}g $JVM_OPTS -cp $THRAX/bin edu.jhu.thrax.Thrax $config
 fi
 

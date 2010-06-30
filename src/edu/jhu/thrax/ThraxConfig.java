@@ -16,6 +16,7 @@ public class ThraxConfig {
     /**
      * Determines the verbosity level. 0 is the normal level, which is
      * quiet. 1 means verbose, and 2 includes debugging information.
+     * A number less than zero means silent.
      */
     public static int verbosity = 0;
 
@@ -52,7 +53,10 @@ public class ThraxConfig {
         for (String key : configMap.keySet()) {
             String value = configMap.get(key).toLowerCase();
 
-            if ("grammar".equals(key)) {
+            if ("verbosity".equals(key)) {
+                setVerbosity(value);
+            }
+            else if ("grammar".equals(key)) {
                 GRAMMAR = value;
             }
             else if ("alignment".equals(key)) {
@@ -121,4 +125,16 @@ public class ThraxConfig {
         }
     }
 
+    private static void setVerbosity(String level)
+    {
+        if ("verbose".equals(level)) {
+            verbosity = 1;
+        }
+        else if ("debug".equals(level)) {
+            verbosity = 2;
+        }
+        else if ("silent".equals(level)) {
+            verbosity = -1;
+        }
+    }
 }

@@ -33,7 +33,7 @@ public abstract class AbstractInputProvider<T> implements InputProvider<T> {
     public T next() {
         String line = scanner.nextLine();
         if (ThraxConfig.verbosity > 1)
-            System.err.println(String.format("%s: %s", name, line));
+            System.err.println(String.format("%s", line));
         return convert(line);
     }
 

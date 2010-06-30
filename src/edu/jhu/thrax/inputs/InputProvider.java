@@ -7,8 +7,6 @@ package edu.jhu.thrax.inputs;
  */
 public interface InputProvider<T> {
 
-    public static String name = "";
-
     /**
      * Determines if this <code>InputProvider</code> has more input to
      * provide.
