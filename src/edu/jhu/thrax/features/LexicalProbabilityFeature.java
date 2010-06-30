@@ -2,6 +2,9 @@ package edu.jhu.thrax.features;
 
 import edu.jhu.thrax.datatypes.Rule;
 
+import java.util.Map;
+import java.util.HashMap;
+
 public class LexicalProbabilityFeature implements Feature {
 
     public static final String name = "lex";
@@ -12,10 +15,14 @@ public class LexicalProbabilityFeature implements Feature {
     }
 
     private CollocationTable table;
+    private Map<Rule,Double> maxf2e;
+    private Map<Rule,Double> maxe2f;
 
     public LexicalProbabilityFeature()
     {
         table = new CollocationTable();
+        maxf2e = new HashMap<Rule,Double>();
+        maxe2f = new HashMap<Rule,Double>();
     }
 
     public void noteExtraction(Rule r)
@@ -29,6 +36,14 @@ public class LexicalProbabilityFeature implements Feature {
         double [] ret = new double[2];
         ret[0] = -Math.log(targetGivenSource(r));
         ret[1] = -Math.log(sourceGivenTarget(r));
+        if (maxf2e.containsKey(r) && ret[0] > maxf2e.get(r))
+            ret[0] = maxf2e.get(r);
+        else
+            maxf2e.put(r, ret[0]);
+        if (maxe2f.containsKey(r) && ret[1] > maxe2f.get(r))
+            ret[1] = maxe2f.get(r);
+        else
+            maxe2f.put(r, ret[1]);
         return ret;
     }
 
