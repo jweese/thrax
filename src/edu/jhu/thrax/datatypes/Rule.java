@@ -264,7 +264,7 @@ public class Rule {
         if (index < 0 || index > numNTs - 1)
             return null;
         int start = -1;
-        
+
         for (int i = rhs.targetStart; i < rhs.targetEnd; i++) {
             int x = targetLex[i];
             if (x == index + 1 && start == -1)

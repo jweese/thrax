@@ -31,8 +31,8 @@ public class GrammarComparison {
             HashSet<String> grammar2 = getRulesFromFile(file2);
 
             Set<String> smaller = grammar1.size() < grammar2.size()
-                                ? grammar1
-                                : grammar2;
+                ? grammar1
+                : grammar2;
             Set<String> larger = smaller == grammar1 ? grammar2 : grammar1;
 
             Set<String> intersection = new HashSet<String>();

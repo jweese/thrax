@@ -10,15 +10,15 @@ import java.io.IOException;
  * converted from a String to an array of int.
  */
 public class PlainTextProvider extends AbstractInputProvider<int []> {
-	public static String name = "plaintext";
+    public static String name = "plaintext";
 
-	public PlainTextProvider(String filename) throws IOException {
-		super(filename);
-	}
+    public PlainTextProvider(String filename) throws IOException {
+        super(filename);
+    }
 
-	public int [] convert(String line)
-	{
-		return Vocabulary.getIds(line.split("\\s+"));
-	}
+    public int [] convert(String line)
+    {
+        return Vocabulary.getIds(line.split("\\s+"));
+    }
 
 }

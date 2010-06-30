@@ -52,11 +52,11 @@ public class CollocationTable {
         IntPair p = new IntPair(f, e);
 
         sourceCounts.put(f, sourceCounts.containsKey(f) ?
-                            sourceCounts.get(f) + 1 : 1);
+                sourceCounts.get(f) + 1 : 1);
         targetCounts.put(e, targetCounts.containsKey(e) ?
-                            targetCounts.get(e) + 1 : 1);
+                targetCounts.get(e) + 1 : 1);
         pairCounts.put(p, pairCounts.containsKey(p) ?
-                          pairCounts.get(p) + 1 : 1);
+                pairCounts.get(p) + 1 : 1);
     }
 
     public double targetGivenSource(int f, int e)

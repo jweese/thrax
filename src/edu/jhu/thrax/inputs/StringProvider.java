@@ -9,15 +9,15 @@ import java.io.IOException;
  * resulting String each time.
  */
 public class StringProvider extends AbstractInputProvider<String> {
-	public static String name = "string";
+    public static String name = "string";
 
-	public StringProvider(String filename) throws IOException {
-		super(filename);
-	}
+    public StringProvider(String filename) throws IOException {
+        super(filename);
+    }
 
-	public String convert(String line)
-	{
-		return line;
-	}
+    public String convert(String line)
+    {
+        return line;
+    }
 
 }

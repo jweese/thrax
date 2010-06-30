@@ -57,7 +57,7 @@ public class LexicalProbabilityFeature implements Feature {
                 continue;
             if (i >= r.alignment.e2f.length || r.alignment.e2f[i].length == 0)
                 ret *= table.targetGivenSource(CollocationTable.ID_UNALIGNED,
-                                               r.target[i]);
+                        r.target[i]);
             else {
                 ret /= r.alignment.e2f[i].length;
                 double sum = 0;
@@ -77,7 +77,7 @@ public class LexicalProbabilityFeature implements Feature {
                 continue;
             if (i >= r.alignment.f2e.length || r.alignment.f2e[i].length == 0)
                 ret *= table.sourceGivenTarget(r.source[i],
-                                               CollocationTable.ID_UNALIGNED);
+                        CollocationTable.ID_UNALIGNED);
             else {
                 ret /= r.alignment.f2e[i].length;
                 double sum = 0;

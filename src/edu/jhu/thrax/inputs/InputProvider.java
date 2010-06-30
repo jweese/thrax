@@ -7,21 +7,21 @@ package edu.jhu.thrax.inputs;
  */
 public interface InputProvider<T> {
 
-	public static String name = "";
+    public static String name = "";
 
-	/**
-	 * Determines if this <code>InputProvider</code> has more input to
-	 * provide.
-	 *
-	 * @return true if more input is waiting, false otherwise
-	 */
-	public boolean hasNext();
+    /**
+     * Determines if this <code>InputProvider</code> has more input to
+     * provide.
+     *
+     * @return true if more input is waiting, false otherwise
+     */
+    public boolean hasNext();
 
-	/**
-	 * Gets the next piece of input.
-	 *
-	 * @return the next piece of input
-	 */
-	public T next();
+    /**
+     * Gets the next piece of input.
+     *
+     * @return the next piece of input
+     */
+    public T next();
 }
 

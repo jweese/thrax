@@ -6,15 +6,15 @@ package edu.jhu.thrax.util;
  */
 public class UnknownFeatureException extends InvalidConfigurationException {
 
-	private String type;
+    private String type;
 
-	public UnknownFeatureException(String t)
-	{
-		type = t;
-	}
+    public UnknownFeatureException(String t)
+    {
+        type = t;
+    }
 
-	public String getMessage()
-	{
-		return String.format("Unknown feature function provided: %s", type);
-	}
+    public String getMessage()
+    {
+        return String.format("Unknown feature function provided: %s", type);
+    }
 }

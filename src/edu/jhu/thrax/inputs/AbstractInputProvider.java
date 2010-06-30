@@ -13,29 +13,29 @@ import edu.jhu.thrax.ThraxConfig;
  */
 public abstract class AbstractInputProvider<T> implements InputProvider<T> {
 
-	protected Scanner scanner;
+    protected Scanner scanner;
 
-	/**
-	 * Constructor meant to read input from a file.
-	 *
-	 * @param filename the name of the file to get input from
-	 * @throws IOException if an input or output exception occurs
-	 */
-	protected AbstractInputProvider(String filename) throws IOException
-	{
-		scanner = new Scanner(new File(filename));
-	}
+    /**
+     * Constructor meant to read input from a file.
+     *
+     * @param filename the name of the file to get input from
+     * @throws IOException if an input or output exception occurs
+     */
+    protected AbstractInputProvider(String filename) throws IOException
+    {
+        scanner = new Scanner(new File(filename));
+    }
 
-	public boolean hasNext() {
-		return scanner.hasNextLine();
-	}
+    public boolean hasNext() {
+        return scanner.hasNextLine();
+    }
 
-	public T next() {
-            String line = scanner.nextLine();
-            if (ThraxConfig.verbosity > 1)
-                System.err.println(String.format("%s: %s", name, line));
-            return convert(line);
-        }
+    public T next() {
+        String line = scanner.nextLine();
+        if (ThraxConfig.verbosity > 1)
+            System.err.println(String.format("%s: %s", name, line));
+        return convert(line);
+    }
 
-        abstract public T convert(String line);
+    abstract public T convert(String line);
 }

@@ -10,7 +10,7 @@ public class Vocabulary {
     private static int size = 0;
 
     private static boolean fixed = false;
-    
+
     public static final String OOV = "OOV";
 
     public static int getId(String word)

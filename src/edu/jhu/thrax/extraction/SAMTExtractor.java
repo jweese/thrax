@@ -54,7 +54,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         return processQueue(q, phrasesByStart);
     }
 
-               
+
     private int [] yield(String parse)
     {
         String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
@@ -65,7 +65,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
             if ("(".equals(t))
                 i++;
             else if (")".equals(t));
-                // do nothing
+            // do nothing
             else
                 result.add(Vocabulary.getId(t.toLowerCase()));
         }

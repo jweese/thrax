@@ -5,15 +5,15 @@ package edu.jhu.thrax.util;
  * user is not known by Thrax.
  */
 public class UnknownAlignmentFormatException extends InvalidConfigurationException {
-	private String format;
+    private String format;
 
-	public UnknownAlignmentFormatException(String fmt)
-	{
-		format = fmt;
-	}
+    public UnknownAlignmentFormatException(String fmt)
+    {
+        format = fmt;
+    }
 
-	public String getMessage()
-	{
-		return String.format("Unknown alignment format: %s", format);
-	}
+    public String getMessage()
+    {
+        return String.format("Unknown alignment format: %s", format);
+    }
 }
