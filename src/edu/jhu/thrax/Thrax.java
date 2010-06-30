@@ -1,6 +1,5 @@
 package edu.jhu.thrax;
 
-import edu.jhu.thrax.util.getopt.OptionMissingArgumentException;
 import edu.jhu.thrax.util.InvalidConfigurationException;
 
 import edu.jhu.thrax.inputs.InputProvider;
@@ -21,13 +20,14 @@ public class Thrax {
 	public static void main(String [] argv)
 	{
 		try {
-			ThraxConfig.configure(argv);
+                    System.err.println(argv[0]);
+			ThraxConfig.configure(argv[0]);
 			RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
 
 			InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
 
                         if (!"".equals(ThraxConfig.FEATURES)) {
-                            String [] feats = ThraxConfig.FEATURES.split(ThraxConfig.SEPARATOR);
+                            String [] feats = ThraxConfig.FEATURES.split("\\s+");
                             for (Feature f : FeatureFactory.createAll(feats)) {
                                 extractor.addFeature(f);
                             }
@@ -65,10 +65,6 @@ public class Thrax {
                             System.out.println(r);
                         }
 
-		}
-		catch (OptionMissingArgumentException e) {
-			System.err.println(e.getMessage());
-			System.exit(1);
 		}
 		catch (IOException e) {
 			System.err.println(e.getMessage());

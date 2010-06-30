@@ -1,4 +1,68 @@
 #!/bin/bash
+VERSION="0.5/alpha"
 
-java -cp bin edu.jhu.thrax.Thrax $*
+if [[ -z "$THRAX" ]]
+then
+    THRAX=`dirname $0`
+fi
+
+version () {
+    cat <<END_VERSION
+Thrax grammar extractor $VERSION
+Copyright (C) 2010 Jonny Weese <jonny@cs.jhu.edu>
+MIT License: <http://www.opensource.org/licenses/mit-license.php>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+END_VERSION
+}
+
+usage () {
+    cat <<END_USAGE
+Usage: `basename $0` [options] <configuration file>
+Options:
+  -m AMOUNT, --mem AMOUNT:          maximum memory for Java VM (gigabytes)
+END_USAGE
+}
+
+while [[ -n "$@" ]]
+do
+    case $1 in
+        -V|--version)
+            version
+            exit 0
+            ;;
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        -m|--mem)
+            mem=$2
+            shift
+            ;;
+        *)
+            if [[ -z "$config" ]]
+            then
+                config=$1
+            fi
+    esac
+    shift
+done
+
+if [[ -z "$config" ]]
+then
+    usage
+    exit 0
+fi
+
+if [[ -z "$mem" ]]
+then
+    mem="1"
+fi
+
+if [[ -f $THRAX/bin/thrax.jar ]]
+then
+    java -Xmx${mem}g -jar $THRAX/bin/thrax.jar $config
+else
+    java -Xmx${mem}g -cp $THRAX/bin edu.jhu.thrax.Thrax $config
+fi
 

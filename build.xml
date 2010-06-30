@@ -18,6 +18,17 @@
                debug="on" includeantruntime="false" />
     </target>
 
+    <target name="jar" depends="compile">
+        <jar destfile="${build}/thrax.jar">
+            <manifest>
+                <attribute name="Main-Class" value="edu.jhu.thrax.Thrax"/>
+            </manifest>
+            <fileset dir="${build}">
+                    <include name="**/*.class"/>
+            </fileset>
+        </jar>
+    </target>
+	
     <target name="clean">
         <delete verbose="true" quiet="true">
 	    <fileset dir="${build}">
