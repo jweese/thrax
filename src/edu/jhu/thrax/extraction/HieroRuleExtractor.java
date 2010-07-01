@@ -63,15 +63,15 @@ public class HieroRuleExtractor implements RuleExtractor {
             HIERO_LABELS.add(X_ID);
     }
 
-    public List<Rule> extract(Object [] inputs)
+    public List<Rule> extract(String [] inputs)
     {
         if (inputs.length < 3) {
             return null;
         }
 
-        int [] source = (int []) inputs[0];
-        int [] target = (int []) inputs[1];
-        Alignment alignment = (Alignment) inputs[2];
+        int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
+        int [] target = Vocabulary.getIds(inputs[1].split("\\s+"));
+        Alignment alignment = new Alignment(inputs[2]);
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
         computeAllLabels(phrasesByStart);

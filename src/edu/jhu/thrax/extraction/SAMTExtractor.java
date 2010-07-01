@@ -31,15 +31,15 @@ public class SAMTExtractor extends HieroRuleExtractor {
         super();
     }
 
-    public List<Rule> extract(Object [] inputs)
+    public List<Rule> extract(String [] inputs)
     {
         if (inputs.length < 3) {
             return null;
         }
 
-        int [] source = (int []) inputs[0];
-        String parse = (String) inputs[1];
-        Alignment alignment = (Alignment) inputs[2];
+        int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
+        String parse = inputs[1];
+        Alignment alignment = new Alignment(inputs[2]);
 
         lattice = new LatticeArray(parse);
         int [] target = yield(parse);

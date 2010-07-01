@@ -22,10 +22,10 @@ public interface RuleExtractor {
      * inputs. The inputs in the array are provided in the same order that
      * <code>requiredInputs</code> gave their names.
      *
-     * @param inputs an array of Objects; the required input to this
+     * @param inputs an array of String; the required input to this
      * extractor
      * @return a list of <code>Rule</code> extracted from these inputs
      */
-    public List<Rule> extract(Object [] inputs);
+    public List<Rule> extract(String [] inputs);
 
 }

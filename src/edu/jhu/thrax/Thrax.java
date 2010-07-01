@@ -3,7 +3,6 @@ package edu.jhu.thrax;
 import edu.jhu.thrax.util.InvalidConfigurationException;
 
 import edu.jhu.thrax.inputs.InputProvider;
-import edu.jhu.thrax.inputs.InputProviderFactory;
 import edu.jhu.thrax.extraction.RuleExtractor;
 import edu.jhu.thrax.extraction.RuleExtractorFactory;
 import edu.jhu.thrax.features.Feature;
@@ -36,7 +35,6 @@ public class Thrax {
             ThraxConfig.configure(confFile);
             RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
 
-            InputProvider [] inputs = InputProviderFactory.createAll(extractor.requiredInputs());
             Scorer scorer = new Scorer();
 
             if (!"".equals(ThraxConfig.FEATURES)) {
@@ -50,29 +48,13 @@ public class Thrax {
 
             Queue<Rule> allRules = new LinkedList<Rule>();
 
-            Object [] currInputs = new Object[inputs.length];
-            boolean haveInput = true;
-            int lineNumber = 0;
+            InputProvider inp = new InputProvider(extractor.requiredInputs());
             if (ThraxConfig.verbosity > 0)
                 System.err.println("Processing sentences.");
-            while (haveInput) {
-                if (ThraxConfig.verbosity > 0) {
-                    lineNumber++;
-                    if (lineNumber % 10000 == 0)
-                        System.err.println(String.format("[line %d]", lineNumber));
-                }
-                for (int i = 0; i < inputs.length; i++) {
-                    if (!inputs[i].hasNext()) {
-                        haveInput = false;
-                        break;
-                    }
-                    currInputs[i] = inputs[i].next();
-                }
-                if (haveInput) {
-                    for (Rule r : extractor.extract(currInputs)) {
-                        scorer.noteExtraction(r);
-                        allRules.offer(r);
-                    }
+            while (inp.hasNext()) {
+                for (Rule r : extractor.extract(inp.next())) {
+                    scorer.noteExtraction(r);
+                    allRules.offer(r);
                 }
             }
             if (ThraxConfig.verbosity > 0)
