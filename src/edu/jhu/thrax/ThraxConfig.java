@@ -13,6 +13,10 @@ public class ThraxConfig {
      * Field delimiter.
      */
     public static final String DELIMITER = "|||";
+    /**
+     * Regular expression for the field delimiter.
+     */
+    public static final String DELIMITER_REGEX = "\\|\\|\\|";
 
     /**
      * Determines the verbosity level. 0 is the normal level, which is
