@@ -11,10 +11,12 @@ public class InputProvider {
     private Scanner [] inputs;
     private Scanner unifiedInput;
     private boolean unified;
+    private int lineNumber;
 
 
     public InputProvider(String [] reqs) throws IOException
     {
+        lineNumber = 0;
         unified = ThraxConfig.UNIFIED_INPUT;
         if (unified)
             unifiedInput = new Scanner(new File(ThraxConfig.INPUT_FILE));
@@ -41,6 +43,9 @@ public class InputProvider {
 
     public String [] next()
     {
+        lineNumber++;
+        if (ThraxConfig.verbosity > 0 && lineNumber % 20000 == 0)
+            System.err.println(String.format("[line %d]", lineNumber));
         if (unified) {
             String line = unifiedInput.nextLine();
             String [] toks = line.split(ThraxConfig.DELIMITER_REGEX);
