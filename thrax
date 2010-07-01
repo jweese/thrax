@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="0.5/alpha"
+VERSION="0.7/alpha"
 
 if [[ -z "$THRAX" ]]
 then

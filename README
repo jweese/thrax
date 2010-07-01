@@ -2,17 +2,26 @@ Thrax is designed to extract a synchronous context-free grammar (SCFG) from an
 aligned parallel corpus. If you don't know what that means, you probably don't
 need Thrax.
 
+Thrax currently has support for both Hiero-style grammars (with a single
+non-terminal symbol) and SAMT-style grammars (where non-terminal symbols are
+calculated by projecting onto the span from a target-side parse tree).
+
 COMPILING:
 To compile the code, type
 
-	ant
+    ant
 
 At the end of the compilation, ant should report that the build was successful.
 
 RUNNING THRAX:
 Thrax can be invoked with
 
-	thrax
+    thrax <configuration file>
+
+Some example configuration files have been included with this distribution:
+
+    example/hiero.conf
+    example/samt.conf
 
 COPYRIGHT AND LICENSE:
 Copyright (c) 2010 by Jonny Weese <jonny@cs.jhu.edu>

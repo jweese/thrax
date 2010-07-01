@@ -105,6 +105,12 @@ public class ThraxConfig {
     public static int THREADS = 1;
 
     /**
+     * Default nonterminal symbol. This is the only NT in Hiero grammars, and
+     * it is used when no other symbol is possible in an SAMT grammar.
+     */
+    public static String DEFAULT_NT = "X";
+
+    /**
      * Whether or not to use hadoop (open-source implementation of MapReduce).
      */
     public static boolean HADOOP = false;
@@ -121,22 +127,22 @@ public class ThraxConfig {
     {
         Map<String,String> configMap = ConfFileParser.parse(filename);
         for (String key : configMap.keySet()) {
-            String value = configMap.get(key).toLowerCase();
+            String value = configMap.get(key);
 
             if ("grammar".equals(key)) {
-                GRAMMAR = value;
+                GRAMMAR = value.toLowerCase();
             }
             else if ("alignment".equals(key)) {
                 ALIGNMENT = value;
             }
             else if ("alignment-format".equals(key)) {
-                ALIGNMENT_FORMAT = value;
+                ALIGNMENT_FORMAT = value.toLowerCase();
             }
             else if ("parse".equals(key)) {
                 PARSE = value;
             }
             else if ("parse-format".equals(key)) {
-                PARSE_FORMAT = value;
+                PARSE_FORMAT = value.toLowerCase();
             }
             else if ("source".equals(key)) {
                 SOURCE = value;
@@ -145,7 +151,7 @@ public class ThraxConfig {
                 TARGET = value;
             }
             else if ("output-format".equals(key)) {
-                OUTPUT_FORMAT = value;
+                OUTPUT_FORMAT = value.toLowerCase();
             }
             else if ("adjacent".equals(key)) {
                 ADJACENT = Boolean.parseBoolean(value);
@@ -172,7 +178,7 @@ public class ThraxConfig {
                 LOOSE = Boolean.parseBoolean(value);
             }
             else if ("features".equals(key)) {
-                FEATURES = value;
+                FEATURES = value.toLowerCase();
             }
             else if ("max-constituent-labels".equals(key)) {
                 MAX_CONSTITUENT_LABELS = Integer.parseInt(value);
@@ -182,6 +188,9 @@ public class ThraxConfig {
             }
             else if ("max-cat-labels".equals(key)) {
                 MAX_CAT_LABELS = Integer.parseInt(value);
+            }
+            else if ("default-nt".equals(key)) {
+                DEFAULT_NT = value;
             }
             else if ("threads".equals(key)) {
                 THREADS = Integer.parseInt(value);

@@ -36,8 +36,7 @@ public class HieroRuleExtractor implements RuleExtractor {
     public boolean ALLOW_ADJACENT_NTS = false;
     public boolean ALLOW_LOOSE_BOUNDS = false;
 
-    public static final String X = "X";
-    public static final int X_ID = Vocabulary.getId(X);
+    public int X_ID;
 
     private ArrayList<Feature> features;
     private int featureLength;
@@ -59,6 +58,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         ALLOW_ADJACENT_NTS = ThraxConfig.ADJACENT;
         ALLOW_LOOSE_BOUNDS = ThraxConfig.LOOSE;
         labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
+        X_ID = Vocabulary.getId(ThraxConfig.DEFAULT_NT);
         if (HIERO_LABELS.isEmpty())
             HIERO_LABELS.add(X_ID);
     }
