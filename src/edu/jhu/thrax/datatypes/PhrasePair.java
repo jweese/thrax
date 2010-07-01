@@ -1,12 +1,36 @@
 package edu.jhu.thrax.datatypes;
 
+/**
+ * This class represents a phrase pair. Essentially it is four integers
+ * describing the boundaries of the source and target sides of the phrase pair.
+ */
 public class PhrasePair implements Cloneable {
 
+    /**
+     * The index of the start of the source side of this PhrasePair.
+     */
     public int sourceStart;
+    /**
+     * One plus the index of the end of the source side of this PhrasePair.
+     */
     public int sourceEnd;
+    /**
+     * The index of the start of the target side of this PhrasePair.
+     */
     public int targetStart;
+    /**
+     * One plus the index of the end of the target side of this PhrasePair.
+     */
     public int targetEnd;
 
+    /**
+     * Constructor.
+     *
+     * @param ss source start
+     * @param se source end
+     * @param ts target start
+     * @param te target end
+     */
     public PhrasePair(int ss, int se, int ts, int te)
     {
         sourceStart = ss;
@@ -15,6 +39,15 @@ public class PhrasePair implements Cloneable {
         targetEnd = te;
     }
 
+    /**
+     * Determines whether this PhrasePair is consistent with the given
+     * Alignment. A PhrasePair is consistent if no source word is aligned to
+     * a target word outside of the target span, and no target word is aligned
+     * to a source word outside of the source span.
+     *
+     * @param a an Alignment
+     * @return true if this PhrasePair is consistent, false otherwise
+     */
     public boolean consistentWith(Alignment a)
     {
         for (int i = sourceStart; i < sourceEnd; i++) {

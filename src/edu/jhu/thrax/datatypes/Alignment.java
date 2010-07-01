@@ -160,11 +160,4 @@ public class Alignment {
         return sb.toString();
     }
 
-    public static void main(String [] argv)
-    {
-        Alignment a = new Alignment("3-3 2-4");
-        String x = a.toString();
-        System.out.print(a);
-        return;
-    }
 }

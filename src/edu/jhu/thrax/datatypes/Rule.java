@@ -5,36 +5,102 @@ import edu.jhu.thrax.util.Vocabulary;
 import java.util.Arrays;
 import java.util.ArrayList;
 
+/**
+ * This class represents a synchronous context-free production rule.
+ */
 public class Rule {
 
+    /**
+     * The left-hand side symbol.
+     */
     int lhs;
+    /**
+     * A PhrasePair describing the boundaries of the right-hand side of this
+     * rule relative to the source and target sentences.
+     */
     public PhrasePair rhs;
 
     // backing data, from sentence. shared among all rules extracted from
     // this sentence.
+    /**
+     * The source-side sentence.
+     */
     public int [] source;
+    /**
+     * The target-side sentence.
+     */
     public int [] target;
+    /**
+     * Alignment between the source- and target-side sentences.
+     */
     public Alignment alignment;
 
+    /**
+     * Labels for nonterminals of this rule.
+     */
     int [] nts;
+    /**
+     * Number of nonterminals in this rule.
+     */
     public byte numNTs;
 
+    /**
+     * Whether or not the source right-hand side ends with a nonterminal
+     * symbol.
+     */
     public boolean sourceEndsWithNT;
 
+    /**
+     * The point at which a new symbol should be attached on the source side
+     * of the right-hand side.
+     */
     public int appendPoint;
+    /**
+     * Array describing the lexicality of the source side. A value less than
+     * zero means that the source word is not present in the rule. Zero means
+     * the word is present as a terminal symbol. Greater than zero indicates
+     * the NT that the word is part of.
+     */
     public byte [] sourceLex;
+    /**
+     * Array describing the lexicality of the target side.
+     */
     public byte [] targetLex; 
 
+    /**
+     * Number of aligned words on the source side of the right-hand side of
+     * this rule.
+     */
     public int alignedWords;
+    /**
+     * Total number of terminal symbols on the source side of the right-hand
+     * side of this rule.
+     */
     public int numTerminals;
 
+    /**
+     * The textual yield of this rule.
+     */
     ArrayList<Integer> yield;
+    /**
+     * Determines whether the textual yield of this rule has changed since the
+     * last time it was computed. Used for memoization.
+     */
     boolean yieldChanged;
 
     private Rule()
     {
     }
 
+    /**
+     * Constructor.
+     *
+     * @param f the source side sentence
+     * @param e the target side sentence
+     * @param a the Alignment between source and target side
+     * @param start the starting index of the source side of this Rule's RHS
+     * @param arity maximum number of nonterminals
+     */
     public Rule(int [] f, int [] e, Alignment a, int start, int arity)
     {
         source = f;
@@ -64,8 +130,7 @@ public class Rule {
     /**
      * Makes an almost-deep copy of this rule, where the backing datatypess are
      * not cloned, but the rule-specific data is cloned so that it can be 
-     * modified. The modifiable fields are nts, ntAlignment, numNTs, and the
-     * lexicalization bitsets and lhs.
+     * modified. 
      *
      * @return a copy of this Rule, suitable for modifying
      */
@@ -97,28 +162,56 @@ public class Rule {
         return ret;
     }
 
+    /**
+     * Gets the left-hand side symbol for this rule.
+     *
+     * @return the LHS symbol
+     */
     public int getLhs()
     {
         return lhs;
     }
 
+    /**
+     * Sets the left-hand side symbol for this rule.
+     *
+     * @param label the new label for the left-hand side
+     */
     public void setLhs(int label)
     {
         yieldChanged = (lhs == label);
         lhs = label;
     }
 
+    /**
+     * Gets the label for a nonterminal symbol in this rule.
+     *
+     * @param index the number of the NT to return
+     */
     public int getNT(int index)
     {
         return nts[index];
     }
 
+    /**
+     * Sets the label for a nonterminal symbol in this rule.
+     *
+     * @param index the number of the NT to modify
+     * @param label the new label for the NT
+     */
     public void setNT(int index, int label)
     {
         yieldChanged = (nts[index] == label);
         nts[index] = label;
     }
 
+    /**
+     * Attaches a nonterminal symbol to the yield of this Rule. The terminal's
+     * extent is defined by the given PhrasePair. The symbol for the 
+     * nonterminal is not set.
+     *
+     * @param pp the spans of this new NT
+     */
     public void extendWithNonterminal(PhrasePair pp)
     {
         numNTs++;
@@ -135,6 +228,11 @@ public class Rule {
         yieldChanged = true;
     }
 
+    /**
+     * Attaches a terminal symbol to the source-side yield of this Rule. Also
+     * attaches any terminals for the target side that are aligned to the
+     * source side symbol.
+     */
     public void extendWithTerminal()
     {
         sourceLex[appendPoint] = 0;
@@ -158,6 +256,9 @@ public class Rule {
         yieldChanged = true;
     }
 
+    /**
+     * Symbol separating the fields of this Rule's textual representation.
+     */
     public static final String FIELD_SEPARATOR = " |||";
     public String toString()
     {
@@ -211,6 +312,10 @@ public class Rule {
         return (this.lhs == other.lhs && this.yield().equals(other.yield()));
     }
 
+    /**
+     * An integer representation of the textual representation of this Rule.
+     * Useful because equality is defined in terms of the yield.
+     */
     public ArrayList<Integer> yield()
     {
         if (!yieldChanged)
@@ -250,6 +355,12 @@ public class Rule {
         return result;
     }
 
+    /**
+     * Returns the target-side span of the indexed nonterminal symbol.
+     *
+     * @param index the number of the NT whose span we want
+     * @return an IntPair describing the target span of the NT
+     */
     public IntPair ntSpan(int index)
     {
         if (index < 0 || index > numNTs - 1)
