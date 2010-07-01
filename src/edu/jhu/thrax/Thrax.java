@@ -17,8 +17,16 @@ import java.util.Queue;
 import java.util.LinkedList;
 import java.util.concurrent.Executors;
 
+/**
+ * The main class for the Thrax extractor.
+ */
 public class Thrax {
 
+    /**
+     * The main function of the exctractor.
+     *
+     * @param argv the command line passed to the JVM
+     */
     public static void main(String [] argv)
     {
         String confFile = argv.length > 0 ? argv[0] : "NO_THRAX_CONF_FILE";
