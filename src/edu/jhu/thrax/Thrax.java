@@ -43,6 +43,8 @@ public class Thrax {
             Object [] currInputs = new Object[inputs.length];
             boolean haveInput = true;
             int lineNumber = 0;
+            if (ThraxConfig.verbosity > 0)
+                System.err.println("Processing sentences.");
             while (haveInput) {
                 if (ThraxConfig.verbosity > 0) {
                     lineNumber++;
@@ -63,13 +65,19 @@ public class Thrax {
                     }
                 }
             }
+            if (ThraxConfig.verbosity > 0)
+                System.err.println("Done processing sentences.\nScoring rules.");
             while (allRules.peek() != null) {
                 scorer.score(allRules.poll());
             }
+            if (ThraxConfig.verbosity > 0)
+                System.err.println("Done scoring rules.\nPrinting rules.");
 
             for (Rule r : scorer.rules()) {
                 System.out.println(scorer.ruleScoreString(r));
             }
+            if (ThraxConfig.verbosity > 0)
+                System.err.println("Done!");
 
         }
         catch (IOException e) {
