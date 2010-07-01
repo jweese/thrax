@@ -20,8 +20,11 @@ usage () {
     cat <<END_USAGE
 Usage: `basename $0` [options] <configuration file>
 Options:
-  -m AMOUNT, --mem AMOUNT:          maximum memory for Java VM (gigabytes)
+  -d, --debug                       enable debugging output
   -h, --help                        print this help message and exit
+  -m AMOUNT, --mem AMOUNT:          maximum memory for Java VM 
+  -q, --quiet                       suppress all output except rules
+  -v, --verbose                     enable verbose output
   -V, --version                     print version information and exit
 END_USAGE
 }
@@ -40,6 +43,15 @@ do
         -m|--mem)
             mem=$2
             shift
+            ;;
+        -v|--verbose)
+            verbosity="verbose"
+            ;;
+        -d|--debug)
+            verbosity="debug"
+            ;;
+        -q|--quiet)
+            verbosity="quiet"
             ;;
         *)
             if [[ -z "$config" ]]
@@ -64,8 +76,8 @@ fi
 JVM_OPTS="-Dfile.encoding=utf8"
 if [[ -f $THRAX/bin/thrax.jar ]]
 then
-    java -Xmx${mem}g $JVM_OPTS -jar $THRAX/bin/thrax.jar $config
+    java -Xmx${mem} $JVM_OPTS -jar $THRAX/bin/thrax.jar $config $verbosity
 else
-    java -Xmx${mem}g $JVM_OPTS -cp $THRAX/bin edu.jhu.thrax.Thrax $config
+    java -Xmx${mem} $JVM_OPTS -cp $THRAX/bin edu.jhu.thrax.Thrax $config $verbosity
 fi
 

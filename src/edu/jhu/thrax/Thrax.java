@@ -30,6 +30,8 @@ public class Thrax {
     public static void main(String [] argv)
     {
         String confFile = argv.length > 0 ? argv[0] : "NO_THRAX_CONF_FILE";
+        if (argv.length > 1)
+            ThraxConfig.setVerbosity(argv[1]);
         try {
             ThraxConfig.configure(confFile);
             RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);

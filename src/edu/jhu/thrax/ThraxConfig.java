@@ -123,10 +123,7 @@ public class ThraxConfig {
         for (String key : configMap.keySet()) {
             String value = configMap.get(key).toLowerCase();
 
-            if ("verbosity".equals(key)) {
-                setVerbosity(value);
-            }
-            else if ("grammar".equals(key)) {
+            if ("grammar".equals(key)) {
                 GRAMMAR = value;
             }
             else if ("alignment".equals(key)) {
@@ -200,7 +197,7 @@ public class ThraxConfig {
      *
      * @param level a String describing the verbosity level
      */
-    private static void setVerbosity(String level)
+    public static void setVerbosity(String level)
     {
         if ("verbose".equals(level)) {
             verbosity = 1;
@@ -208,7 +205,7 @@ public class ThraxConfig {
         else if ("debug".equals(level)) {
             verbosity = 2;
         }
-        else if ("silent".equals(level)) {
+        else if ("quiet".equals(level)) {
             verbosity = -1;
         }
     }
