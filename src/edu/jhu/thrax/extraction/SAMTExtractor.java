@@ -83,16 +83,33 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 int to = pp.targetEnd;
                 IntPair span = new IntPair(from, to);
                 Collection<Integer> c = new HashSet<Integer>();
-                for (int l : lattice.getConstituentLabels(from, to))
-                    c.add(l);
-                for (int l : lattice.getConcatenatedLabels(from, to))
-                    c.add(l);
-                for (int l : lattice.getCcgLabels(from, to))
-                    c.add(l);
+                Collection<Integer> labels;
+                labels = lattice.getConstituentLabels(from, to);
+                addUpTo(ThraxConfig.MAX_CONSTITUENT_LABELS, labels, c);
+                labels = lattice.getConcatenatedLabels(from, to);
+                addUpTo(ThraxConfig.MAX_CAT_LABELS, labels, c);
+                labels = lattice.getCcgLabels(from, to);
+                addUpTo(ThraxConfig.MAX_CCG_LABELS, labels, c);
                 if (c.isEmpty())
                     c = HieroRuleExtractor.HIERO_LABELS;
                 labelsBySpan.put(span, c);
             }
+        }
+    }
+
+    private static void addUpTo(int limit, Collection<Integer> src,
+                                           Collection<Integer> dest)
+    {
+        if (limit < 0 || src.size() < limit) {
+            dest.addAll(src);
+            return;
+        }
+        int numAdded = 0;
+        for (int x : src) {
+            if (numAdded >= limit)
+                break;
+            dest.add(x);
+            numAdded++;
         }
     }
 
