@@ -21,8 +21,11 @@ public class FeatureFactory {
         if (fname.equals(LexicalProbabilityFeature.name)) {
             return new LexicalProbabilityFeature();
         }
-        else if (fname.equals(RelativeFrequencyFeature.name)) {
-            return new RelativeFrequencyFeature();
+        else if (fname.equals(RuleProbabilityFeature.name)) {
+            return new RuleProbabilityFeature();
+        }
+        else if (fname.equals(PhrasalProbabilityFeature.name)) {
+            return new PhrasalProbabilityFeature();
         }
         else if (fname.equals(UnalignedWordCountFeature.name)) {
             return new UnalignedWordCountFeature();

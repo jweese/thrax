@@ -3,9 +3,9 @@ package edu.jhu.thrax.features;
 import java.util.HashMap;
 import edu.jhu.thrax.datatypes.Rule;
 
-public class RelativeFrequencyFeature implements Feature {
+public class RuleProbabilityFeature implements Feature {
 
-    public static final String name = "rf";
+    public static final String name = "rule";
 
     public int length()
     {
@@ -22,7 +22,7 @@ public class RelativeFrequencyFeature implements Feature {
     private HashMap<Integer,Integer> lhsCounts;
     private HashMap<Rule,Integer> ruleCounts;
 
-    public RelativeFrequencyFeature() {
+    public RuleProbabilityFeature() {
         lhsCounts = new HashMap<Integer,Integer>();
         ruleCounts = new HashMap<Rule,Integer>();
     }

@@ -79,14 +79,13 @@ public class Rule {
     public int numTerminals;
 
     /**
-     * The textual yield of this rule.
+     * The textual yield of source side of this rule.
      */
-    ArrayList<Integer> yield;
+    ArrayList<Integer> sourceYield;
     /**
-     * Determines whether the textual yield of this rule has changed since the
-     * last time it was computed. Used for memoization.
+     * The textual yield of the target side of this rule.
      */
-    boolean yieldChanged;
+    ArrayList<Integer> targetYield;
 
     private Rule()
     {
@@ -123,8 +122,8 @@ public class Rule {
 
         rhs = new PhrasePair(start, start + 1, -1, -1);
 
-        yield = new ArrayList<Integer>();
-        yieldChanged = true;
+        sourceYield = new ArrayList<Integer>();
+        targetYield = new ArrayList<Integer>();
     }
 
     /**
@@ -155,10 +154,12 @@ public class Rule {
         ret.alignedWords = this.alignedWords;
         ret.numTerminals = this.numTerminals;
 
-        ret.yield = new ArrayList<Integer>(this.yield.size());
-        for (int x : this.yield())
-            ret.yield.add(x);
-        ret.yieldChanged = this.yieldChanged;
+        ret.sourceYield = new ArrayList<Integer>();
+        ret.targetYield = new ArrayList<Integer>();
+        for (int x : this.sourceYield())
+            ret.sourceYield.add(x);
+        for (int y : this.targetYield())
+            ret.targetYield.add(y);
         return ret;
     }
 
@@ -179,7 +180,6 @@ public class Rule {
      */
     public void setLhs(int label)
     {
-        yieldChanged = (lhs == label);
         lhs = label;
     }
 
@@ -201,7 +201,6 @@ public class Rule {
      */
     public void setNT(int index, int label)
     {
-        yieldChanged = (nts[index] == label);
         nts[index] = label;
     }
 
@@ -225,7 +224,6 @@ public class Rule {
         if (pp.targetEnd > rhs.targetEnd)
             rhs.targetEnd = pp.targetEnd;
         sourceEndsWithNT = true;
-        yieldChanged = true;
     }
 
     /**
@@ -253,7 +251,6 @@ public class Rule {
         alignedWords++;
         appendPoint++;
         rhs.sourceEnd = appendPoint;
-        yieldChanged = true;
     }
 
     /**
@@ -266,7 +263,7 @@ public class Rule {
         sb.append(String.format("[%s]", Vocabulary.getWord(lhs)));
         sb.append(FIELD_SEPARATOR);
         int last = -1;
-        for (int i = 0; i < sourceLex.length; i++) {
+        for (int i = rhs.sourceStart; i < rhs.sourceEnd; i++) {
             int x = sourceLex[i];
             if (x < 0)
                 continue;
@@ -280,7 +277,7 @@ public class Rule {
 
         sb.append(FIELD_SEPARATOR);
         last = -1;
-        for (int i = 0; i < targetLex.length; i++) {
+        for (int i = rhs.targetStart; i < rhs.targetEnd; i++) {
             int x = targetLex[i];
             if (x < 0)
                 continue;
@@ -309,49 +306,55 @@ public class Rule {
         if (!(o instanceof Rule))
             return false;
         Rule other = (Rule) o;
-        return (this.lhs == other.lhs && this.yield().equals(other.yield()));
+        return (this.lhs == other.lhs && 
+                this.sourceYield().equals(other.sourceYield()) &&
+                this.targetYield().equals(other.targetYield()));
     }
 
     /**
      * An integer representation of the textual representation of this Rule.
      * Useful because equality is defined in terms of the yield.
      */
-    public ArrayList<Integer> yield()
+    public ArrayList<Integer> sourceYield()
     {
-        if (!yieldChanged)
-            return yield;
-        yield.clear();
+        sourceYield.clear();
         int last = -1;
         for (int i = rhs.sourceStart; i < rhs.sourceEnd; i++) {
             int x = sourceLex[i];
             if (x == 0)
-                yield.add(source[i]);
+                sourceYield.add(source[i]);
             if (x > 0 && x != last) {
                 last = x;
-                yield.add(nts[last-1]);
+                sourceYield.add(nts[last-1]);
             }
         }
-        last = -1;
+        return sourceYield;
+    }
+
+    public ArrayList<Integer> targetYield()
+    {
+        targetYield.clear();
+        int last = -1;
         for (int j = rhs.targetStart; j < rhs.targetEnd; j++) {
             int y = targetLex[j];
             if (y < 0)
-                yield.add(y);
+                targetYield.add(y);
             if (y == 0)
-                yield.add(target[j]);
+                targetYield.add(target[j]);
             if (y > 0 && y != last) {
                 last = y;
-                yield.add(nts[last-1]);
+                targetYield.add(nts[last-1]);
             }
         }
-        yieldChanged = false;
-        return yield;
+        return targetYield;
     }
 
     public int hashCode()
     {
         int result = 17;
         result = result * 37 + lhs;
-        result = result * 37 + yield().hashCode();
+        result = result * 37 + sourceYield().hashCode();
+        result = result * 37 + targetYield().hashCode();
         return result;
     }
 
