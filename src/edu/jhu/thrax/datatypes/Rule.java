@@ -1,6 +1,7 @@
 package edu.jhu.thrax.datatypes;
 
 import edu.jhu.thrax.util.Vocabulary;
+import edu.jhu.thrax.ThraxConfig;
 
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -253,15 +254,11 @@ public class Rule {
         rhs.sourceEnd = appendPoint;
     }
 
-    /**
-     * Symbol separating the fields of this Rule's textual representation.
-     */
-    public static final String FIELD_SEPARATOR = " |||";
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("[%s]", Vocabulary.getWord(lhs)));
-        sb.append(FIELD_SEPARATOR);
+        sb.append(String.format( " %s", ThraxConfig.DELIMITER));
         int last = -1;
         for (int i = rhs.sourceStart; i < rhs.sourceEnd; i++) {
             int x = sourceLex[i];
@@ -275,7 +272,7 @@ public class Rule {
             }
         }
 
-        sb.append(FIELD_SEPARATOR);
+        sb.append(String.format(" %s", ThraxConfig.DELIMITER));
         last = -1;
         for (int i = rhs.targetStart; i < rhs.targetEnd; i++) {
             int x = targetLex[i];

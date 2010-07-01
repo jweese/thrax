@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Set;
 
+import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.datatypes.Rule;
 
 public class Scorer {
@@ -90,7 +91,7 @@ public class Scorer {
         sb.append(r);
         if (!rules.containsKey(r))
             return sb.toString();
-        sb.append(Rule.FIELD_SEPARATOR);
+        sb.append(String.format(" %s", ThraxConfig.DELIMITER));
         for (double d : rules.get(r))
             sb.append(String.format(" %.6f", d));
         return sb.toString();

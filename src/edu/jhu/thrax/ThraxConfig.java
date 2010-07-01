@@ -10,6 +10,11 @@ import java.io.IOException;
 public class ThraxConfig {
 
     /**
+     * Field delimiter.
+     */
+    public static final String DELIMITER = "|||";
+
+    /**
      * Determines the verbosity level. 0 is the normal level, which is
      * quiet. 1 means verbose, and 2 includes debugging information.
      * A number less than zero means silent.
@@ -117,6 +122,15 @@ public class ThraxConfig {
     // put hadoop options here
 
     /**
+     * Whether or not the parallel corpus is in one file.
+     */
+    public static boolean UNIFIED_INPUT = false;
+    /**
+     * The path to the unified input file.
+     */
+    public static String INPUT_FILE = "";
+
+    /**
      * Sets the various static configuration variables by reading them from
      * a configuration file.
      *
@@ -197,6 +211,12 @@ public class ThraxConfig {
             }
             else if ("hadoop".equals(key)) {
                 HADOOP = Boolean.parseBoolean(value);
+            }
+            else if ("unified-input".equals(key)) {
+                UNIFIED_INPUT = Boolean.parseBoolean(value);
+            }
+            else if ("input-file".equals(key)) {
+                INPUT_FILE = value;
             }
         }
     }
