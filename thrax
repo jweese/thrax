@@ -70,7 +70,7 @@ fi
 
 if [[ -z "$mem" ]]
 then
-    mem="1"
+    mem="1g"
 fi
 
 JVM_OPTS="-Dfile.encoding=utf8"

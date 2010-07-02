@@ -97,15 +97,15 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
     }
 
-    private static void addUpTo(int limit, Collection<Integer> src,
-                                           Collection<Integer> dest)
+    private static <T> void addUpTo(int limit, Collection<T> src,
+                                               Collection<T> dest)
     {
         if (limit < 0 || src.size() < limit) {
             dest.addAll(src);
             return;
         }
         int numAdded = 0;
-        for (int x : src) {
+        for (T x : src) {
             if (numAdded >= limit)
                 break;
             dest.add(x);
