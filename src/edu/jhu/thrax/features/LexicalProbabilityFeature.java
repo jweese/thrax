@@ -2,9 +2,6 @@ package edu.jhu.thrax.features;
 
 import edu.jhu.thrax.datatypes.Rule;
 
-import java.util.Map;
-import java.util.HashMap;
-
 public class LexicalProbabilityFeature implements Feature {
 
     public static final String name = "lex";

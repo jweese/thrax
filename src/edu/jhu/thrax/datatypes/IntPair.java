@@ -3,7 +3,7 @@ package edu.jhu.thrax.datatypes;
 /**
  * A class that represents a pair of integers.
  */
-public class IntPair implements Comparable {
+public class IntPair implements Comparable<IntPair> {
 
     /**
      * The first integer of the pair ("car").
@@ -71,9 +71,8 @@ public class IntPair implements Comparable {
         return false;
     }
 
-    public int compareTo(Object o)
+    public int compareTo(IntPair ip)
     {
-        IntPair ip = (IntPair) o;
         if (this.fst == ip.fst) {
             return this.snd - ip.snd;
         }

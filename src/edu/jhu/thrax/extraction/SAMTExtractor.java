@@ -5,15 +5,12 @@ import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.syntax.LatticeArray;
 import edu.jhu.thrax.datatypes.*;
 
-import java.util.Set;
 import java.util.List;
 import java.util.HashSet;
-import java.util.HashMap;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Collection;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class SAMTExtractor extends HieroRuleExtractor {
 

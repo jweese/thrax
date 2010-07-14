@@ -4,6 +4,7 @@ package edu.jhu.thrax.util;
  * This exception is thrown when the "grammar" option provided by the user is
  * not known by Thrax.
  */
+@SuppressWarnings("serial")
 public class UnknownGrammarTypeException extends InvalidConfigurationException {
 
     private String type;

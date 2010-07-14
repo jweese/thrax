@@ -2,8 +2,6 @@ package edu.jhu.thrax.extraction;
 
 import java.util.List;
 import edu.jhu.thrax.datatypes.Rule;
-import edu.jhu.thrax.features.Feature;
-
 /**
  * This is the common interface for classes that can extract <code>Rule</code>
  * objects from certain inputs. 

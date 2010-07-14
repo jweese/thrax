@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.ArrayList;
 import edu.jhu.thrax.datatypes.Rule;
 
-import edu.jhu.thrax.ThraxConfig;
 
 public class PhrasalProbabilityFeature implements Feature {
 

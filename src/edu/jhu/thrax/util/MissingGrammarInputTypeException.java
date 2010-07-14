@@ -6,6 +6,7 @@ package edu.jhu.thrax.util;
  * corpus) but the source for that input has not been provided by the
  * configuration.
  */
+@SuppressWarnings("serial")
 public class MissingGrammarInputTypeException extends InvalidConfigurationException {
 
     private String type;
