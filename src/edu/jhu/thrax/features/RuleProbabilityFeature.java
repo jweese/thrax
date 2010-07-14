@@ -27,7 +27,7 @@ public class RuleProbabilityFeature implements Feature {
         ruleCounts = new HashMap<Rule,Integer>();
     }
 
-    public void noteExtraction(Rule r)
+    public synchronized void noteExtraction(Rule r)
     {
         int currLhsCount = lhsCounts.containsKey(r.getLhs())
             ? lhsCounts.get(r.getLhs()) : 0;

@@ -47,7 +47,7 @@ public class CollocationTable {
         return;
     }
 
-    private void addPair(int f, int e)
+    private synchronized void addPair(int f, int e)
     {
         IntPair p = new IntPair(f, e);
 

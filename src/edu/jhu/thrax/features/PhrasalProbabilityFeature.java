@@ -30,7 +30,7 @@ public class PhrasalProbabilityFeature implements Feature {
         collocation = new HashMap<ArrayList<Integer>,Integer>();
     }
 
-    public void noteExtraction(Rule r)
+    public synchronized void noteExtraction(Rule r)
     {
         ArrayList<Integer> sy = r.sourceYield();
         ArrayList<Integer> ty = r.targetYield();
