@@ -14,7 +14,6 @@ import edu.jhu.thrax.datatypes.Rule;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.BlockingQueue;
