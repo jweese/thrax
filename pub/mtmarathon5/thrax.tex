@@ -4,13 +4,13 @@
 \usepackage{amsmath}
 \usepackage{wrapfig}
 \usepackage{url}
+\usepackage{multirow}
 
 \begin{document}
 
 \title{Thrax: a Fast Extractor for Synchronous Context-Free Grammars}
 \institute{clsp}{Center for Language and Speech Processing, Johns Hopkins University}
 \author{firstname=Jonathan, surname=Weese, institute={clsp}, corresponding=yes, email={jonny@cs.jhu.edu}, address={Computational Science and Engineering Building, Room 324 \\ Johns Hopkins University \\ 3400 N. Charles Street, Baltimore, MD 21218, United States}}
-
 
 \shorttitle{Thrax}
 \shortauthor{J. Weese}
@@ -96,6 +96,22 @@ In the native Java implementation, the feature function interface consists of tw
 
 \section{Performance}
 \label{sec:performance}
+
+\begin{table}[t]
+\caption{Comparison of Thrax extraction to Joshua's built-in extractor and the SAMT extractor of Zollmann and Venugopal.}
+\begin{tabular}{l | l | l | r | r | r}
+Dataset & Sentences & Grammar & System & Time (sec.) & BLEU \\ \hline
+% \multirow{4}{*}{BTEC zh-en} & \multirow{4}{*}{44K} & \multirow{2}{*}{Hiero} & Thrax & 360 & 25 \\
+% & & & Joshua & & \\
+% & & \multirow{2}{*}{SAMT} & Thrax & & \\
+% & & & ZV & & \\ \hline
+\multirow{4}{*}{NIST09 ur-en} & \multirow{4}{*}{165K} & \multirow{2}{*}{Hiero} & Thrax & & \\
+& & & Joshua & & \\
+& & \multirow{2}{*}{SAMT} & Thrax & & \\
+& & & ZV & & \\
+
+\end{tabular}
+\end{table}
 
 \bibliography{thrax}
 \end{document}
