@@ -13,8 +13,10 @@ import edu.jhu.thrax.datatypes.Rule;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Vector;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.LinkedList;
+import java.util.Collections;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -49,19 +51,22 @@ public class Thrax {
                 System.err.println("WARNING: no feature functions provided");
             }
 
-            final List<Rule> allRules = new Vector<Rule>(1000, 1000);
+            final List<Rule> allRules = Collections.synchronizedList(new LinkedList<Rule>());
 
             final InputProvider inp = new InputProvider(extractor.requiredInputs());
             if (ThraxConfig.verbosity > 0)
                 System.err.println("Processing sentences.");
 
             BlockingQueue<Runnable> q = new ArrayBlockingQueue<Runnable>(1000);
-            ThreadPoolExecutor exec = new ThreadPoolExecutor(ThraxConfig.THREADS, ThraxConfig.THREADS, 1, TimeUnit.SECONDS, q);
+            ExecutorService exec = Executors.newFixedThreadPool(ThraxConfig.THREADS);
 
             while (inp.hasNext()) {
                 exec.execute(new Runnable(){
                     public void run() {
-                        for (Rule r : extractor.extract(inp.next())) {
+                        String [] inputs = inp.next();
+                        if (inputs == null)
+                            return;
+                        for (Rule r : extractor.extract(inputs)) {
                             scorer.noteExtraction(r);
                             allRules.add(r);
                         }

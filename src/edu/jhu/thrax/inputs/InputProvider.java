@@ -28,7 +28,7 @@ public class InputProvider {
         }
     }
 
-    public boolean hasNext()
+    public synchronized boolean hasNext()
     {
         if (unified)
             return unifiedInput.hasNextLine();
@@ -41,8 +41,10 @@ public class InputProvider {
         }
     }
 
-    public String [] next()
+    public synchronized String [] next()
     {
+        if (!hasNext())
+            return null;
         lineNumber++;
         if (ThraxConfig.verbosity > 0 && lineNumber % 20000 == 0)
             System.err.println(String.format("[line %d]", lineNumber));
