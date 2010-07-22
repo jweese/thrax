@@ -7,6 +7,7 @@ import edu.jhu.thrax.datatypes.*;
 
 import java.util.List;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Collection;
@@ -42,13 +43,13 @@ public class SAMTExtractor extends HieroRuleExtractor {
         int [] target = yield(parse);
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
-        computeAllLabels(phrasesByStart);
+        HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart);
 
         Queue<Rule> q = new LinkedList<Rule>();
         for (int i = 0; i < source.length; i++)
             q.offer(new Rule(source, target, alignment, i, NT_LIMIT));
 
-        return processQueue(q, phrasesByStart);
+        return processQueue(q, phrasesByStart, labelsBySpan);
     }
 
 
@@ -72,8 +73,9 @@ public class SAMTExtractor extends HieroRuleExtractor {
         return ret;
     }
 
-    protected void computeAllLabels(PhrasePair [][] phrases)
+    protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases)
     {
+        HashMap<IntPair,Collection<Integer>> labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
         for (PhrasePair [] plist : phrases) {
             for (PhrasePair pp : plist) {
                 int from = pp.targetStart;
@@ -92,6 +94,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 labelsBySpan.put(span, c);
             }
         }
+        return labelsBySpan;
     }
 
     private static <T> void addUpTo(int limit, Collection<T> src,

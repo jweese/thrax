@@ -13,7 +13,7 @@ public class Vocabulary {
 
     public static final String OOV = "OOV";
 
-    public static int getId(String word)
+    public synchronized static int getId(String word)
     {
         if (word2id.containsKey(word)) {
             return word2id.get(word);
@@ -30,7 +30,7 @@ public class Vocabulary {
         return ret;
     }
 
-    public static String getWord(int id)
+    public synchronized static String getWord(int id)
     {
         if (id2word.containsKey(id)) {
             return id2word.get(id);
