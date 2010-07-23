@@ -39,8 +39,6 @@ public class HieroRuleExtractor implements RuleExtractor {
     private ArrayList<Feature> features;
     private int featureLength;
 
-    HashMap<IntPair,Collection<Integer>> labelsBySpan;
-
     /**
      * Default constructor. All it does is to initialize the list of
      * features to an empty list.
@@ -55,7 +53,6 @@ public class HieroRuleExtractor implements RuleExtractor {
         LEXICAL_MINIMUM = ThraxConfig.LEXICALITY;
         ALLOW_ADJACENT_NTS = ThraxConfig.ADJACENT;
         ALLOW_LOOSE_BOUNDS = ThraxConfig.LOOSE;
-        labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
         X_ID = Vocabulary.getId(ThraxConfig.DEFAULT_NT);
         if (HIERO_LABELS.isEmpty())
             HIERO_LABELS.add(X_ID);
@@ -72,16 +69,16 @@ public class HieroRuleExtractor implements RuleExtractor {
         Alignment alignment = new Alignment(inputs[2]);
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
-        computeAllLabels(phrasesByStart);
+        HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart);
 
         Queue<Rule> q = new LinkedList<Rule>();
         for (int i = 0; i < source.length; i++)
             q.offer(new Rule(source, target, alignment, i, NT_LIMIT));
 
-        return processQueue(q, phrasesByStart);
+        return processQueue(q, phrasesByStart, labelsBySpan);
     }
 
-    protected List<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart)
+    protected List<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart, HashMap<IntPair,Collection<Integer>> labelsBySpan)
     {
         int numPrototypes = 0;
         List<Rule> rules = new ArrayList<Rule>();
@@ -90,7 +87,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 
             if (isWellFormed(r)) {
                 numPrototypes++;
-                for (Rule s : getLabelVariants(r)) {
+                for (Rule s : getLabelVariants(r, labelsBySpan)) {
                     rules.add(s);
                 }
             }
@@ -152,7 +149,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         return (r.alignedWords >= LEXICAL_MINIMUM);
     }
 
-    protected Collection<Rule> getLabelVariants(Rule r)
+    protected Collection<Rule> getLabelVariants(Rule r, HashMap<IntPair,Collection<Integer>> labelsBySpan)
     {
         Collection<Rule> result = new HashSet<Rule>();
         Queue<Rule> q = new LinkedList<Rule>();
@@ -217,8 +214,9 @@ public class HieroRuleExtractor implements RuleExtractor {
     }
 
     static Collection<Integer> HIERO_LABELS = new ArrayList<Integer>();
-    protected void computeAllLabels(PhrasePair [][] phrases)
+    protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases)
     {
+        HashMap<IntPair,Collection<Integer>> labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
         for (PhrasePair [] plist : phrases) {
             for (PhrasePair pp : plist) {
                 int from = pp.targetStart;
@@ -227,5 +225,6 @@ public class HieroRuleExtractor implements RuleExtractor {
                 labelsBySpan.put(span, HIERO_LABELS);
             }
         }
+        return labelsBySpan;
     }
 }

@@ -38,7 +38,6 @@ public class Thrax {
             ThraxConfig.setVerbosity(argv[1]);
         try {
             ThraxConfig.configure(confFile);
-            final RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
 
             final Scorer scorer = new Scorer();
 
@@ -53,6 +52,7 @@ public class Thrax {
 
             final List<Rule> allRules = Collections.synchronizedList(new LinkedList<Rule>());
 
+	    final RuleExtractor extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
             final InputProvider inp = new InputProvider(extractor.requiredInputs());
             if (ThraxConfig.verbosity > 0)
                 System.err.println("Processing sentences.");
