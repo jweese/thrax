@@ -100,15 +100,23 @@ In the native Java implementation, the feature function interface consists of tw
 \begin{table}[t]
 \caption{Comparison of Thrax extraction to Joshua's built-in extractor and the SAMT extractor of Zollmann and Venugopal.}
 \begin{tabular}{l | l | l | r | r | r}
-Dataset & Sentences & Grammar & System & Time (sec.) & BLEU \\ \hline
+Dataset & Sentences & Grammar & System & Time (mm:ss) & BLEU \\ \hline
 % \multirow{4}{*}{BTEC zh-en} & \multirow{4}{*}{44K} & \multirow{2}{*}{Hiero} & Thrax & 360 & 25 \\
 % & & & Joshua & & \\
 % & & \multirow{2}{*}{SAMT} & Thrax & & \\
 % & & & ZV & & \\ \hline
-\multirow{4}{*}{NIST09 ur-en} & \multirow{4}{*}{165K} & \multirow{2}{*}{Hiero} & Thrax & & \\
+\multirow{4}{*}{NIST09 ur-en} & \multirow{4}{*}{165K} & \multirow{2}{*}{Hiero} & Thrax & 23:00 & 19.08 \\
+& & & Joshua & & 19.58 \\
+& & \multirow{2}{*}{SAMT} & Thrax & & \\
+& & & ZV & & \\ \hline
+\multirow{4}{*}{fbis zh-en} & \multirow{4}{*}{303K} & \multirow{2}{*}{Hiero} & Thrax & & \\
 & & & Joshua & & \\
 & & \multirow{2}{*}{SAMT} & Thrax & & \\
-& & & ZV & & \\
+& & & ZV & & \\ \hline
+\multirow{4}{*}{ar-en} & \multirow{4}{*}{987K} & \multirow{2}{*}{Hiero} & Thrax & & \\
+& & & Joshua & & \\
+& & \multirow{2}{*}{SAMT} & Thrax & & \\
+& & & ZV & & \\ \hline
 
 \end{tabular}
 \end{table}
