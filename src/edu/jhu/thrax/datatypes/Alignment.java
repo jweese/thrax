@@ -160,4 +160,30 @@ public class Alignment {
         return sb.toString();
     }
 
+    /**
+     * Determines whether this Alignment is consistent with the two sentences
+     * that it is supposed to be an alignment for.
+     *
+     * @param src the length of the source-side sentence
+     * @param tgt the length of the target-side sentence
+     * @return true if this Alignment will not cause index-out-of-bounds errors,
+     * false otherwise
+     */
+    public boolean consistent(int src, int tgt)
+    {
+        for (int [] xs : f2e) {
+            for (int x : xs) {
+                if (x < 0 || x >= tgt)
+                    return false;
+            }
+        }
+        for (int [] ys : e2f) {
+            for (int y : ys) {
+                if (y < 0 || y >= src)
+                    return false;
+            }
+        }
+        return true;
+    }
+
 }

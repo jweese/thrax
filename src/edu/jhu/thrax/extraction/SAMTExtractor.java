@@ -42,6 +42,11 @@ public class SAMTExtractor extends HieroRuleExtractor {
         lattice = new LatticeArray(parse);
         int [] target = yield(parse);
 
+        if (!alignment.consistent(source.length, target.length)) {
+            System.err.println("WARNING: inconsistent alignment (skipping)");
+            return null;
+        }
+
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
         HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart);
 
