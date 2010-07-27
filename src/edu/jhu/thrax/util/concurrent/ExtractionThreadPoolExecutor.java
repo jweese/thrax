@@ -26,7 +26,7 @@ public class ExtractionThreadPoolExecutor extends ThreadPoolExecutor {
         }
     }
 
-    protected void afterExecture(Runnable r, Throwable t)
+    protected void afterExecute(Runnable r, Throwable t)
     {
         super.afterExecute(r, t);
         ExtractionTask et = (ExtractionTask) r;
