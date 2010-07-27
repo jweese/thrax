@@ -15,11 +15,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ArrayBlockingQueue;
+import edu.jhu.thrax.util.concurrent.ExtractionTask;
+import edu.jhu.thrax.util.concurrent.ExtractionThreadPoolExecutor;
 
 /**
  * The main class for the Thrax extractor.
@@ -57,21 +56,23 @@ public class Thrax {
             if (ThraxConfig.verbosity > 0)
                 System.err.println("Processing sentences.");
 
-            BlockingQueue<Runnable> q = new ArrayBlockingQueue<Runnable>(1000);
-            ExecutorService exec = Executors.newFixedThreadPool(ThraxConfig.THREADS);
+            ExecutorService exec = new ExtractionThreadPoolExecutor();
+
+            int numLines = 0;
 
             while (inp.hasNext()) {
-                exec.execute(new Runnable(){
-                    public void run() {
-                        String [] inputs = inp.next();
-                        if (inputs == null)
-                            return;
-                        for (Rule r : extractor.extract(inputs)) {
-                            scorer.noteExtraction(r);
-                            allRules.add(r);
-                        }
-                    }
-                });
+                numLines++;
+                exec.execute(new ExtractionTask(numLines, extractor, scorer, allRules, inp.next())); // Runnable(){
+//                    public void run() {
+//                        String [] inputs = inp.next();
+//                        if (inputs == null)
+//                            return;
+//                        for (Rule r : extractor.extract(inputs)) {
+//                            scorer.noteExtraction(r);
+//                            allRules.add(r);
+//                        }
+//                    }
+//                });
             }
             exec.shutdown();
             exec.awaitTermination(60, TimeUnit.SECONDS);

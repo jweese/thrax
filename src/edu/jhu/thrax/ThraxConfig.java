@@ -114,6 +114,11 @@ public class ThraxConfig {
     public static int THREADS = 1;
 
     /**
+     * Number of sentences to hold in memory while threads are busy processing.
+     */
+    public static int QUEUE_SIZE = 200;
+
+    /**
      * Default nonterminal symbol. This is the only NT in Hiero grammars, and
      * it is used when no other symbol is possible in an SAMT grammar.
      */
@@ -212,6 +217,9 @@ public class ThraxConfig {
             }
             else if ("threads".equals(key)) {
                 THREADS = Integer.parseInt(value);
+            }
+            else if ("queue-size".equals(key)) {
+                QUEUE_SIZE = Integer.parseInt(value);
             }
             else if ("hadoop".equals(key)) {
                 HADOOP = Boolean.parseBoolean(value);

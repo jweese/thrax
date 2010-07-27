@@ -40,7 +40,12 @@ public class Alignment {
         IntPair [] ips = new IntPair[ts.length];
         int i = 0;
         for (String t : ts) {
-            ips[i++] = IntPair.alignmentFormat(t);
+            IntPair ip = IntPair.alignmentFormat(t);
+            if (ip == null) {
+                System.err.println("WARNING: malformed alignment " + t + " (skipping)");
+                continue;
+            }
+            ips[i++] = ip;
         }
 
         Arrays.sort(ips);
