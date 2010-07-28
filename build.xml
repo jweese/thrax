@@ -1,10 +1,13 @@
 <project name="Thrax" basedir="." default="compile">
 
+    <property environment="env"/>
+
     <property name="src" value="./src"/>
     <property name="build" value="./bin"/>
     <property name="lib" value="./lib"/>
     <property name="doc" value="./doc"/>
     <property name="test" value="./test"/>
+    <property name="hadoop-src" value="edu/jhu/thrax/hadoop"/>
 
     <property name="testng" value="${lib}/testng-5.8-jdk15.jar"/>
 
@@ -15,7 +18,8 @@
 
     <target name="compile" depends="init">
         <javac srcdir="${src}" destdir="${build}"
-            debug="on" includeantruntime="false" />
+            debug="on" includeantruntime="false"
+            excludes="${hadoop-src}/**" />
     </target>
 
     <target name="jar" depends="compile">
@@ -35,6 +39,16 @@
                 <include name="**/*.java"/>
             </fileset>
         </jar>
+    </target>
+
+    <target name="init-hadoop" unless="env.HADOOP">
+        <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation."/>
+    </target>
+
+    <target name="hadoop" depends="init-hadoop">
+        <javac srcdir="${src}" destdir="${build}"
+            debug="on" includeantruntime="false"
+            includes="${hadoop-src}/**" />
     </target>
 
     <target name="clean">
