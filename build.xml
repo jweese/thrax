@@ -41,12 +41,14 @@
         </jar>
     </target>
 
-    <target name="init-hadoop" unless="env.HADOOP">
-        <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation."/>
+    <target name="init-hadoop">
+        <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation." unless="env.HADOOP"/>
+        <fail message="Please set the $HADOOP_VERSION environment variable to the version number of your Hadoop installation." unless="env.HADOOP_VERSION"/>
     </target>
 
-    <target name="hadoop" depends="init-hadoop">
+    <target name="hadoop" depends="init,init-hadoop">
         <javac srcdir="${src}" destdir="${build}"
+            classpath="${env.HADOOP}/hadoop-${env.HADOOP_VERSION}-core.jar"
             debug="on" includeantruntime="false"
             includes="${hadoop-src}/**" />
     </target>
