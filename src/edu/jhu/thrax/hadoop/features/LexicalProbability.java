@@ -17,6 +17,7 @@ import java.io.IOException;
 public class LexicalProbability
 {
     public static final Text UNALIGNED = new Text("/UNALIGNED/");
+    public static final Text MARGINAL = new Text("/MARGINAL/");
 
     private static class Map extends Mapper<LongWritable, Text, IntPair, IntWritable>
     {
