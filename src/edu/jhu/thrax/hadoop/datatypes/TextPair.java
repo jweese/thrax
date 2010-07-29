@@ -122,7 +122,7 @@ public class TextPair implements WritableComparable<TextPair>
             try {
                 int length1 = WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
                 int length2 = WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
-                int cmp = TEXT_COMPARATOR.compare(b1, s2, length1, b2, s2, length2);
+                int cmp = TEXT_COMPARATOR.compare(b1, s1, length1, b2, s2, length2);
                 if (cmp != 0) {
                     return cmp;
                 }

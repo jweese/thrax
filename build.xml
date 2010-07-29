@@ -43,6 +43,17 @@
         </jar>
     </target>
 
+    <target name="hadoop-jar" depends="compile,hadoop">
+        <jar destfile="${build}/thrax-hadoop.jar">
+            <manifest>
+                <attribute name="Main-Class" value="edu.jhu.thrax.hadoop.features.LexicalProbability"/>
+            </manifest>
+            <fileset dir="${build}">
+                <include name="**/*.class"/>
+            </fileset>
+        </jar>
+    </target>
+
     <target name="init-hadoop">
         <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation." unless="env.HADOOP"/>
         <fail message="Please set the $HADOOP_VERSION environment variable to the version number of your Hadoop installation." unless="env.HADOOP_VERSION"/>
