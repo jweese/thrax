@@ -133,5 +133,28 @@ public class RuleWritable implements Writable
         return result;
     }
 
+    public boolean equals(Object o)
+    {
+        if (o instanceof RuleWritable) {
+            RuleWritable that = (RuleWritable) o;
+            return lhs.equals(that.lhs) &&
+                   source.equals(that.source) &&
+                   target.equals(that.target) &&
+                   f2e.equals(that.f2e) &&
+                   e2f.equals(that.e2f);
+        }
+        return false;
+    }
+
+    public int hashCode()
+    {
+        int result = 163;
+        result = 37 * result + lhs.hashCode();
+        result = 37 * result + source.hashCode();
+        result = 37 * result + target.hashCode();
+        result = 37 * result + f2e.hashCode();
+        result = 37 * result + e2f.hashCode();
+        return result;
+    }
 }
 
