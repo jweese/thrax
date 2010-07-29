@@ -19,7 +19,9 @@
     <target name="compile" depends="init">
         <javac srcdir="${src}" destdir="${build}"
             debug="on" includeantruntime="false"
-            excludes="${hadoop-src}/**" />
+            excludes="${hadoop-src}/**">
+            <compilerarg value="-Xlint"/>
+        </javac>
     </target>
 
     <target name="jar" depends="compile">
@@ -50,7 +52,9 @@
         <javac srcdir="${src}" destdir="${build}"
             classpath="${env.HADOOP}/hadoop-${env.HADOOP_VERSION}-core.jar"
             debug="on" includeantruntime="false"
-            includes="${hadoop-src}/**" />
+            includes="${hadoop-src}/**">
+            <compilerarg value="-Xlint"/>
+        </javac>
     </target>
 
     <target name="clean">

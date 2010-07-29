@@ -24,6 +24,13 @@ public class IntPair implements WritableComparable<IntPair>
         snd = cdr;
     }
 
+    public void reverse()
+    {
+        int tmp = fst;
+        fst = snd;
+        snd = tmp;
+    }
+
     public void write(DataOutput out) throws IOException
     {
         out.writeInt(fst);
