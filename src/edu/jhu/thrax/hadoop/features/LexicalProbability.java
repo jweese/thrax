@@ -19,6 +19,7 @@ public class LexicalProbability
     public static final Text UNALIGNED = new Text("/UNALIGNED/");
     public static final Text MARGINAL = new Text("/MARGINAL/");
     public static final byte [] MARGINAL_BYTES = MARGINAL.getBytes();
+    public static final int MARGINAL_LENGTH = MARGINAL.getLength();
 
     private static class Map extends Mapper<LongWritable, Text, IntPair, IntWritable>
     {
