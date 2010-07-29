@@ -96,8 +96,6 @@ public class LexicalProbability
             int myCount = 0;
             for (IntWritable x : values)
                 myCount += x.get();
-            System.err.print(key);
-            System.err.println(String.format("\t%d\t%d", myCount, marginalCount));
             context.write(key, new DoubleWritable(-1 * Math.log(myCount / (double) marginalCount)));
         }
     }
