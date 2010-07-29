@@ -8,6 +8,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.fs.Path;
@@ -103,19 +104,6 @@ public class LexicalProbability
         }
     }
 
-
-    private static class Combine extends Reducer<TextPair, IntWritable, TextPair, IntWritable>
-    {
-        protected void reduce(TextPair key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
-        {
-            int total = 0;
-            for (IntWritable x : values) {
-                total += x.get();
-            }
-            context.write(key, new IntWritable(total));
-        }
-    }
-
     private static class Reduce extends Reducer<TextPair, IntWritable, TextPair, DoubleWritable>
     {
         private Text current = new Text();
@@ -153,7 +141,7 @@ public class LexicalProbability
         Job result = new Job();
         result.setMapperClass(SourceGivenTargetMap.class);
         result.setReducerClass(Reduce.class);
-        result.setCombinerClass(Combine.class);
+        result.setCombinerClass(IntSumReducer.class);
         result.setPartitionerClass(Partition.class);
         result.setSortComparatorClass(TextPair.MarginalComparator.class);
 
