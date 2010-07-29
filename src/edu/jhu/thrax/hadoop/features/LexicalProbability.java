@@ -28,7 +28,7 @@ public class LexicalProbability
     public static final byte [] MARGINAL_BYTES = MARGINAL.getBytes();
     public static final int MARGINAL_LENGTH = MARGINAL.getLength();
 
-    private static class Map extends Mapper<LongWritable, Text, TextPair, IntWritable>
+    private static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
@@ -63,6 +63,46 @@ public class LexicalProbability
             }
         }
     }
+
+    private static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
+    {
+        private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
+
+        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
+        {
+            counts.clear();
+
+            String line = value.toString();
+            String [] parts = line.trim().split(ThraxConfig.DELIMITER_REGEX);
+            String [] source = parts[0].trim().split("\\s+");
+            String [] target = parts[1].trim().split("\\s+");
+            Alignment alignment = new Alignment(parts[2].trim());
+
+            for (int i = 0; i < target.length; i++) {
+                Text tgt = new Text(target[i]);
+                if (alignment.targetIsAligned(i)) {
+                    for (int x : alignment.e2f[i]) {
+                        Text src = new Text(source[x]);
+                        TextPair tp = new TextPair(tgt, src);
+                        counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
+                    }
+                    TextPair m = new TextPair(tgt, MARGINAL);
+                    counts.put(m, counts.containsKey(m) ? counts.get(m) + alignment.e2f[i].length : alignment.e2f[i].length);
+                }
+                else {
+                    TextPair u = new TextPair(tgt, UNALIGNED);
+                    counts.put(u, counts.containsKey(u) ? counts.get(u) + 1 : 1);
+                    TextPair m = new TextPair(tgt, MARGINAL);
+                    counts.put(m, counts.containsKey(m) ? counts.get(m) + 1 : 1);
+                }
+            }
+
+            for (TextPair tp : counts.keySet()) {
+                context.write(tp, new IntWritable(counts.get(tp)));
+            }
+        }
+    }
+
 
     private static class Combine extends Reducer<TextPair, IntWritable, TextPair, IntWritable>
     {
@@ -111,7 +151,7 @@ public class LexicalProbability
     public static Job getJob() throws IOException
     {
         Job result = new Job();
-        result.setMapperClass(Map.class);
+        result.setMapperClass(SourceGivenTargetMap.class);
         result.setReducerClass(Reduce.class);
         result.setCombinerClass(Combine.class);
         result.setPartitionerClass(Partition.class);
