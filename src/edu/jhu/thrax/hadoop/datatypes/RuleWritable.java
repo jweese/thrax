@@ -38,12 +38,22 @@ public class RuleWritable implements Writable
 
     public void write(DataOutput out) throws IOException
     {
-
+        lhs.write(out);
+        source.write(out);
+        target.write(out);
+        f2e.write(out);
+        e2f.write(out);
+        features.write(out);
     }
 
     public void readFields(DataInput in) throws IOException
     {
-
+        lhs.readFields(in);
+        source.readFields(in);
+        target.readFields(in);
+        f2e.readFields(in);
+        e2f.readFields(in);
+        features.readFields(in);
     }
 
 }
