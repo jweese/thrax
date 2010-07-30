@@ -3,7 +3,9 @@ package edu.jhu.thrax.hadoop.datatypes;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.TwoDArrayWritable;
 import org.apache.hadoop.io.MapWritable;
-import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableUtils;
+import org.apache.hadoop.io.WritableComparator;
+import org.apache.hadoop.io.WritableComparable;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -14,7 +16,7 @@ import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.datatypes.Rule;
 import edu.jhu.thrax.hadoop.features.LexicalProbability;
 
-public class RuleWritable implements Writable
+public class RuleWritable implements WritableComparable<RuleWritable>
 {
     public Text lhs;
     public Text source;
@@ -155,6 +157,65 @@ public class RuleWritable implements Writable
         result = 37 * result + f2e.hashCode();
         result = 37 * result + e2f.hashCode();
         return result;
+    }
+
+    public int compareTo(RuleWritable that)
+    {
+        int cmp = lhs.compareTo(that.lhs);
+        if (cmp != 0)
+            return cmp;
+        cmp = source.compareTo(that.source);
+        if (cmp != 0)
+            return cmp;
+        return target.compareTo(that.target);
+    }
+
+    public static class YieldComparator extends WritableComparator
+    {
+        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        public YieldComparator()
+        {
+            super(RuleWritable.class);
+        }
+
+        public int compare(byte [] b1, int s1, int l1,
+                           byte [] b2, int s2, int l2)
+        {
+            try {
+                int cmp;
+                int vis1 = WritableUtils.decodeVIntSize(b1[s1]);
+                int vi1 = readVInt(b1, s1);
+                int len1 = vis1 + vi1;
+                int vis2 = WritableUtils.decodeVIntSize(b2[s2]);
+                int vi2 = readVInt(b2, s2);
+                int len2 = vis2 + vi2;
+
+                cmp = TEXT_COMPARATOR.compare(b1, s1, len1, b2, s2, len2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                vis1 = WritableUtils.decodeVIntSize(b1[s1 + len1]);
+                vi1 = readVInt(b1, s1 + len1);
+                int start1 = s1 + len1;
+                len1 = vis1 + vi1;
+                vis2 = WritableUtils.decodeVIntSize(b2[s2 + len2]);
+                vi2 = readVInt(b2, s2 + len2);
+                int start2 = s2 + len2;
+                len2 = vis2 + vi2;
+                cmp = TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                return TEXT_COMPARATOR.compare(b1, start1 + len1, l1 - start1 - len1, b2, start2 + len2, l2 - start2 - len2);
+            }
+            catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+
+    static {
+        WritableComparator.define(RuleWritable.class, new YieldComparator());
     }
 }
 
