@@ -107,11 +107,55 @@ public class TextPair implements WritableComparable<TextPair>
         WritableComparator.define(TextPair.class, new Comparator());
     }
 
-    public static class MarginalComparator extends WritableComparator
+    public static class FstMarginalComparator extends WritableComparator
     {
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
 
-        public MarginalComparator()
+        public FstMarginalComparator()
+        {
+            super(TextPair.class);
+        }
+
+        public int compare(byte [] b1, int s1, int l1,
+                           byte [] b2, int s2, int l2)
+        {
+            try {
+                int vis1 = WritableUtils.decodeVIntSize(b1[s1]);
+                int vi1 = readVInt(b1, s1);
+                int vis2 = WritableUtils.decodeVIntSize(b2[s2]);
+                int vi2 = readVInt(b2, s2);
+
+                int length1 = vis1 + vi1;
+                int length2 = vis2 + vi2;
+
+                int cmp = TEXT_COMPARATOR.compare(b1, s1 + length1, l1 - length1,
+                                                  b2, s2 + length2, l2 - length2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                cmp = TEXT_COMPARATOR.compare(b1, s1, length1, b2, s2, length2);
+                if (cmp == 0) {
+                    return 0;
+                }
+                if (compareBytes(b1, s1 + vis1, vi1, LexicalProbability.MARGINAL_BYTES, 0, LexicalProbability.MARGINAL_LENGTH) == 0) {
+                    return -1;
+                }
+                else if (compareBytes(b2, s2 + vis2, vi2, LexicalProbability.MARGINAL_BYTES, 0, LexicalProbability.MARGINAL_LENGTH) == 0) {
+                    return 1;
+                }
+                return cmp;
+            }
+            catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+
+    public static class SndMarginalComparator extends WritableComparator
+    {
+        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+
+        public SndMarginalComparator()
         {
             super(TextPair.class);
         }

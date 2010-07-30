@@ -143,7 +143,7 @@ public class LexicalProbability
         result.setReducerClass(Reduce.class);
         result.setCombinerClass(IntSumReducer.class);
         result.setPartitionerClass(Partition.class);
-        result.setSortComparatorClass(TextPair.MarginalComparator.class);
+        result.setSortComparatorClass(TextPair.SndMarginalComparator.class);
 
         result.setMapOutputKeyClass(TextPair.class);
         result.setMapOutputValueClass(IntWritable.class);
