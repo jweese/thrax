@@ -71,10 +71,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         int numPairs = 0;
         for (int i = r.rhs.sourceStart; i < r.rhs.sourceEnd; i++) {
             if (r.sourceLex[i] == 0) {
-                if (r.alignment.sourceIsAligned(i))
-                    numPairs += r.alignment.f2e[i].length;
-                else
-                    numPairs += 1;
+                numPairs++;
             }
         }
         Text [][] result = new Text[numPairs][];
@@ -83,19 +80,19 @@ public class RuleWritable implements WritableComparable<RuleWritable>
             if (r.sourceLex[i] == 0) {
                 Text src = new Text(Vocabulary.getWord(r.source[i]));
                 if (r.alignment.sourceIsAligned(i)) {
+                    result[idx] = new Text[r.alignment.f2e[i].length + 1];
+                    result[idx][0] = src;
+                    int j = 1;
                     for (int x : r.alignment.f2e[i]) {
-                        result[idx] = new Text[2];
-                        result[idx][0] = src;
-                        result[idx][1] = new Text(Vocabulary.getWord(r.target[x]));
-                        idx++;
+                        result[idx][j++] = new Text(Vocabulary.getWord(r.target[x]));
                     }
                 }
                 else {
                     result[idx] = new Text[2];
                     result[idx][0] = src;
                     result[idx][1] = LexicalProbability.UNALIGNED;
-                    idx++;
                 }
+                idx++;
             }
         }
         return result;
@@ -106,10 +103,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         int numPairs = 0;
         for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
             if (r.targetLex[i] == 0) {
-                if (r.alignment.targetIsAligned(i))
-                    numPairs += r.alignment.e2f[i].length;
-                else
-                    numPairs += 1;
+                numPairs++;
             }
         }
         Text [][] result = new Text[numPairs][];
@@ -118,11 +112,11 @@ public class RuleWritable implements WritableComparable<RuleWritable>
             if (r.targetLex[i] == 0) {
                 Text tgt = new Text(Vocabulary.getWord(r.target[i]));
                 if (r.alignment.targetIsAligned(i)) {
+                    result[idx] = new Text[r.alignment.e2f[i].length + 1];
+                    result[idx][0] = tgt;
+                    int j = 1;
                     for (int x : r.alignment.e2f[i]) {
-                        result[idx] = new Text[2];
-                        result[idx][0] = tgt;
-                        result[idx][1] = new Text(Vocabulary.getWord(r.source[x]));
-                        idx++;
+                        result[idx][j++] = new Text(Vocabulary.getWord(r.source[x]));
                     }
                 }
                 else {
@@ -130,6 +124,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                     result[idx][0] = tgt;
                     result[idx][1] = LexicalProbability.UNALIGNED;
                 }
+                idx++;
             }
         }
         return result;
