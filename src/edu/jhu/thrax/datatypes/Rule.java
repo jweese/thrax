@@ -144,12 +144,12 @@ public class Rule {
         ret.target = this.target;
         ret.alignment = this.alignment;
 
-        ret.nts = (int []) this.nts.clone();
+        ret.nts = this.nts.clone();
         ret.numNTs = this.numNTs;
         ret.sourceEndsWithNT = this.sourceEndsWithNT;
 
-        ret.sourceLex = (byte []) this.sourceLex.clone();
-        ret.targetLex = (byte []) this.targetLex.clone();
+        ret.sourceLex = this.sourceLex.clone();
+        ret.targetLex = this.targetLex.clone();
 
         ret.appendPoint = this.appendPoint;
         ret.alignedWords = this.alignedWords;

@@ -13,7 +13,7 @@ public class ExtractionThreadPoolExecutor extends ThreadPoolExecutor {
     {
         super(ThraxConfig.THREADS, ThraxConfig.THREADS,
               15, TimeUnit.SECONDS,
-              new ArrayBlockingQueue(ThraxConfig.QUEUE_SIZE),
+              new ArrayBlockingQueue<Runnable>(ThraxConfig.QUEUE_SIZE),
               new ThreadPoolExecutor.CallerRunsPolicy());
     }
 
