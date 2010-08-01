@@ -22,11 +22,43 @@ Usage: `basename $0` [options] <configuration file>
 Options:
   -d, --debug                       enable debugging output
   -h, --help                        print this help message and exit
+  -H, --hadoop                      use Hadoop for extraction
   -m AMOUNT, --mem AMOUNT:          maximum memory for Java VM 
   -q, --quiet                       suppress all output except rules
   -v, --verbose                     enable verbose output
   -V, --version                     print version information and exit
 END_USAGE
+}
+
+jvm () {
+    JVM_OPTS="-Dfile.encoding=utf8"
+    if [[ -f $THRAX/bin/thrax.jar ]]
+    then
+        java -Xmx${mem} $JVM_OPTS -jar $THRAX/bin/thrax.jar $config $verbosity
+    else
+        java -Xmx${mem} $JVM_OPTS -cp $THRAX/bin edu.jhu.thrax.Thrax $config $verbosity
+    fi
+}
+
+hadoop () {
+    if [[ -z "$HADOOP" ]]
+    then
+        echo "please set the $$HADOOP environment variable to point to your hadoop installation."
+        exit 1
+    fi
+    if [[ -z "$HADOOP_VERSION" ]]
+    then
+        echo "please set the $$HADOOP_VERSION environment variable to your hadoop version number."
+        exit 1
+    fi
+    ./lib/getoption.pl $config features | grep -q lex
+    if [[ $? == 0 ]]
+    then
+        echo "lexical probability feature"
+        # do the lexprob-dependent hadoop job here
+        # hadoop fs merge etc etc
+    fi
+    # then we will run a bunch of hadoop jobs to do the extraction
 }
 
 while [[ -n "$@" ]]
@@ -53,6 +85,9 @@ do
         -q|--quiet)
             verbosity="quiet"
             ;;
+        -H|--hadoop)
+            hadoop="yes"
+            ;;
         *)
             if [[ -z "$config" ]]
             then
@@ -73,11 +108,10 @@ then
     mem="1g"
 fi
 
-JVM_OPTS="-Dfile.encoding=utf8"
-if [[ -f $THRAX/bin/thrax.jar ]]
+if [[ -z "$hadoop" ]]
 then
-    java -Xmx${mem} $JVM_OPTS -jar $THRAX/bin/thrax.jar $config $verbosity
+    jvm
 else
-    java -Xmx${mem} $JVM_OPTS -cp $THRAX/bin edu.jhu.thrax.Thrax $config $verbosity
+    hadoop
 fi
 

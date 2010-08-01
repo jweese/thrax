@@ -8,6 +8,9 @@ open CONF, $ARGV[0] or die "$!";
 my $key = $ARGV[1];
 while (<CONF>) {
     s/#.*//;
-    print if /^$key\s+/;
+    if (/^$key\s+/) {
+        s/$key\s+//;
+        print;
+    }
 }
 
