@@ -18,6 +18,7 @@ import edu.jhu.thrax.hadoop.features.LexicalProbability;
 
 public class RuleWritable implements WritableComparable<RuleWritable>
 {
+    private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
     public Text lhs;
     public Text source;
     public Text target;
@@ -37,7 +38,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
 
     public RuleWritable(Rule r)
     {
-        String [] parts = r.toString().split(ThraxConfig.DELIMITER);
+        String [] parts = r.toString().split(ThraxConfig.DELIMITER_REGEX);
         lhs = new Text(parts[0].trim());
         source = new Text(parts[1].trim());
         target = new Text(parts[2].trim());
@@ -152,6 +153,17 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         result = 37 * result + f2e.hashCode();
         result = 37 * result + e2f.hashCode();
         return result;
+    }
+
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append(lhs.toString());
+        sb.append(DELIM);
+        sb.append(source.toString());
+        sb.append(DELIM);
+        sb.append(target.toString());
+        return sb.toString();
     }
 
     public int compareTo(RuleWritable that)

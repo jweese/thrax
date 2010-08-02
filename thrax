@@ -41,7 +41,6 @@ jvm () {
 }
 
 run_hadoop () {
-    files="$config"
     if [[ -z "$HADOOP" ]]
     then
         echo "please set the $$HADOOP environment variable to point to your hadoop installation."
@@ -73,18 +72,31 @@ run_hadoop () {
         echo "Please set the 'hadoop-work-dir' key in your Thrax conf file."
         exit 1
     fi
-    if ./lib/getoption.pl $config features | grep -q lex
+    mkdir -p $LOCAL_WORK
+    cp $config $LOCAL_WORK/thrax.config
+    files="$LOCAL_WORK/thrax.config"
+    if ./lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
     then
         # do the lexprob-dependent hadoop job here
         hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.LexicalProbability $INPUT_FILE $HADOOP_WORK/lexprobs
-        mkdir -p $LOCAL_WORK
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
         files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
     fi
     # then we will run a bunch of hadoop jobs to do the extraction
-    hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.Thrax -files $files $INPUT_FILE $HADOOP_WORK
+    hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.Thrax -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
     # now either hadoop fs -cat or hadoop fs -getmerge
+    outfile=`./lib/getoption.pl $config output`
+    if [[ -z "$outfile" || "$outfile" = "stdout" ]]
+    then
+        hadoop fs -cat $HADOOP_WORK/rules/* | sort -u
+    elif [[ `./lib/getoption.pl $config gzip` = "true" ]]
+    then
+        hadoop fs -cat $HADOOP_WORK/rules/* | sort -u | gzip >$outfile
+    else
+        hadoop fs -getmerge $HADOOP_WORK/rules $outfile.tmp && sort -u $outfile.tmp -o $outfile && rm $outfile.tmp
+    fi
+
 }
 
 while [[ -n "$@" ]]

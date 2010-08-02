@@ -47,7 +47,7 @@ public class IntPair implements Comparable<IntPair> {
      * @param s a string in Berkeley aligner format
      * @return a new IntPair representing that string
      */
-    static IntPair alignmentFormat(String s)
+    public static IntPair alignmentFormat(String s)
     {
         String [] nums = s.split("-");
         if (nums.length != 2) {

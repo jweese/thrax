@@ -140,6 +140,11 @@ public class ThraxConfig {
     public static String INPUT_FILE = "";
 
     /**
+     * Label feature scores with feature names?
+     */
+    public static boolean LABEL_FEATURE_SCORES = false;
+
+    /**
      * Sets the various static configuration variables by reading them from
      * a configuration file.
      *
@@ -229,6 +234,9 @@ public class ThraxConfig {
             }
             else if ("input-file".equals(key)) {
                 INPUT_FILE = value;
+            }
+            else if ("label-feature-scores".equals(key)) {
+                LABEL_FEATURE_SCORES = Boolean.parseBoolean(value);
             }
         }
     }
