@@ -45,9 +45,6 @@
 
     <target name="hadoop-jar" depends="compile,hadoop">
         <jar destfile="${build}/thrax-hadoop.jar">
-            <manifest>
-                <attribute name="Main-Class" value="edu.jhu.thrax.hadoop.features.LexicalProbability"/>
-            </manifest>
             <fileset dir="${build}">
                 <include name="**/*.class"/>
             </fileset>

@@ -13,6 +13,9 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -22,7 +25,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class LexicalProbability
+public class LexicalProbability extends Configured implements Tool
 {
     public static final Text UNALIGNED = new Text("/UNALIGNED/");
     public static final Text MARGINAL = new Text("/MARGINAL/");
@@ -136,47 +139,64 @@ public class LexicalProbability
         }
     }
 
-    public static Job getJob() throws IOException
+    public int run(String [] argv) throws Exception
     {
-        Job result = new Job();
-        result.setMapperClass(SourceGivenTargetMap.class);
-        result.setReducerClass(Reduce.class);
-        result.setCombinerClass(IntSumReducer.class);
-        result.setPartitionerClass(Partition.class);
-        result.setSortComparatorClass(TextPair.SndMarginalComparator.class);
+        String f2eOut;
+        String e2fOut;
+        if (argv[1].endsWith(Path.SEPARATOR)) {
+            f2eOut = argv[1] + "f2e";
+            e2fOut = argv[1] + "e2f";
+        }
+        else {
+            f2eOut = argv[1] + Path.SEPARATOR + "f2e";
+            e2fOut = argv[1] + Path.SEPARATOR + "e2f";
+        }
+        Configuration conf = getConf();
+        Job job = new Job(conf, "lexprob-f2e");
+        job.setJarByClass(LexicalProbability.class);
+        job.setMapperClass(TargetGivenSourceMap.class);
+        job.setReducerClass(Reduce.class);
+        job.setCombinerClass(IntSumReducer.class);
+        job.setPartitionerClass(Partition.class);
+        job.setSortComparatorClass(TextPair.SndMarginalComparator.class);
 
-        result.setMapOutputKeyClass(TextPair.class);
-        result.setMapOutputValueClass(IntWritable.class);
-        result.setOutputKeyClass(TextPair.class);
-        result.setOutputValueClass(DoubleWritable.class);
-        return result;
+        job.setMapOutputKeyClass(TextPair.class);
+        job.setMapOutputValueClass(IntWritable.class);
+        job.setOutputKeyClass(TextPair.class);
+        job.setOutputValueClass(DoubleWritable.class);
+
+        FileInputFormat.setInputPaths(job, new Path(argv[0]));
+        FileOutputFormat.setOutputPath(job, new Path(f2eOut));
+        job.waitForCompletion(true);
+
+        Job e2fjob = new Job(conf, "lexprob-e2f");
+        e2fjob.setJarByClass(LexicalProbability.class);
+        e2fjob.setMapperClass(SourceGivenTargetMap.class);
+        e2fjob.setReducerClass(Reduce.class);
+        e2fjob.setCombinerClass(IntSumReducer.class);
+        e2fjob.setPartitionerClass(Partition.class);
+        e2fjob.setSortComparatorClass(TextPair.SndMarginalComparator.class);
+
+        e2fjob.setMapOutputKeyClass(TextPair.class);
+        e2fjob.setMapOutputValueClass(IntWritable.class);
+        e2fjob.setOutputKeyClass(TextPair.class);
+        e2fjob.setOutputValueClass(DoubleWritable.class);
+
+        FileInputFormat.setInputPaths(e2fjob, new Path(argv[0]));
+        FileOutputFormat.setOutputPath(e2fjob, new Path(e2fOut));
+        e2fjob.waitForCompletion(true);
+
+        return 0;
     }
 
-    public static void main(String [] argv)
+    public static void main(String [] argv) throws Exception
     {
         if (argv.length < 2) {
             System.err.println("usage: hadoop jar <jar> <input> <output>");
             return;
         }
-        try {
-            Job theJob = getJob();
-            theJob.setJobName("lexprobs");
-            theJob.setJarByClass(LexicalProbability.class);
-            FileInputFormat.setInputPaths(theJob, new Path(argv[0]));
-            FileOutputFormat.setOutputPath(theJob, new Path(argv[1]));
-            theJob.submit();
-            return;
-        }
-        catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-        catch (InterruptedException e) {
-            System.err.println(e.getMessage());
-        }
-        catch (ClassNotFoundException e) {
-            System.err.println(e.getMessage());
-        }
+        int result = ToolRunner.run(new Configuration(), new LexicalProbability(), argv);
+        System.exit(result);
     }
-
 }
 

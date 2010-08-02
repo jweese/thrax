@@ -9,7 +9,8 @@ my $key = $ARGV[1];
 while (<CONF>) {
     s/#.*//;
     if (/^$key\s+/) {
-        s/$key\s+//;
+        s/^$key\s+//;
+        s/\s+$//;
         print;
     }
 }

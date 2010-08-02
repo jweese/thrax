@@ -40,7 +40,8 @@ jvm () {
     fi
 }
 
-hadoop () {
+run_hadoop () {
+    files="$config"
     if [[ -z "$HADOOP" ]]
     then
         echo "please set the $$HADOOP environment variable to point to your hadoop installation."
@@ -51,14 +52,39 @@ hadoop () {
         echo "please set the $$HADOOP_VERSION environment variable to your hadoop version number."
         exit 1
     fi
-    ./lib/getoption.pl $config features | grep -q lex
-    if [[ $? == 0 ]]
+    INPUT_FILE=`./lib/getoption.pl $config input-file`
+    if [[ -z "$INPUT_FILE" ]]
     then
-        echo "lexical probability feature"
+        echo "No unified input file given; cannot run on hadoop."
+        echo "Please set the 'input-file' key in your Thrax conf file."
+        exit 1
+    fi
+    LOCAL_WORK=`./lib/getoption.pl $config work-dir`
+    if [[ -z "$LOCAL_WORK" ]]
+    then
+        echo "No local work directory specified!"
+        echo "Please set the 'work-dir' key in your Thrax conf file."
+        exit 1
+    fi
+    HADOOP_WORK=`./lib/getoption.pl $config hadoop-work-dir`
+    if [[ -z "$HADOOP_WORK" ]]
+    then
+        echo "No working directory for hadoop specified!"
+        echo "Please set the 'hadoop-work-dir' key in your Thrax conf file."
+        exit 1
+    fi
+    if ./lib/getoption.pl $config features | grep -q lex
+    then
         # do the lexprob-dependent hadoop job here
-        # hadoop fs merge etc etc
+        hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.LexicalProbability $INPUT_FILE $HADOOP_WORK/lexprobs
+        mkdir -p $LOCAL_WORK
+        hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
+        hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
+        files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
     fi
     # then we will run a bunch of hadoop jobs to do the extraction
+    hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.Thrax -files $files $INPUT_FILE $HADOOP_WORK
+    # now either hadoop fs -cat or hadoop fs -getmerge
 }
 
 while [[ -n "$@" ]]
@@ -86,7 +112,7 @@ do
             verbosity="quiet"
             ;;
         -H|--hadoop)
-            hadoop="yes"
+            run_with_hadoop="yes"
             ;;
         *)
             if [[ -z "$config" ]]
@@ -108,10 +134,10 @@ then
     mem="1g"
 fi
 
-if [[ -z "$hadoop" ]]
+if [[ -z "$run_with_hadoop" ]]
 then
     jvm
 else
-    hadoop
+    run_hadoop
 fi
 
