@@ -9,14 +9,16 @@ import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
-public abstract class Feature extends Mapper<RuleWritable, IntWritable,
-                                    RuleWritable, IntWritable>
-                                        implements Comparable<Feature>
+public abstract class Feature implements Comparable<Feature>
 {
+    public static String name;
+
     public Class<? extends Reducer> combinerClass()
     {
         return IntSumReducer.class;
     }
+
+    public abstract Class<? extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>> mapperClass();
 
     public abstract Class<? extends WritableComparator> sortComparatorClass();
 

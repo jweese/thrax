@@ -3,9 +3,12 @@ package edu.jhu.thrax.hadoop.datatypes;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.TwoDArrayWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableComparable;
+
+import org.apache.hadoop.mapreduce.Partitioner;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -45,6 +48,13 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         f2e = new TwoDArrayWritable(Text.class, sourceAlignmentArray(r));
         e2f = new TwoDArrayWritable(Text.class, targetAlignmentArray(r));
         features = new MapWritable();
+    }
+
+    public void set(RuleWritable r)
+    {
+        lhs.set(r.lhs);
+        source.set(r.source);
+        target.set(r.target);
     }
 
     public void write(DataOutput out) throws IOException
@@ -131,6 +141,13 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         return result;
     }
 
+    public boolean sameYield(RuleWritable r)
+    {
+        return lhs.equals(r.lhs) &&
+               source.equals(r.source) &&
+               target.equals(r.target);
+    }
+
     public boolean equals(Object o)
     {
         if (o instanceof RuleWritable) {
@@ -174,7 +191,13 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         cmp = source.compareTo(that.source);
         if (cmp != 0)
             return cmp;
-        return target.compareTo(that.target);
+        cmp = target.compareTo(that.target);
+        if (cmp != 0)
+            return cmp;
+        cmp = f2e.hashCode() - that.f2e.hashCode();
+        if (cmp != 0)
+            return cmp;
+        return e2f.hashCode() - that.e2f.hashCode();
     }
 
     public static class YieldComparator extends WritableComparator
@@ -218,6 +241,18 @@ public class RuleWritable implements WritableComparable<RuleWritable>
             catch (IOException e) {
                 throw new IllegalArgumentException(e);
             }
+        }
+    }
+
+    public static class YieldPartitioner extends Partitioner<RuleWritable, IntWritable>
+    {
+        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        {
+            int hash = 163;
+            hash = 37 * hash + key.lhs.hashCode();
+            hash = 37 * hash + key.source.hashCode();
+            hash = 37 * hash + key.target.hashCode();
+            return hash % numPartitions;
         }
     }
 

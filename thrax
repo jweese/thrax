@@ -78,7 +78,7 @@ run_hadoop () {
     if ./lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
     then
         # do the lexprob-dependent hadoop job here
-        hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.LexicalProbability $INPUT_FILE $HADOOP_WORK/lexprobs
+        hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator $INPUT_FILE $HADOOP_WORK/lexprobs
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
         files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
@@ -89,12 +89,12 @@ run_hadoop () {
     outfile=`./lib/getoption.pl $config output`
     if [[ -z "$outfile" || "$outfile" = "stdout" ]]
     then
-        hadoop fs -cat $HADOOP_WORK/rules/* | sort -u
+        hadoop fs -cat $HADOOP_WORK/final/* | sort -u
     elif [[ `./lib/getoption.pl $config gzip` = "true" ]]
     then
-        hadoop fs -cat $HADOOP_WORK/rules/* | sort -u | gzip >$outfile
+        hadoop fs -cat $HADOOP_WORK/final/* | sort -u | gzip >$outfile
     else
-        hadoop fs -getmerge $HADOOP_WORK/rules $outfile.tmp && sort -u $outfile.tmp -o $outfile && rm $outfile.tmp
+        hadoop fs -cat $HADOOP_WORK/final/* | sort -u >$outfile
     fi
 
 }

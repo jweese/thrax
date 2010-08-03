@@ -25,7 +25,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class LexicalProbability extends Configured implements Tool
+public class WordLexicalProbabilityCalculator extends Configured implements Tool
 {
     public static final Text UNALIGNED = new Text("/UNALIGNED/");
     public static final Text MARGINAL = new Text("/MARGINAL/");
@@ -127,7 +127,7 @@ public class LexicalProbability extends Configured implements Tool
             int myCount = 0;
             for (IntWritable x : values)
                 myCount += x.get();
-            context.write(key, new DoubleWritable(-1 * Math.log(myCount / (double) marginalCount)));
+            context.write(key, new DoubleWritable(Math.log(myCount / (double) marginalCount)));
         }
     }
 
@@ -153,7 +153,7 @@ public class LexicalProbability extends Configured implements Tool
         }
         Configuration conf = getConf();
         Job job = new Job(conf, "lexprob-f2e");
-        job.setJarByClass(LexicalProbability.class);
+        job.setJarByClass(WordLexicalProbabilityCalculator.class);
         job.setMapperClass(TargetGivenSourceMap.class);
         job.setReducerClass(Reduce.class);
         job.setCombinerClass(IntSumReducer.class);
@@ -170,7 +170,7 @@ public class LexicalProbability extends Configured implements Tool
         job.waitForCompletion(true);
 
         Job e2fjob = new Job(conf, "lexprob-e2f");
-        e2fjob.setJarByClass(LexicalProbability.class);
+        e2fjob.setJarByClass(WordLexicalProbabilityCalculator.class);
         e2fjob.setMapperClass(SourceGivenTargetMap.class);
         e2fjob.setReducerClass(Reduce.class);
         e2fjob.setCombinerClass(IntSumReducer.class);
@@ -195,7 +195,7 @@ public class LexicalProbability extends Configured implements Tool
             System.err.println("usage: hadoop jar <jar> <input> <output>");
             return;
         }
-        int result = ToolRunner.run(new Configuration(), new LexicalProbability(), argv);
+        int result = ToolRunner.run(new Configuration(), new WordLexicalProbabilityCalculator(), argv);
         System.exit(result);
     }
 }
