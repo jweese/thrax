@@ -269,5 +269,79 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     static {
         WritableComparator.define(RuleWritable.class, new YieldComparator());
     }
+
+    public static class SourceMarginalComparator extends WritableComparator
+    {
+        private static final TextPair.FstMarginalComparator TEXTPAIR_COMPARATOR = new TextPair.FstMarginalComparator();
+
+        public SourceMarginalComparator()
+        {
+            super(RuleWritable.class);
+        }
+
+        public int compare(byte [] b1, int s1, int l1,
+                           byte [] b2, int s2, int l2)
+        {
+            try {
+                int start1 = s1 + WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
+                int start2 = s2 + WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
+                int target1 = start1 + WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
+                int target2 = start2 + WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
+                int end1 = target1 + WritableUtils.decodeVIntSize(b1[target1]) + readVInt(b1, target1);
+                int end2 = target2 + WritableUtils.decodeVIntSize(b2[target2]) + readVInt(b2, target2);
+                return TEXTPAIR_COMPARATOR.compare(b1, start1, end1 - start1,
+                                                   b2, start2, end2 - start2);
+            }
+            catch (IOException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
+
+    public static class SourcePartitioner extends Partitioner<RuleWritable, IntWritable>
+    {
+        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        {
+            return key.source.hashCode() % numPartitions;
+        }
+    }
+
+    public static class TargetMarginalComparator extends WritableComparator
+    {
+        private static final TextPair.SndMarginalComparator TEXTPAIR_COMPARATOR = new TextPair.SndMarginalComparator();
+
+        public TargetMarginalComparator()
+        {
+            super(RuleWritable.class);
+        }
+
+        public int compare(byte [] b1, int s1, int l1,
+                           byte [] b2, int s2, int l2)
+        {
+            try {
+                int start1 = s1 + WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
+                int start2 = s2 + WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
+                int target1 = start1 + WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
+                int target2 = start2 + WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
+                int end1 = target1 + WritableUtils.decodeVIntSize(b1[target1]) + readVInt(b1, target1);
+                int end2 = target2 + WritableUtils.decodeVIntSize(b2[target2]) + readVInt(b2, target2);
+                return TEXTPAIR_COMPARATOR.compare(b1, start1, end1 - start1,
+                                                   b2, start2, end2 - start2);
+            }
+            catch (IOException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
+
+    public static class TargetPartitioner extends Partitioner<RuleWritable, IntWritable>
+    {
+        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        {
+            return key.target.hashCode() % numPartitions;
+        }
+    }
 }
 
