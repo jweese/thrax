@@ -131,18 +131,14 @@ public class LexicalProbabilityFeature extends Feature
             for (Text [] pairs : (Text [][]) r.e2f.toArray()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
-                double totalProb = Double.NEGATIVE_INFINITY;
+                double prob = 0;
                 Text tgt = pairs[0];
                 TextPair tp = new TextPair(tgt, new Text());
                 for (int j = 1; j < pairs.length; j++) {
                     tp.snd.set(pairs[j]);
-                    double prob = e2f.get(tp);
-                    if (j == 1)
-                        totalProb = prob;
-                    else
-                        totalProb = logAdd(totalProb, prob);
+                    prob += e2f.get(tp);
                 }
-                result += totalProb;
+                result += Math.log(prob);
             }
             return result;
         }
@@ -153,18 +149,14 @@ public class LexicalProbabilityFeature extends Feature
             for (Text [] pairs : (Text [][]) r.f2e.toArray()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
-                double totalProb = Double.NEGATIVE_INFINITY;
+                double prob = 0;
                 Text src = pairs[0];
                 TextPair tp = new TextPair(src, new Text());
                 for (int j = 1; j < pairs.length; j++) {
                     tp.snd.set(pairs[j]);
-                    double prob = f2e.get(tp);
-                    if (j == 1)
-                        totalProb = prob;
-                    else
-                        totalProb = logAdd(totalProb, prob);
+                    prob += f2e.get(tp);
                 }
-                result += totalProb;
+                result += Math.log(prob);
             }
             return result;
         }
@@ -183,14 +175,6 @@ public class LexicalProbabilityFeature extends Feature
                 result.put(tp, score);
             }
             return result;
-        }
-
-        private static double logAdd(double x, double y)
-        {
-            if (y <= x)
-                return x + Math.log1p(Math.exp(y - x));
-            else
-                return y + Math.log1p(Math.exp(x - y));
         }
     }
 }

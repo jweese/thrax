@@ -127,7 +127,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             int myCount = 0;
             for (IntWritable x : values)
                 myCount += x.get();
-            context.write(key, new DoubleWritable(Math.log(myCount / (double) marginalCount)));
+            context.write(key, new DoubleWritable(myCount / (double) marginalCount));
         }
     }
 
