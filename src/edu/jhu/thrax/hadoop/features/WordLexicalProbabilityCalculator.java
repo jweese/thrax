@@ -24,6 +24,7 @@ import org.apache.hadoop.io.DoubleWritable;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.ArrayList;
 
 public class WordLexicalProbabilityCalculator extends Configured implements Tool
 {
@@ -40,9 +41,16 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             counts.clear();
             String line = value.toString();
             String [] parts = line.split(ThraxConfig.DELIMITER_REGEX);
-            String [] source = parts[0].trim().split("\\s+");
-            String [] target = parts[1].trim().split("\\s+");
-            Alignment alignment = new Alignment(parts[2].trim());
+            for (int i = 0; i < parts.length; i++) {
+                parts[i] = parts[i].trim();
+            }
+            String [] source = parts[0].split("\\s+");
+            String [] target;
+            if (parts[1].startsWith("(") && parts[1].endsWith(")"))
+                target = parseYield(parts[1]);
+            else
+                target = parts[1].split("\\s+");
+            Alignment alignment = new Alignment(parts[2]);
 
             for (int i = 0; i < source.length; i++) {
                 Text src = new Text(source[i]);
@@ -66,6 +74,27 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 context.write(tp, new IntWritable(counts.get(tp)));
             }
         }
+
+        static String [] parseYield(String parse)
+        {
+            ArrayList<String> al = new ArrayList<String>();
+            String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
+            for (int i = 0; i < tokens.length; i++) {
+                String t = tokens[i];
+                if ("(".equals(t))
+                    i++;
+                else if (")".equals(t)) {
+                    // do nothing
+                }
+                else
+                    al.add(t.toLowerCase());
+            }
+            String [] ret = new String[al.size()];
+            for (int j = 0; j < ret.length; j++) {
+                ret[j] = al.get(j);
+            }
+            return ret;
+        }
     }
 
     private static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
@@ -78,9 +107,15 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 
             String line = value.toString();
             String [] parts = line.trim().split(ThraxConfig.DELIMITER_REGEX);
-            String [] source = parts[0].trim().split("\\s+");
-            String [] target = parts[1].trim().split("\\s+");
-            Alignment alignment = new Alignment(parts[2].trim());
+            for (int i = 0; i < parts.length; i++)
+                parts[i] = parts[i].trim();
+            String [] source = parts[0].split("\\s+");
+            String [] target;
+            if (parts[1].startsWith("(") && parts[1].endsWith(")"))
+                target = TargetGivenSourceMap.parseYield(parts[1]);
+            else 
+                target = parts[1].split("\\s+");
+            Alignment alignment = new Alignment(parts[2]);
 
             for (int i = 0; i < target.length; i++) {
                 Text tgt = new Text(target[i]);

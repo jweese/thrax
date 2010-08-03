@@ -25,6 +25,12 @@ To compile the code, type
     ant
 
 * HADOOP MODE:
+First, you need to set two environment variables:
+$HADOOP should point to the directory where Hadoop is installed.
+$HADOOP_VERSION should be the version number of your installation of Hadoop.
+These need to be set because we need $HADOOP/hadoop-${HADOOP_VERSION}-core.jar
+in the classpath in order to compile correctly.
+
 To compile, type
 
     ant hadoop-jar
