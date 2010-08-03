@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="0.72/alpha"
+VERSION="0.80/alpha"
 
 if [[ -z "$THRAX" ]]
 then
@@ -22,7 +22,7 @@ Usage: `basename $0` [options] <configuration file>
 Options:
   -d, --debug                       enable debugging output
   -h, --help                        print this help message and exit
-  -H, --hadoop                      use Hadoop for extraction
+  -H, --hadoop                      use Hadoop mode for extraction
   -m AMOUNT, --mem AMOUNT           maximum memory for Java VM 
   -q, --quiet                       suppress all output except rules
   -v, --verbose                     enable verbose output

@@ -6,17 +6,39 @@ Thrax currently has support for both Hiero-style grammars (with a single
 non-terminal symbol) and SAMT-style grammars (where non-terminal symbols are
 calculated by projecting onto the span from a target-side parse tree).
 
+Thrax has two modes: native Java mode (where all rules are held in memory during
+execution) and Hadoop mode (which uses Hadoop, Apache's open-source MapReduce
+implementation). For anything other than a toy grammar, native Java mode is
+not appropriate unless you have many gigabytes of free memory to give to the
+JVM. This does NOT mean that you can only use Thrax for toy grammars if you
+don't have access to a cluster! Thrax will work perfectly well using Hadoop in
+standalone mode on a single machine. There are notes for each mode under
+COMPILING below.
+
+Note that Hadoop mode was developed against Hadoop version 0.20.2.
+
 COMPILING:
+
+* NATIVE JAVA MODE:
 To compile the code, type
 
     ant
 
+* HADOOP MODE:
+To compile, type
+
+    ant hadoop-jar
+
+This will compile all the Hadoop-specific classes and package them into a jar
+for use on a Hadoop cluster.
+
 At the end of the compilation, ant should report that the build was successful.
 
 RUNNING THRAX:
-Thrax can be invoked with
+Thrax can be invoked with one of
 
     thrax <configuration file>
+    thrax --hadoop <configuration file>
 
 Some example configuration files have been included with this distribution:
 
