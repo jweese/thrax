@@ -64,7 +64,6 @@ public class HieroRuleExtractor implements RuleExtractor {
             return null;
         }
 
-        System.err.println("Target in extractor:" + inputs[1]);
         int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
         int [] target = Vocabulary.getIds(inputs[1].split("\\s+"));
         Alignment alignment = new Alignment(inputs[2]);

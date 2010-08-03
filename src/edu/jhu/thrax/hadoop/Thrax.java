@@ -68,6 +68,11 @@ public class Thrax extends Configured implements Tool
         Feature [] features = FeatureFactory.getAll(ThraxConfig.FEATURES.split("\\s+"));
         for (int j = 0; j < features.length; j++) {
             Feature f = features[j];
+            if (f == null) {
+                // the factory didn't know what feature to make
+                // let's silently ignore it
+                continue;
+            }
             Job fjob = new Job(conf, String.format("thrax-%d-%s", j, f.name));
             fjob.setInputFormatClass(SequenceFileInputFormat.class);
             fjob.setMapOutputKeyClass(RuleWritable.class);
