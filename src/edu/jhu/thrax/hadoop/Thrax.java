@@ -7,7 +7,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
@@ -51,6 +53,8 @@ public class Thrax extends Configured implements Tool
         job.setOutputKeyClass(RuleWritable.class);
         job.setOutputValueClass(IntWritable.class);
 
+        job.setOutputFormatClass(SequenceFileOutputFormat.class);
+
         FileInputFormat.setInputPaths(job, new Path(argv[0]));
         if (!argv[1].endsWith(Path.SEPARATOR)) {
             argv[1] += Path.SEPARATOR;
@@ -65,6 +69,7 @@ public class Thrax extends Configured implements Tool
         for (int j = 0; j < features.length; j++) {
             Feature f = features[j];
             Job fjob = new Job(conf, String.format("thrax-%d-%s", j, f.name));
+            fjob.setInputFormatClass(SequenceFileInputFormat.class);
             fjob.setMapOutputKeyClass(RuleWritable.class);
             fjob.setMapOutputValueClass(IntWritable.class);
             fjob.setOutputKeyClass(RuleWritable.class);
@@ -73,6 +78,7 @@ public class Thrax extends Configured implements Tool
             fjob.setCombinerClass(f.combinerClass());
             fjob.setPartitionerClass(f.partitionerClass());
             fjob.setReducerClass(f.reducerClass());
+            fjob.setOutputFormatClass(SequenceFileOutputFormat.class);
 
             inputPath = outputPath;
             outputPath = argv[1] + String.format("feature-%d-%s", j, f.name);
@@ -81,6 +87,7 @@ public class Thrax extends Configured implements Tool
             fjob.waitForCompletion(true);
         }
         Job printjob = new Job(conf, "thrax-print");
+        printjob.setInputFormatClass(SequenceFileInputFormat.class);
         printjob.setMapOutputKeyClass(RuleWritable.class);
         printjob.setMapOutputValueClass(IntWritable.class);
         printjob.setOutputKeyClass(RuleWritable.class);

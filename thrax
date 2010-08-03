@@ -23,7 +23,7 @@ Options:
   -d, --debug                       enable debugging output
   -h, --help                        print this help message and exit
   -H, --hadoop                      use Hadoop for extraction
-  -m AMOUNT, --mem AMOUNT:          maximum memory for Java VM 
+  -m AMOUNT, --mem AMOUNT           maximum memory for Java VM 
   -q, --quiet                       suppress all output except rules
   -v, --verbose                     enable verbose output
   -V, --version                     print version information and exit
