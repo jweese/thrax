@@ -17,7 +17,7 @@ import java.io.IOException;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.datatypes.Rule;
-import edu.jhu.thrax.hadoop.features.LexicalProbability;
+import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 public class RuleWritable implements WritableComparable<RuleWritable>
 {
@@ -101,7 +101,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                 else {
                     result[idx] = new Text[2];
                     result[idx][0] = src;
-                    result[idx][1] = LexicalProbability.UNALIGNED;
+                    result[idx][1] = WordLexicalProbabilityCalculator.UNALIGNED;
                 }
                 idx++;
             }
@@ -133,7 +133,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                 else {
                     result[idx] = new Text[2];
                     result[idx][0] = tgt;
-                    result[idx][1] = LexicalProbability.UNALIGNED;
+                    result[idx][1] = WordLexicalProbabilityCalculator.UNALIGNED;
                 }
                 idx++;
             }

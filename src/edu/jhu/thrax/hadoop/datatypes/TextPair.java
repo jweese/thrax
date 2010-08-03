@@ -9,7 +9,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import edu.jhu.thrax.hadoop.features.LexicalProbability;
+import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 public class TextPair implements WritableComparable<TextPair>
 {
@@ -137,10 +137,10 @@ public class TextPair implements WritableComparable<TextPair>
                 if (cmp == 0) {
                     return 0;
                 }
-                if (compareBytes(b1, s1 + vis1, vi1, LexicalProbability.MARGINAL_BYTES, 0, LexicalProbability.MARGINAL_LENGTH) == 0) {
+                if (compareBytes(b1, s1 + vis1, vi1, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
                     return -1;
                 }
-                else if (compareBytes(b2, s2 + vis2, vi2, LexicalProbability.MARGINAL_BYTES, 0, LexicalProbability.MARGINAL_LENGTH) == 0) {
+                else if (compareBytes(b2, s2 + vis2, vi2, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
                     return 1;
                 }
                 return cmp;
@@ -177,10 +177,10 @@ public class TextPair implements WritableComparable<TextPair>
                 }
                 int vintsize1 = WritableUtils.decodeVIntSize(b1[s1 + length1]);
                 int vintsize2 = WritableUtils.decodeVIntSize(b2[s2 + length2]);
-                if (compareBytes(b1, s1 + length1 + vintsize1, l1 - length1 - vintsize1, LexicalProbability.MARGINAL_BYTES, 0, LexicalProbability.MARGINAL_LENGTH) == 0) {
+                if (compareBytes(b1, s1 + length1 + vintsize1, l1 - length1 - vintsize1, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
                     return -1;
                 }
-                else if (compareBytes(b2, s2 + length2 + vintsize2, l2 - length2 - vintsize2, LexicalProbability.MARGINAL_BYTES, 0, LexicalProbability.MARGINAL_LENGTH) == 0) {
+                else if (compareBytes(b2, s2 + length2 + vintsize2, l2 - length2 - vintsize2, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
                     return 1;
                 }
                 return cmp;
