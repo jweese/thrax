@@ -39,6 +39,16 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         features = new MapWritable();
     }
 
+    public RuleWritable(RuleWritable r)
+    {
+        lhs = new Text(r.lhs);
+        source = new Text(r.source);
+        target = new Text(r.target);
+        f2e = new TwoDArrayWritable(Text.class, r.f2e.get());
+        e2f = new TwoDArrayWritable(Text.class, r.f2e.get());
+        features = new MapWritable(r.features);
+    }
+
     public RuleWritable(Rule r)
     {
         String [] parts = r.toString().split(ThraxConfig.DELIMITER_REGEX);

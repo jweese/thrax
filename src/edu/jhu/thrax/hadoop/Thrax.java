@@ -73,7 +73,7 @@ public class Thrax extends Configured implements Tool
                 // let's silently ignore it
                 continue;
             }
-            Job fjob = new Job(conf, String.format("thrax-%d-%s", j, f.name));
+            Job fjob = new Job(conf, String.format("thrax-%d-%s", j, f.name()));
             fjob.setInputFormatClass(SequenceFileInputFormat.class);
             fjob.setMapOutputKeyClass(RuleWritable.class);
             fjob.setMapOutputValueClass(IntWritable.class);
@@ -84,9 +84,10 @@ public class Thrax extends Configured implements Tool
             fjob.setPartitionerClass(f.partitionerClass());
             fjob.setReducerClass(f.reducerClass());
             fjob.setOutputFormatClass(SequenceFileOutputFormat.class);
+            fjob.setJarByClass(Thrax.class);
 
             inputPath = outputPath;
-            outputPath = argv[1] + String.format("feature-%d-%s", j, f.name);
+            outputPath = argv[1] + String.format("feature-%d-%s", j, f.name());
             FileInputFormat.setInputPaths(fjob, new Path(inputPath));
             FileOutputFormat.setOutputPath(fjob, new Path(outputPath));
             fjob.waitForCompletion(true);
@@ -99,6 +100,7 @@ public class Thrax extends Configured implements Tool
         printjob.setOutputValueClass(NullWritable.class);
         printjob.setCombinerClass(IntSumReducer.class);
         printjob.setReducerClass(OutputReducer.class);
+        printjob.setJarByClass(Thrax.class);
 
         inputPath = outputPath;
         outputPath = argv[1] + "final";

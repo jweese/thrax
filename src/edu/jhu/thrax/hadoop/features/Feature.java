@@ -11,7 +11,7 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 public abstract class Feature implements Comparable<Feature>
 {
-    public static String name;
+    public abstract String name();
 
     public Class<? extends Reducer> combinerClass()
     {

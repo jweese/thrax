@@ -21,7 +21,10 @@ import java.io.IOException;
 
 public class LexicalProbabilityFeature extends Feature
 {
-    public static final String name = "lex";
+    public String name()
+    {
+        return "lex";
+    }
 
     public Class<? extends Mapper> mapperClass()
     {
@@ -58,6 +61,7 @@ public class LexicalProbabilityFeature extends Feature
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
+            current = new RuleWritable();
             ruleCounts = new HashMap<RuleWritable,IntWritable>();
             Configuration conf = context.getConfiguration();
             Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
@@ -76,20 +80,25 @@ public class LexicalProbabilityFeature extends Feature
             }
         }
 
-        protected void reduce(RuleWritable key, IntWritable value, Context context) throws IOException, InterruptedException
+        protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
-            if (current != null && !key.sameYield(current)) {
+            if (current == null || !key.sameYield(current)) {
+                current.set(key);
                 DoubleWritable tgsWritable = new DoubleWritable(-maxf2e);
                 DoubleWritable sgtWritable = new DoubleWritable(-maxe2f);
                 for (RuleWritable r : ruleCounts.keySet()) {
+                    IntWritable cnt = ruleCounts.get(r);
                     r.features.put(TGS_LABEL, tgsWritable);
                     r.features.put(SGT_LABEL, sgtWritable);
-                    context.write(r, ruleCounts.get(r));
+                    context.write(r, cnt);
                 }
                 ruleCounts.clear();
-                maxf2e = targetGivenSource(key);
                 maxe2f = sourceGivenTarget(key);
-                ruleCounts.put(key, value);
+                maxf2e = targetGivenSource(key);
+                int count = 0;
+                for (IntWritable x : values)
+                    count += x.get();
+                ruleCounts.put(new RuleWritable(key), new IntWritable(count));
                 return;
             }
             double sgt = sourceGivenTarget(key);
@@ -98,7 +107,10 @@ public class LexicalProbabilityFeature extends Feature
                 maxe2f = sgt;
             if (tgs > maxf2e)
                 maxf2e = tgs;
-            ruleCounts.put(key, value);
+            int count = 0;
+            for (IntWritable x : values)
+                count += x.get();
+            ruleCounts.put(new RuleWritable(key), new IntWritable(count));
         }
 
         protected void cleanup(Context context) throws IOException, InterruptedException
@@ -106,9 +118,10 @@ public class LexicalProbabilityFeature extends Feature
             DoubleWritable tgsWritable = new DoubleWritable(-maxf2e);
             DoubleWritable sgtWritable = new DoubleWritable(-maxe2f);
             for (RuleWritable r : ruleCounts.keySet()) {
+                IntWritable cnt = ruleCounts.get(r);
                 r.features.put(TGS_LABEL, tgsWritable);
                 r.features.put(SGT_LABEL, sgtWritable);
-                context.write(r, ruleCounts.get(r));
+                context.write(r, cnt);
             }
         }
 
@@ -118,13 +131,18 @@ public class LexicalProbabilityFeature extends Feature
             for (Text [] pairs : (Text [][]) r.e2f.toArray()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
+                double totalProb = Double.NEGATIVE_INFINITY;
                 Text tgt = pairs[0];
                 TextPair tp = new TextPair(tgt, new Text());
                 for (int j = 1; j < pairs.length; j++) {
                     tp.snd.set(pairs[j]);
                     double prob = e2f.get(tp);
-                    result += prob;
+                    if (j == 1)
+                        totalProb = prob;
+                    else
+                        totalProb = logAdd(totalProb, prob);
                 }
+                result += totalProb;
             }
             return result;
         }
@@ -135,13 +153,18 @@ public class LexicalProbabilityFeature extends Feature
             for (Text [] pairs : (Text [][]) r.f2e.toArray()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
+                double totalProb = Double.NEGATIVE_INFINITY;
                 Text src = pairs[0];
                 TextPair tp = new TextPair(src, new Text());
                 for (int j = 1; j < pairs.length; j++) {
                     tp.snd.set(pairs[j]);
                     double prob = f2e.get(tp);
-                    result += prob;
+                    if (j == 1)
+                        totalProb = prob;
+                    else
+                        totalProb = logAdd(totalProb, prob);
                 }
+                result += totalProb;
             }
             return result;
         }
@@ -149,7 +172,7 @@ public class LexicalProbabilityFeature extends Feature
         private HashMap<TextPair,Double> readTable(String filename) throws IOException
         {
             HashMap<TextPair,Double> result = new HashMap<TextPair,Double>();
-            Scanner scanner = new Scanner(new File(filename));
+            Scanner scanner = new Scanner(new File(filename), "UTF-8");
             while (scanner.hasNextLine()) {
                 String [] tokens = scanner.nextLine().split("\\s+");
                 if (tokens.length != 3)
@@ -160,6 +183,14 @@ public class LexicalProbabilityFeature extends Feature
                 result.put(tp, score);
             }
             return result;
+        }
+
+        private static double logAdd(double x, double y)
+        {
+            if (y <= x)
+                return x + Math.log1p(Math.exp(y - x));
+            else
+                return y + Math.log1p(Math.exp(x - y));
         }
     }
 }
