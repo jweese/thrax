@@ -6,6 +6,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.conf.Configuration;
@@ -22,9 +23,9 @@ public class LexicalProbabilityFeature extends Feature
 {
     public static final String name = "lex";
 
-    public Class<? extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>> mapperClass()
+    public Class<? extends Mapper> mapperClass()
     {
-        return Map.class;
+        return Mapper.class;
     }
 
     public Class<? extends WritableComparator> sortComparatorClass()
@@ -37,7 +38,12 @@ public class LexicalProbabilityFeature extends Feature
         return RuleWritable.YieldPartitioner.class;
     }
 
-    private static class Map extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>
+    public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, IntWritable>> reducerClass()
+    {
+        return Reduce.class;
+    }
+
+    private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, IntWritable>
     {
         private HashMap<TextPair,Double> f2e;
         private HashMap<TextPair,Double> e2f;
@@ -70,7 +76,7 @@ public class LexicalProbabilityFeature extends Feature
             }
         }
 
-        protected void map(RuleWritable key, IntWritable value, Context context) throws IOException, InterruptedException
+        protected void reduce(RuleWritable key, IntWritable value, Context context) throws IOException, InterruptedException
         {
             if (current != null && !key.sameYield(current)) {
                 DoubleWritable tgsWritable = new DoubleWritable(-maxf2e);

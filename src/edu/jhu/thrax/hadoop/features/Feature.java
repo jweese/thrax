@@ -18,11 +18,13 @@ public abstract class Feature implements Comparable<Feature>
         return IntSumReducer.class;
     }
 
-    public abstract Class<? extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>> mapperClass();
+    public abstract Class<? extends Mapper> mapperClass();
 
     public abstract Class<? extends WritableComparator> sortComparatorClass();
 
-    public abstract Class<? extends Partitioner<RuleWritable, IntWritable>> partitionerClass();
+    public abstract Class<? extends Partitioner> partitionerClass();
+
+    public abstract Class<? extends Reducer> reducerClass();
 
     public int compareTo(Feature other)
     {

@@ -72,7 +72,7 @@ public class Thrax extends Configured implements Tool
             fjob.setMapperClass(f.mapperClass());
             fjob.setCombinerClass(f.combinerClass());
             fjob.setPartitionerClass(f.partitionerClass());
-            fjob.setReducerClass(IntSumReducer.class);
+            fjob.setReducerClass(f.reducerClass());
 
             inputPath = outputPath;
             outputPath = argv[1] + String.format("feature-%d-%s", j, f.name);
