@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/perl -w
 use strict;
 
 # this little script will read a Thrax config file and output a line that
