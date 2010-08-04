@@ -1,22 +1,25 @@
 package edu.jhu.thrax.hadoop.features;
 
+import java.util.List;
+import java.util.ArrayList;
+
 public class FeatureFactory
 {
-    public static Feature get(String name)
+    public static void get(List<Feature> list, String name)
     {
-        if (name.equals("lex"))
-            return new LexicalProbabilityFeature();
-        else if (name.equals("phrase"))
-            return new SourcePhraseGivenTargetFeature();
-        else 
-            return null;
+        if (name.equals("lex")) {
+            list.add(new LexicalProbabilityFeature());
+        }
+        else if (name.equals("phrase")) {
+            list.add(new SourcePhraseGivenTargetFeature());
+        }
     }
 
-    public static Feature [] getAll(String [] names)
+    public static List<Feature> getAll(String [] names)
     {
-        Feature [] result = new Feature[names.length];
-        for (int i = 0; i < result.length; i++)
-            result[i] = get(names[i]);
+        List<Feature> result = new ArrayList<Feature>();
+        for (String s : names)
+            get(result, s);
         return result;
     }
 }

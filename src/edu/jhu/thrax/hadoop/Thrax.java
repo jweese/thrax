@@ -23,6 +23,8 @@ import edu.jhu.thrax.hadoop.output.OutputReducer;
 import edu.jhu.thrax.hadoop.features.Feature;
 import edu.jhu.thrax.hadoop.features.FeatureFactory;
 
+import java.util.List;
+
 public class Thrax extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
@@ -65,9 +67,9 @@ public class Thrax extends Configured implements Tool
 
         job.waitForCompletion(true);
 
-        Feature [] features = FeatureFactory.getAll(ThraxConfig.FEATURES.split("\\s+"));
-        for (int j = 0; j < features.length; j++) {
-            Feature f = features[j];
+        List<Feature> features = FeatureFactory.getAll(ThraxConfig.FEATURES.split("\\s+"));
+        for (int j = 0; j < features.size(); j++) {
+            Feature f = features.get(j);
             if (f == null) {
                 // the factory didn't know what feature to make
                 // let's silently ignore it
