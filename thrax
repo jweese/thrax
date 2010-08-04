@@ -41,31 +41,21 @@ jvm () {
 }
 
 run_hadoop () {
-    if [[ -z "$HADOOP" ]]
-    then
-        echo "please set the $$HADOOP environment variable to point to your hadoop installation."
-        exit 1
-    fi
-    if [[ -z "$HADOOP_VERSION" ]]
-    then
-        echo "please set the $$HADOOP_VERSION environment variable to your hadoop version number."
-        exit 1
-    fi
-    INPUT_FILE=`./lib/getoption.pl $config input-file`
+    INPUT_FILE=`$THRAX/lib/getoption.pl $config input-file`
     if [[ -z "$INPUT_FILE" ]]
     then
         echo "No unified input file given; cannot run on hadoop."
         echo "Please set the 'input-file' key in your Thrax conf file."
         exit 1
     fi
-    LOCAL_WORK=`./lib/getoption.pl $config work-dir`
+    LOCAL_WORK=`$THRAX/lib/getoption.pl $config work-dir`
     if [[ -z "$LOCAL_WORK" ]]
     then
         echo "No local work directory specified!"
         echo "Please set the 'work-dir' key in your Thrax conf file."
         exit 1
     fi
-    HADOOP_WORK=`./lib/getoption.pl $config hadoop-work-dir`
+    HADOOP_WORK=`$THRAX/lib/getoption.pl $config hadoop-work-dir`
     if [[ -z "$HADOOP_WORK" ]]
     then
         echo "No working directory for hadoop specified!"
@@ -75,22 +65,22 @@ run_hadoop () {
     mkdir -p $LOCAL_WORK
     cp $config $LOCAL_WORK/thrax.config
     files="$LOCAL_WORK/thrax.config"
-    if ./lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
+    if $THRAX/lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
     then
         # do the lexprob-dependent hadoop job here
-        hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator $INPUT_FILE $HADOOP_WORK/lexprobs
+        hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator $INPUT_FILE $HADOOP_WORK/lexprobs
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
         files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
     fi
     # then we will run a bunch of hadoop jobs to do the extraction
-    hadoop jar bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.Thrax -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
+    hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.Thrax -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
     # now either hadoop fs -cat or hadoop fs -getmerge
-    outfile=`./lib/getoption.pl $config output`
+    outfile=`$THRAX/lib/getoption.pl $config output`
     if [[ -z "$outfile" || "$outfile" = "stdout" ]]
     then
         hadoop fs -cat $HADOOP_WORK/final/* | sort -u
-    elif [[ `./lib/getoption.pl $config gzip` = "true" ]]
+    elif [[ `$THRAX/lib/getoption.pl $config gzip` = "true" ]]
     then
         hadoop fs -cat $HADOOP_WORK/final/* | sort -u | gzip >$outfile
     else
