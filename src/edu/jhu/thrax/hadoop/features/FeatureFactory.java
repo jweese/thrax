@@ -12,6 +12,7 @@ public class FeatureFactory
         }
         else if (name.equals("phrase")) {
             list.add(new SourcePhraseGivenTargetFeature());
+            list.add(new TargetPhraseGivenSourceFeature());
         }
     }
 
