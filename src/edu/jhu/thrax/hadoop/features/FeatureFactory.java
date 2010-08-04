@@ -6,6 +6,8 @@ public class FeatureFactory
     {
         if (name.equals("lex"))
             return new LexicalProbabilityFeature();
+        else if (name.equals("phrase"))
+            return new SourcePhraseGivenTargetFeature();
         else 
             return null;
     }

@@ -45,7 +45,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         source = new Text(r.source);
         target = new Text(r.target);
         f2e = new TwoDArrayWritable(Text.class, r.f2e.get());
-        e2f = new TwoDArrayWritable(Text.class, r.f2e.get());
+        e2f = new TwoDArrayWritable(Text.class, r.e2f.get());
         features = new MapWritable(r.features);
     }
 

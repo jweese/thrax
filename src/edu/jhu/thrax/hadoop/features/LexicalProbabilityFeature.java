@@ -136,6 +136,7 @@ public class LexicalProbabilityFeature extends Feature
                 TextPair tp = new TextPair(tgt, new Text());
                 for (int j = 1; j < pairs.length; j++) {
                     tp.snd.set(pairs[j]);
+                    System.err.println("tp is " + tp);
                     prob += e2f.get(tp);
                 }
                 result += Math.log(prob);

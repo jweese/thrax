@@ -80,6 +80,7 @@ public class Thrax extends Configured implements Tool
             fjob.setOutputKeyClass(RuleWritable.class);
             fjob.setOutputValueClass(IntWritable.class);
             fjob.setMapperClass(f.mapperClass());
+            fjob.setSortComparatorClass(f.sortComparatorClass());
             fjob.setCombinerClass(f.combinerClass());
             fjob.setPartitionerClass(f.partitionerClass());
             fjob.setReducerClass(f.reducerClass());
