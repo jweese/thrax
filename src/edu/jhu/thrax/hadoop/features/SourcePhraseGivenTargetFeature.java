@@ -63,17 +63,26 @@ public class SourcePhraseGivenTargetFeature extends Feature
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
             if (key.source.equals(WordLexicalProbabilityCalculator.MARGINAL)) {
+                DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
+                for (RuleWritable r : rules.keySet()) {
+                    r.features.put(NAME, result);
+                    context.write(r, rules.get(r));
+                }
+                currentSource.set(WordLexicalProbabilityCalculator.MARGINAL);
                 if (!key.target.equals(currentTarget)) {
                     marginal = 0;
+                    count = 0;
                     currentTarget.set(key.target);
+                    rules.clear();
                 }
                 for (IntWritable x : values)
                     marginal += x.get();
                 return;
             }
+            
             // control only gets here if we are using the same marginal
             if (!key.source.equals(currentSource)) {
-                DoubleWritable result = new DoubleWritable(count / (double) marginal);
+                DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
                 for (RuleWritable r : rules.keySet()) {
                     r.features.put(NAME, result);
                     context.write(r, rules.get(r));
@@ -92,7 +101,7 @@ public class SourcePhraseGivenTargetFeature extends Feature
 
         protected void cleanup(Context context) throws IOException, InterruptedException
         {
-            DoubleWritable result = new DoubleWritable(count / (double) marginal);
+            DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
             for (RuleWritable r : rules.keySet()) {
                 r.features.put(NAME, result);
                 context.write(r, rules.get(r));
