@@ -36,6 +36,14 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     private static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
+        private boolean parsed;
+
+        protected void setup(Context context) throws IOException, InterruptedException
+        {
+            Configuration conf = context.getConfiguration();
+            parsed = conf.getBoolean("english-is-parsed", false);
+        }
+
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
         {
             counts.clear();
@@ -46,7 +54,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             }
             String [] source = parts[0].split("\\s+");
             String [] target;
-            if (parts[1].startsWith("(") && parts[1].endsWith(")"))
+            if (parsed)
                 target = parseYield(parts[1]);
             else
                 target = parts[1].split("\\s+");
@@ -100,7 +108,15 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     private static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
+        private boolean parsed;
 
+        protected void setup(Context context) throws IOException, InterruptedException
+        {
+            Configuration conf = context.getConfiguration();
+            parsed = conf.getBoolean("english-is-parsed", false);
+        }
+
+ 
         protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
         {
             counts.clear();
@@ -111,7 +127,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 parts[i] = parts[i].trim();
             String [] source = parts[0].split("\\s+");
             String [] target;
-            if (parts[1].startsWith("(") && parts[1].endsWith(")"))
+            if (parsed)
                 target = TargetGivenSourceMap.parseYield(parts[1]);
             else 
                 target = parts[1].split("\\s+");

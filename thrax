@@ -67,8 +67,9 @@ run_hadoop () {
     files="$LOCAL_WORK/thrax.config"
     if $THRAX/lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
     then
+        parsed=`$THRAX/lib/getoption.pl $config english-is-parsed`
         # do the lexprob-dependent hadoop job here
-        hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator $INPUT_FILE $HADOOP_WORK/lexprobs
+        hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator -D english-is-parsed=$parsed $INPUT_FILE $HADOOP_WORK/lexprobs
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
         hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
         files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
