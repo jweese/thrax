@@ -12,7 +12,7 @@ public class TestSetFilter
 {
     private static HashSet<String> testPhrases;
 
-    private static final String NT_REGEX = "\\[\\D,\\d\\]";
+    private static final String NT_REGEX = "\\[[^\\]]+?\\]";
 
     private static void getTestPhrases(int phraseLength, String filename) throws IOException
     {
@@ -20,7 +20,7 @@ public class TestSetFilter
         Scanner scanner = new Scanner(new File(filename));
         StringBuilder sb = new StringBuilder();
         while (scanner.hasNextLine()) {
-            String [] words = scanner.nextLine().split("\\s+");
+            String [] words = scanner.nextLine().trim().split("\\s+");
             for (int len = 1; len <= phraseLength; len++) {
                 for (int start = 0; start <= words.length - len; start++) {
                     sb.setLength(0);
@@ -58,7 +58,7 @@ public class TestSetFilter
         String testFile = argv[1];
         getTestPhrases(phraseLength, testFile);
 
-        Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;
         int rulesOut = 0;
         while (scanner.hasNextLine()) {

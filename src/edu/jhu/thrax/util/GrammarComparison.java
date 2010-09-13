@@ -3,10 +3,13 @@ package edu.jhu.thrax.util;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Scanner;
+import java.util.zip.GZIPInputStream;
 
 import java.io.PrintStream;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.FileNotFoundException;
 
 
@@ -62,8 +65,15 @@ public class GrammarComparison {
         return;
     }
 
-    private static HashSet<String> getRulesFromFile(String filename) throws FileNotFoundException {
-        Scanner scanner = new Scanner(new File(filename));
+    private static HashSet<String> getRulesFromFile(String filename) throws IOException
+    {
+        Scanner scanner;
+        if (filename.endsWith(".gz")) {
+            scanner = new Scanner(new GZIPInputStream(new FileInputStream(new File(filename))), "UTF-8");
+        }
+        else {
+            scanner = new Scanner(new File(filename), "UTF-8");
+        }
 
         HashSet<String> ret = new HashSet<String>();
         while (scanner.hasNextLine()) {
