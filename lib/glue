@@ -1,0 +1,34 @@
+#!/bin/bash
+VERSION="0.80/alpha"
+
+if [[ -z "$THRAX" ]]
+then
+    THRAX=`dirname $0`
+fi
+
+usage () {
+    cat <<END_USAGE
+Usage: `basename $0` <configuration file> <grammar>
+END_USAGE
+}
+
+if [[ $# -lt 2 ]]
+then
+    usage
+    exit 1
+fi
+
+config=$1
+grammar=$2
+
+goal=`$THRAX/lib/getoption.pl $config goal-symbol`
+if [[ -z "$goal" ]]
+then
+    echo "The option 'goal-symbol' was not set in your configuration file." >&2
+    echo "Using default goal symbol 'S'." >&2
+fi
+
+features=`$THRAX/lib/getoption.pl $config features`
+
+java -cp $THRAX/bin -Xmx500m edu.jhu.thrax.glue.CreateGlueGrammar $grammar $goal $features
+
