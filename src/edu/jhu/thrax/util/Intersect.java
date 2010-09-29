@@ -18,9 +18,9 @@ public class Intersect
 
         Scanner scanner;
         if (argv[1].endsWith(".gz"))
-            scanner = new Scanner(new File(argv[1]), "UTF-8");
-        else
             scanner = new Scanner(new GZIPInputStream(new FileInputStream(new File(argv[1]))), "UTF-8");
+        else
+            scanner = new Scanner(new File(argv[1]), "UTF-8");
         PrintStream firstGrammar = new PrintStream(new FileOutputStream(argv[2] + ".1"));
         PrintStream secondGrammar = new PrintStream(new FileOutputStream(argv[2] + ".2"));
         while (scanner.hasNextLine()) {
