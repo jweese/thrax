@@ -14,10 +14,7 @@ public class Intersect
     private static HashMap<String,String> rules;
     public static void main(String [] argv) throws Exception
     {
-        System.err.print("[INF] Reading smaller grammar ... ");
         getRulesFromFile(argv[0]);
-        System.err.println("done.");
-        System.err.println("Iterating over larger grammar; printing matches.");
 
         Scanner scanner;
         if (argv[1].endsWith(".gz"))
