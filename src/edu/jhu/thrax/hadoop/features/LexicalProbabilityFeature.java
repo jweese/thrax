@@ -128,7 +128,7 @@ public class LexicalProbabilityFeature extends Feature
         private double sourceGivenTarget(RuleWritable r)
         {
             double result = 0;
-            for (Text [] pairs : (Text [][]) r.e2f.toArray()) {
+            for (Text [] pairs : r.e2f.get()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
                 double prob = 0;
@@ -146,7 +146,7 @@ public class LexicalProbabilityFeature extends Feature
         private double targetGivenSource(RuleWritable r)
         {
             double result = 0;
-            for (Text [] pairs : (Text [][]) r.f2e.toArray()) {
+            for (Text [] pairs : r.f2e.get()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
                 double prob = 0;

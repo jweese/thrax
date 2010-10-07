@@ -26,9 +26,16 @@ if [[ -z "$goal" ]]
 then
     echo "The option 'goal-symbol' was not set in your configuration file." >&2
     echo "Using default goal symbol 'S'." >&2
+    goal="S"
 fi
 
 features=`$THRAX/lib/getoption.pl $config features`
 
-java -cp $THRAX/bin -Xmx500m edu.jhu.thrax.glue.CreateGlueGrammar $grammar $goal $features
+if [[ file $grammar | grep -q gzip ]]
+then
+    zcat $grammar | java -cp $THRAX/bin -Xmx500m edu.jhu.thrax.glue.CreateGlueGrammar $goal $features
+else
+    java -cp $THRAX/bin -Xmx500m edu.jhu.thrax.glue.CreateGlueGrammar $goal $features <$grammar
+fi
+
 
