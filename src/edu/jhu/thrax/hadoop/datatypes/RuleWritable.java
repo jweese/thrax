@@ -310,7 +310,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                                                       b2, start2, end2 - start2);
                 if (cmp != 0)
                     return cmp;
-                cmp = TEXT_COMPARATOR.compare(b1, s1, start1, b2, s2, start2);
+                cmp = TEXT_COMPARATOR.compare(b1, s1, start1 - s1, b2, s2, start2 - s2);
                 if (cmp != 0)
                     return cmp;
                 start1 = end1;
@@ -366,7 +366,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                                                       b2, start2, end2 - start2);
                 if (cmp != 0)
                     return cmp;
-                cmp = TEXT_COMPARATOR.compare(b1, s1, start1, b2, s2, start2);
+                cmp = TEXT_COMPARATOR.compare(b1, s1, start1 - s2, b2, s2, start2 - s2);
                 if (cmp != 0)
                     return cmp;
                 start1 = end1;
