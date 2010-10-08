@@ -11,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.NullWritable;
@@ -30,6 +31,7 @@ public class Thrax extends Configured implements Tool
     public int run(String [] argv) throws Exception
     {
         Configuration conf = getConf();
+        FileSystem fs = FileSystem.get(conf);
         Job job = new Job(conf, "thrax");
 
         // do some command-line stuff
@@ -62,7 +64,7 @@ public class Thrax extends Configured implements Tool
             argv[1] += Path.SEPARATOR;
         }
         String outputPath = argv[1] + "rules";
-        String inputPath;
+        String inputPath = null;
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
         job.waitForCompletion(true);
@@ -94,6 +96,8 @@ public class Thrax extends Configured implements Tool
             FileInputFormat.setInputPaths(fjob, new Path(inputPath));
             FileOutputFormat.setOutputPath(fjob, new Path(outputPath));
             fjob.waitForCompletion(true);
+            if (inputPath != null)
+                fs.delete(new Path(inputPath), true);
         }
         Job printjob = new Job(conf, "thrax-print");
         printjob.setInputFormatClass(SequenceFileInputFormat.class);
@@ -110,6 +114,7 @@ public class Thrax extends Configured implements Tool
         FileInputFormat.setInputPaths(printjob, new Path(inputPath));
         FileOutputFormat.setOutputPath(printjob, new Path(outputPath));
         printjob.waitForCompletion(true);
+        fs.delete(new Path(inputPath), true);
         return 0;
     }
 

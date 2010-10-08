@@ -75,7 +75,6 @@ public class Intersect
         while (scanner.hasNextLine()) {
             String s = scanner.nextLine();
             String r = repr(s);
-            System.err.println(r);
             if (rules.containsKey(r))
                 rules.get(r).add(s);
             else {
