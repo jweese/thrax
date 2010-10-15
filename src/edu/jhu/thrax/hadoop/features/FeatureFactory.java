@@ -14,6 +14,9 @@ public class FeatureFactory
             list.add(new SourcePhraseGivenTargetFeature());
             list.add(new TargetPhraseGivenSourceFeature());
         }
+        else if (name.equals("samt")) {
+            list.add(new SAMTFeatureSet());
+        }
     }
 
     public static List<Feature> getAll(String [] names)
