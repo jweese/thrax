@@ -19,6 +19,10 @@ import edu.jhu.thrax.util.io.LineReader;
 public class LatticeArray implements ParseLattice, Externalizable, ExternalizableToUtf8 {
 
     /**
+     * A random number to get rid of the warning.
+     */
+    private static final long serialVersionUID = 8078L;
+    /**
      * Note that index stores the indices of lattice node positions, i.e. the last element of 
      * index is the terminal node, pointing to lattice.size()
      */
