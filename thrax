@@ -69,23 +69,23 @@ run_hadoop () {
     then
         parsed=`$THRAX/lib/getoption.pl $config english-is-parsed`
         # do the lexprob-dependent hadoop job here
-        hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator -D english-is-parsed=$parsed $INPUT_FILE $HADOOP_WORK/lexprobs
-        hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
-        hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
+        $HADOOP/bin/hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator -D english-is-parsed=$parsed $INPUT_FILE $HADOOP_WORK/lexprobs
+        $HADOOP/bin/hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
+        $HADOOP/bin/hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
         files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
     fi
     # then we will run a bunch of hadoop jobs to do the extraction
-    hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.Thrax -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
+    $HADOOP/bin/hadoop jar $THRAX/bin/thrax-hadoop.jar edu.jhu.thrax.hadoop.Thrax -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
     # now either hadoop fs -cat or hadoop fs -getmerge
     outfile=`$THRAX/lib/getoption.pl $config output`
     if [[ -z "$outfile" || "$outfile" = "stdout" ]]
     then
-        hadoop fs -cat $HADOOP_WORK/final/* | sort -u
+        $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u
     elif [[ `$THRAX/lib/getoption.pl $config gzip` = "true" ]]
     then
-        hadoop fs -cat $HADOOP_WORK/final/* | sort -u | gzip >$outfile
+        $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u | gzip >$outfile
     else
-        hadoop fs -cat $HADOOP_WORK/final/* | sort -u >$outfile
+        $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u >$outfile
     fi
 
 }
