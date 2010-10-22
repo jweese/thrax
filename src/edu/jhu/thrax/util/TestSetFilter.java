@@ -40,9 +40,10 @@ public class TestSetFilter
         String source = rule.split(ThraxConfig.DELIMITER_REGEX)[1];
         String [] phrases = source.split(NT_REGEX);
         for (String p : phrases) {
-            if ("".equals(p)) continue;
-            if (!testPhrases.contains(p.trim()))
+            if ("".equals(p.trim())) continue;
+            if (!testPhrases.contains(p.trim())) {
                 return false;
+            }
         }
         return true;
     }
