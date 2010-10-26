@@ -37,16 +37,16 @@ public class Alignment {
     public Alignment(String s)
     {
         String [] ts = s.trim().split("\\s+");
-        IntPair [] ips = new IntPair[ts.length];
-        int i = 0;
+        ArrayList<IntPair> ipList = new ArrayList<IntPair>();
         for (String t : ts) {
             IntPair ip = IntPair.alignmentFormat(t);
             if (ip == null) {
                 System.err.println("WARNING: malformed alignment " + t + " (skipping)");
                 continue;
             }
-            ips[i++] = ip;
+            ipList.add(ip);
         }
+        IntPair [] ips = (IntPair []) ipList.toArray();
 
         Arrays.sort(ips);
         f2e = convertIntPairsTo2DArray(ips);
