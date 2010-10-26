@@ -131,7 +131,13 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 target = TargetGivenSourceMap.parseYield(parts[1]);
             else 
                 target = parts[1].split("\\s+");
-            Alignment alignment = new Alignment(parts[2]);
+            Alignment alignment;
+            if (parts.length >= 3) {
+                alignment = new Alignment(parts[2]);
+            }
+            else {
+                alignment = new Alignment("");
+            }
 
             for (int i = 0; i < target.length; i++) {
                 Text tgt = new Text(target[i]);

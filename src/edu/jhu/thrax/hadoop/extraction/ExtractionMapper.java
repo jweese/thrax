@@ -56,6 +56,16 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
         for (int i = 0; i < inputs.length; i++) {
             inputs[i] = inputs[i].trim();
         }
+        if (inputs.length < 3) {
+            String [] realInputs = new String[3];
+            for (int j = 0; j < realInputs.length; j++) {
+                if (j < inputs.length)
+                    realInputs[j] = inputs[j];
+                else
+                    realInputs[j] = "";
+            }
+            inputs = realInputs;
+        }
         for (Rule r : extractor.extract(inputs))
             context.write(new RuleWritable(r), one);
     }

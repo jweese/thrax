@@ -62,6 +62,9 @@ public class Alignment {
 
     private static int [][] convertIntPairsTo2DArray(IntPair [] ips)
     {
+        if (ips.length == 0) {
+            return new int[0][0];
+        }
         int [][] ret = new int[ips[ips.length-1].fst + 1][];
         ArrayList<IntPair> list = new ArrayList<IntPair>();
         int currfst = 0;
