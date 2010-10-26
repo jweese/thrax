@@ -46,7 +46,9 @@ public class Alignment {
             }
             ipList.add(ip);
         }
-        IntPair [] ips = (IntPair []) ipList.toArray();
+        IntPair [] ips = new IntPair[ipList.size()];
+        for (int i = 0; i < ips.length; i++)
+            ips[i] = ipList.get(i);
 
         Arrays.sort(ips);
         f2e = convertIntPairsTo2DArray(ips);
