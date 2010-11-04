@@ -1,30 +1,13 @@
-Thrax is designed to extract a synchronous context-free grammar (SCFG) from an
-aligned parallel corpus. If you don't know what that means, you probably don't
-need Thrax.
+Thrax uses Apache hadoop (an open-source implementation of MapReduce) to
+efficiently extract a synchronous context-free grammar translation model
+for use in modern machine translation systems.
 
 Thrax currently has support for both Hiero-style grammars (with a single
 non-terminal symbol) and SAMT-style grammars (where non-terminal symbols are
 calculated by projecting onto the span from a target-side parse tree).
 
-Thrax has two modes: native Java mode (where all rules are held in memory during
-execution) and Hadoop mode (which uses Hadoop, Apache's open-source MapReduce
-implementation). For anything other than a toy grammar, native Java mode is
-not appropriate unless you have many gigabytes of free memory to give to the
-JVM. This does NOT mean that you can only use Thrax for toy grammars if you
-don't have access to a cluster! Thrax will work perfectly well using Hadoop in
-standalone mode on a single machine. There are notes for each mode under
-COMPILING below.
-
-Note that Hadoop mode was developed against Hadoop version 0.20.2.
-
 COMPILING:
 
-* NATIVE JAVA MODE:
-To compile the code, type
-
-    ant
-
-* HADOOP MODE:
 First, you need to set two environment variables:
 $HADOOP should point to the directory where Hadoop is installed.
 $HADOOP_VERSION should be the version number of your installation of Hadoop.
@@ -33,18 +16,17 @@ in the classpath in order to compile correctly.
 
 To compile, type
 
-    ant hadoop-jar
+    ant jar
 
-This will compile all the Hadoop-specific classes and package them into a jar
-for use on a Hadoop cluster.
+This will compile all classes and package them into a jar for use on a 
+Hadoop cluster.
 
 At the end of the compilation, ant should report that the build was successful.
 
 RUNNING THRAX:
-Thrax can be invoked with one of
+Thrax can be invoked with
 
     thrax <configuration file>
-    thrax --hadoop <configuration file>
 
 Some example configuration files have been included with this distribution:
 
