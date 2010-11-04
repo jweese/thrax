@@ -22,72 +22,10 @@ Usage: `basename $0` [options] <configuration file>
 Options:
   -d, --debug                       enable debugging output
   -h, --help                        print this help message and exit
-  -H, --hadoop                      use Hadoop mode for extraction
-  -m AMOUNT, --mem AMOUNT           maximum memory for Java VM 
   -q, --quiet                       suppress all output except rules
   -v, --verbose                     enable verbose output
   -V, --version                     print version information and exit
 END_USAGE
-}
-
-jvm () {
-    JVM_OPTS="-Dfile.encoding=utf8"
-    if [[ -f $THRAX/bin/thrax.jar ]]
-    then
-        java -Xmx${mem} $JVM_OPTS -jar $THRAX/bin/thrax.jar $config $verbosity
-    else
-        java -Xmx${mem} $JVM_OPTS -cp $THRAX/bin edu.jhu.thrax.Thrax $config $verbosity
-    fi
-}
-
-run_hadoop () {
-    INPUT_FILE=`$THRAX/lib/getoption.pl $config input-file`
-    if [[ -z "$INPUT_FILE" ]]
-    then
-        echo "No unified input file given; cannot run on hadoop."
-        echo "Please set the 'input-file' key in your Thrax conf file."
-        exit 1
-    fi
-    LOCAL_WORK=`$THRAX/lib/getoption.pl $config work-dir`
-    if [[ -z "$LOCAL_WORK" ]]
-    then
-        echo "No local work directory specified!"
-        echo "Please set the 'work-dir' key in your Thrax conf file."
-        exit 1
-    fi
-    HADOOP_WORK=`$THRAX/lib/getoption.pl $config hadoop-work-dir`
-    if [[ -z "$HADOOP_WORK" ]]
-    then
-        echo "No working directory for hadoop specified!"
-        echo "Please set the 'hadoop-work-dir' key in your Thrax conf file."
-        exit 1
-    fi
-    mkdir -p $LOCAL_WORK
-    cp $config $LOCAL_WORK/thrax.config
-    files="$LOCAL_WORK/thrax.config"
-    if $THRAX/lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
-    then
-        parsed=`$THRAX/lib/getoption.pl $config english-is-parsed`
-        # do the lexprob-dependent hadoop job here
-        $HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator -D english-is-parsed=$parsed $INPUT_FILE $HADOOP_WORK/lexprobs
-        $HADOOP/bin/hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
-        $HADOOP/bin/hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
-        files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
-    fi
-    # then we will run a bunch of hadoop jobs to do the extraction
-    $HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.Thrax -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
-    # now either hadoop fs -cat or hadoop fs -getmerge
-    outfile=`$THRAX/lib/getoption.pl $config output`
-    if [[ -z "$outfile" || "$outfile" = "stdout" ]]
-    then
-        $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u
-    elif [[ `$THRAX/lib/getoption.pl $config gzip` = "true" ]]
-    then
-        $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u | gzip >$outfile
-    else
-        $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u >$outfile
-    fi
-
 }
 
 while [[ -n "$@" ]]
@@ -101,10 +39,6 @@ do
             usage
             exit 0
             ;;
-        -m|--mem)
-            mem=$2
-            shift
-            ;;
         -v|--verbose)
             verbosity="verbose"
             ;;
@@ -113,9 +47,6 @@ do
             ;;
         -q|--quiet)
             verbosity="quiet"
-            ;;
-        -H|--hadoop)
-            run_with_hadoop="yes"
             ;;
         *)
             if [[ -z "$config" ]]
@@ -132,15 +63,50 @@ then
     exit 0
 fi
 
-if [[ -z "$mem" ]]
+INPUT_FILE=`$THRAX/lib/getoption.pl $config input-file`
+if [[ -z "$INPUT_FILE" ]]
 then
-    mem="1g"
+    echo "No unified input file given; cannot run on hadoop."
+    echo "Please set the 'input-file' key in your Thrax conf file."
+    exit 1
 fi
-
-if [[ -z "$run_with_hadoop" ]]
+LOCAL_WORK=`$THRAX/lib/getoption.pl $config work-dir`
+if [[ -z "$LOCAL_WORK" ]]
 then
-    jvm
+    echo "No local work directory specified!"
+    echo "Please set the 'work-dir' key in your Thrax conf file."
+    exit 1
+fi
+HADOOP_WORK=`$THRAX/lib/getoption.pl $config hadoop-work-dir`
+if [[ -z "$HADOOP_WORK" ]]
+then
+    echo "No working directory for hadoop specified!"
+    echo "Please set the 'hadoop-work-dir' key in your Thrax conf file."
+    exit 1
+fi
+mkdir -p $LOCAL_WORK
+cp $config $LOCAL_WORK/thrax.config
+files="$LOCAL_WORK/thrax.config"
+if $THRAX/lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
+then
+    parsed=`$THRAX/lib/getoption.pl $config english-is-parsed`
+    # do the lexprob-dependent hadoop job here
+    $HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator -D english-is-parsed=$parsed $INPUT_FILE $HADOOP_WORK/lexprobs
+    $HADOOP/bin/hadoop fs -getmerge $HADOOP_WORK/lexprobs/f2e $LOCAL_WORK/lexprobs.f2e
+    $HADOOP/bin/hadoop fs -getmerge $HADOOP_WORK/lexprobs/e2f $LOCAL_WORK/lexprobs.e2f
+    files="$files,$LOCAL_WORK/lexprobs.f2e,$LOCAL_WORK/lexprobs.e2f"
+fi
+# then we will run a bunch of hadoop jobs to do the extraction
+$HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.Thrax -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
+# now either hadoop fs -cat or hadoop fs -getmerge
+outfile=`$THRAX/lib/getoption.pl $config output`
+if [[ -z "$outfile" || "$outfile" = "stdout" ]]
+then
+    $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u
+elif [[ `$THRAX/lib/getoption.pl $config gzip` = "true" ]]
+then
+    $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u | gzip >$outfile
 else
-    run_hadoop
+    $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u >$outfile
 fi
 
