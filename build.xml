@@ -16,19 +16,21 @@
         <mkdir dir="${build}"/>
     </target>
 
-    <target name="compile" depends="init">
+    <target name="init-hadoop">
+        <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation." unless="env.HADOOP"/>
+        <fail message="Please set the $HADOOP_VERSION environment variable to the version number of your Hadoop installation." unless="env.HADOOP_VERSION"/>
+    </target>
+
+    <target name="compile" depends="init,init-hadoop">
         <javac srcdir="${src}" destdir="${build}"
-            debug="on" includeantruntime="false"
-            excludes="${hadoop-src}/**">
+            classpath="${env.HADOOP}/hadoop-${env.HADOOP_VERSION}-core.jar"
+            debug="on" includeantruntime="false">
             <compilerarg value="-Xlint"/>
         </javac>
     </target>
 
     <target name="jar" depends="compile">
         <jar destfile="${build}/thrax.jar">
-            <manifest>
-                <attribute name="Main-Class" value="edu.jhu.thrax.Thrax"/>
-            </manifest>
             <fileset dir="${build}">
                 <include name="**/*.class"/>
             </fileset>
@@ -41,28 +43,6 @@
                 <include name="**/*.java"/>
             </fileset>
         </jar>
-    </target>
-
-    <target name="hadoop-jar" depends="compile,hadoop">
-        <jar destfile="${build}/thrax-hadoop.jar">
-            <fileset dir="${build}">
-                <include name="**/*.class"/>
-            </fileset>
-        </jar>
-    </target>
-
-    <target name="init-hadoop">
-        <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation." unless="env.HADOOP"/>
-        <fail message="Please set the $HADOOP_VERSION environment variable to the version number of your Hadoop installation." unless="env.HADOOP_VERSION"/>
-    </target>
-
-    <target name="hadoop" depends="init,init-hadoop">
-        <javac srcdir="${src}" destdir="${build}"
-            classpath="${env.HADOOP}/hadoop-${env.HADOOP_VERSION}-core.jar"
-            debug="on" includeantruntime="false"
-            includes="${hadoop-src}/**">
-            <compilerarg value="-Xlint"/>
-        </javac>
     </target>
 
     <target name="clean">
