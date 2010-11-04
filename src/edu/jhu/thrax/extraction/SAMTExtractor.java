@@ -32,7 +32,11 @@ public class SAMTExtractor extends HieroRuleExtractor {
     public List<Rule> extract(String [] inputs)
     {
         if (inputs.length < 3) {
-            return null;
+            return new ArrayList<Rule>();
+        }
+        for (String i : inputs) {
+            if (i.trim().equals("") || i.trim().equals("()"))
+                return new ArrayList<Rule>();
         }
 
         int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
@@ -44,7 +48,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
 
         if (!alignment.consistent(source.length, target.length)) {
             System.err.println("WARNING: inconsistent alignment (skipping)");
-            return null;
+            return new ArrayList<Rule>();
         }
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);

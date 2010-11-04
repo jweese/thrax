@@ -61,7 +61,11 @@ public class HieroRuleExtractor implements RuleExtractor {
     public List<Rule> extract(String [] inputs)
     {
         if (inputs.length < 3) {
-            return null;
+            return new ArrayList<Rule>();
+        }
+        for (String i : inputs) {
+            if (i.trim().equals(""))
+                return new ArrayList<Rule>();
         }
 
         int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
@@ -69,7 +73,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         Alignment alignment = new Alignment(inputs[2]);
         if (!alignment.consistent(source.length, target.length)) {
             System.err.println("WARNING: inconsistent alignment (skipping)");
-            return null;
+            return new ArrayList<Rule>();
         }
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);

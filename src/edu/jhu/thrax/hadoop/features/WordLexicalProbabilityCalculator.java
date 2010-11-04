@@ -51,6 +51,8 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             String [] parts = line.split(ThraxConfig.DELIMITER_REGEX);
             for (int i = 0; i < parts.length; i++) {
                 parts[i] = parts[i].trim();
+                if (parts[i].equals("") || parts[i].equals("()"))
+                    return;
             }
             String [] source = parts[0].split("\\s+");
             String [] target;
@@ -123,8 +125,11 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 
             String line = value.toString();
             String [] parts = line.trim().split(ThraxConfig.DELIMITER_REGEX);
-            for (int i = 0; i < parts.length; i++)
+            for (int i = 0; i < parts.length; i++) {
                 parts[i] = parts[i].trim();
+                if (parts[i].equals("") || parts[i].equals("()"))
+                    return;
+            }
             String [] source = parts[0].split("\\s+");
             String [] target;
             if (parsed)
