@@ -1,6 +1,7 @@
 package edu.jhu.thrax.datatypes;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 
 /**
@@ -104,7 +105,7 @@ public class Alignment {
      */
     public boolean sourceIsAligned(int i)
     {
-        return i < f2e.length && f2e[i].length > 0;
+        return i >= 0 && i < f2e.length && f2e[i].length > 0;
     }
 
     /**
@@ -115,7 +116,7 @@ public class Alignment {
      */
     public boolean targetIsAligned(int i)
     {
-        return i < e2f.length && e2f[i].length > 0;
+        return i >= 0 && i < e2f.length && e2f[i].length > 0;
     }
 
     /**
@@ -150,6 +151,36 @@ public class Alignment {
             }
         }
         return new PhrasePair(sourceStart, sourceEnd, targetStart, targetEnd);
+    }
+
+    public List<PhrasePair> getAllPairsFromSource(int sourceStart, int sourceEnd, boolean allowUnalignedBoundaries, int elength)
+    {
+        List<PhrasePair> result = new ArrayList<PhrasePair>();
+        PhrasePair pp = getPairFromSource(sourceStart, sourceEnd);
+        if (pp == null)
+            return result;
+        result.add(pp);
+        if (!allowUnalignedBoundaries)
+            return result;
+        int unalignedTargetStart = pp.targetStart;
+        while (unalignedTargetStart > 0 && !targetIsAligned(unalignedTargetStart - 1))
+            unalignedTargetStart--;
+        int unalignedTargetEnd = pp.targetEnd;
+        while (unalignedTargetEnd < elength && !targetIsAligned(unalignedTargetEnd))
+            unalignedTargetEnd++;
+        for (int i = unalignedTargetStart; i < pp.targetStart; i++)
+            result.add(new PhrasePair(sourceStart, sourceEnd, i, pp.targetEnd));
+        if (unalignedTargetEnd == pp.targetEnd)
+            return result;
+        List<PhrasePair> otherResult = new ArrayList<PhrasePair>();
+        for (PhrasePair curr : result) {
+            for (int j = pp.targetEnd + 1; j <= unalignedTargetEnd; j++) {
+                PhrasePair x = new PhrasePair(curr.sourceStart, curr.sourceEnd, curr.targetStart, j);
+		otherResult.add(x);
+	    }
+        }
+        result.addAll(otherResult);
+        return result;
     }
 
     public String toString()
