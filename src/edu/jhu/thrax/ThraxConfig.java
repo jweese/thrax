@@ -30,32 +30,6 @@ public class ThraxConfig {
      */
     public static String GRAMMAR = "hiero";
     /**
-     * Path to alignment file.
-     */
-    public static String ALIGNMENT = "";
-    /**
-     * Alignment format. This doesn't do anything right now. The only format
-     * is Berkeley.
-     */
-    public static String ALIGNMENT_FORMAT = "berkeley";
-    /**
-     * Path to file with parses of target-side sentences.
-     */
-    public static String PARSE = "";
-    /**
-     * Parse format. This doesn't do anything. The only format is Penn
-     * treebank.
-     */
-    public static String PARSE_FORMAT = "ptb";
-    /**
-     * Path to file with source-side sentences.
-     */
-    public static String SOURCE = "";
-    /**
-     * Path to file with plaintext target-side sentences.
-     */
-    public static String TARGET = "";
-    /**
      * Output format. This doesn't do anything. The only format is Joshua.
      */
     public static String OUTPUT_FORMAT = "joshua";
@@ -109,35 +83,10 @@ public class ThraxConfig {
     public static int MAX_CAT_LABELS = -1;
 
     /**
-     * Number of threads of execution.
-     */
-    public static int THREADS = 1;
-
-    /**
-     * Number of sentences to hold in memory while threads are busy processing.
-     */
-    public static int QUEUE_SIZE = 200;
-
-    /**
      * Default nonterminal symbol. This is the only NT in Hiero grammars, and
      * it is used when no other symbol is possible in an SAMT grammar.
      */
     public static String DEFAULT_NT = "X";
-
-    /**
-     * Whether or not to use hadoop (open-source implementation of MapReduce).
-     */
-    public static boolean HADOOP = false;
-    // put hadoop options here
-
-    /**
-     * Whether or not the parallel corpus is in one file.
-     */
-    public static boolean UNIFIED_INPUT = false;
-    /**
-     * The path to the unified input file.
-     */
-    public static String INPUT_FILE = "";
 
     /**
      * Label feature scores with feature names?
@@ -159,24 +108,6 @@ public class ThraxConfig {
 
             if ("grammar".equals(key)) {
                 GRAMMAR = value.toLowerCase();
-            }
-            else if ("alignment".equals(key)) {
-                ALIGNMENT = value;
-            }
-            else if ("alignment-format".equals(key)) {
-                ALIGNMENT_FORMAT = value.toLowerCase();
-            }
-            else if ("parse".equals(key)) {
-                PARSE = value;
-            }
-            else if ("parse-format".equals(key)) {
-                PARSE_FORMAT = value.toLowerCase();
-            }
-            else if ("source".equals(key)) {
-                SOURCE = value;
-            }
-            else if ("target".equals(key)) {
-                TARGET = value;
             }
             else if ("output-format".equals(key)) {
                 OUTPUT_FORMAT = value.toLowerCase();
@@ -219,21 +150,6 @@ public class ThraxConfig {
             }
             else if ("default-nt".equals(key)) {
                 DEFAULT_NT = value;
-            }
-            else if ("threads".equals(key)) {
-                THREADS = Integer.parseInt(value);
-            }
-            else if ("queue-size".equals(key)) {
-                QUEUE_SIZE = Integer.parseInt(value);
-            }
-            else if ("hadoop".equals(key)) {
-                HADOOP = Boolean.parseBoolean(value);
-            }
-            else if ("unified-input".equals(key)) {
-                UNIFIED_INPUT = Boolean.parseBoolean(value);
-            }
-            else if ("input-file".equals(key)) {
-                INPUT_FILE = value;
             }
             else if ("label-feature-scores".equals(key)) {
                 LABEL_FEATURE_SCORES = Boolean.parseBoolean(value);
