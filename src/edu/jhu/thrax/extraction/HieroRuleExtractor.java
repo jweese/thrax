@@ -173,12 +173,6 @@ public class HieroRuleExtractor implements RuleExtractor {
             if (labels == null || labels.isEmpty()) {
                 System.err.println("WARNING: no labels for target-side span of " + r.ntSpan(i));
             }
-            else if (ThraxConfig.verbosity > 1) {
-                System.err.print("labels for span " + r.ntSpan(i));
-                for (int l : labels)
-                    System.err.print(String.format(" %s", Vocabulary.getWord(l)));
-                System.err.println();
-            }
             for (Rule s = q.peek(); s != null && s.getNT(i) == -1; s = q.peek()) {
                 s = q.poll();
                 for (int l : labels) {

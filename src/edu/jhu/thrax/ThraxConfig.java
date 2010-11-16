@@ -19,13 +19,6 @@ public class ThraxConfig {
     public static final String DELIMITER_REGEX = "\\|\\|\\|";
 
     /**
-     * Determines the verbosity level. 0 is the normal level, which is
-     * quiet. 1 means verbose, and 2 includes debugging information.
-     * A number less than zero means silent.
-     */
-    public static int verbosity = 0;
-
-    /**
      * Grammar type for extraction.
      */
     public static String GRAMMAR = "hiero";
@@ -157,21 +150,4 @@ public class ThraxConfig {
         }
     }
 
-    /**
-     * Sets the verbosity level.
-     *
-     * @param level a String describing the verbosity level
-     */
-    public static void setVerbosity(String level)
-    {
-        if ("verbose".equals(level)) {
-            verbosity = 1;
-        }
-        else if ("debug".equals(level)) {
-            verbosity = 2;
-        }
-        else if ("quiet".equals(level)) {
-            verbosity = -1;
-        }
-    }
 }

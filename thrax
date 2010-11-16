@@ -36,15 +36,6 @@ do
             usage
             exit 0
             ;;
-        -v|--verbose)
-            verbosity="verbose"
-            ;;
-        -d|--debug)
-            verbosity="debug"
-            ;;
-        -q|--quiet)
-            verbosity="quiet"
-            ;;
         *)
             if [[ -z "$config" ]]
             then
