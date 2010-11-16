@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Scanner;
+
+import java.io.IOException;
 
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.util.Vocabulary;
@@ -276,5 +279,23 @@ public class HieroRuleExtractor implements RuleExtractor {
             }
         }
         return labelsBySpan;
+    }
+
+    public static void main(String [] argv) throws IOException
+    {
+        if (argv.length < 1) {
+            System.err.println("usage: HieroRuleExtractor <conf file>");
+            return;
+        }
+        ThraxConfig.configure(argv[0]);
+        Scanner scanner = new Scanner(System.in);
+        HieroRuleExtractor extractor = new HieroRuleExtractor();
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String [] tokens = line.split(ThraxConfig.DELIMITER_REGEX);
+            for (Rule r : extractor.extract(tokens))
+                System.out.println(r);
+        }
+        return;
     }
 }
