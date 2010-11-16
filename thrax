@@ -20,10 +20,7 @@ usage () {
     cat <<END_USAGE
 Usage: `basename $0` [options] <configuration file>
 Options:
-  -d, --debug                       enable debugging output
   -h, --help                        print this help message and exit
-  -q, --quiet                       suppress all output except rules
-  -v, --verbose                     enable verbose output
   -V, --version                     print version information and exit
 END_USAGE
 }
@@ -66,7 +63,7 @@ fi
 INPUT_FILE=`$THRAX/lib/getoption.pl $config input-file`
 if [[ -z "$INPUT_FILE" ]]
 then
-    echo "No unified input file given; cannot run on hadoop."
+    echo "No input file given!"
     echo "Please set the 'input-file' key in your Thrax conf file."
     exit 1
 fi
@@ -74,15 +71,16 @@ LOCAL_WORK=`$THRAX/lib/getoption.pl $config work-dir`
 if [[ -z "$LOCAL_WORK" ]]
 then
     echo "No local work directory specified!"
-    echo "Please set the 'work-dir' key in your Thrax conf file."
-    exit 1
+    LOCAL_WORK="./thrax_tmp"
+    echo "Using '$LOCAL_WORK'"
 fi
 HADOOP_WORK=`$THRAX/lib/getoption.pl $config hadoop-work-dir`
 if [[ -z "$HADOOP_WORK" ]]
 then
     echo "No working directory for hadoop specified!"
-    echo "Please set the 'hadoop-work-dir' key in your Thrax conf file."
-    exit 1
+    datestr=`date "+%Y_%m_%d_%H%M%S"`
+    HADOOP_WORK="thrax_run_$datestr"
+    echo "Using '$HADOOP_WORK'"
 fi
 mkdir -p $LOCAL_WORK
 cp $config $LOCAL_WORK/thrax.config
