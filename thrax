@@ -76,7 +76,7 @@ fi
 mkdir -p $LOCAL_WORK
 cp $config $LOCAL_WORK/thrax.config
 files="$LOCAL_WORK/thrax.config"
-if $THRAX/lib/getoption.pl $config features | grep -q lex && test ! -e $LOCAL_WORK/lexprobs.f2e
+if $THRAX/lib/getoption.pl $config features | grep -q lex 
 then
     parsed=`$THRAX/lib/getoption.pl $config english-is-parsed`
     # do the lexprob-dependent hadoop job here
