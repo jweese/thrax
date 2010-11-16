@@ -10,7 +10,6 @@ import java.util.LinkedList;
 
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.util.Vocabulary;
-import edu.jhu.thrax.features.Feature;
 import edu.jhu.thrax.ThraxConfig;
 
 /**
@@ -36,17 +35,13 @@ public class HieroRuleExtractor implements RuleExtractor {
 
     public int X_ID;
 
-    private ArrayList<Feature> features;
-    private int featureLength;
 
     /**
-     * Default constructor. All it does is to initialize the list of
-     * features to an empty list.
+     * Default constructor. The grammar parameters are initalized according
+     * to how they are set in the thrax config file.
      */
     public HieroRuleExtractor()
     {
-        features = new ArrayList<Feature>();
-        featureLength = 0;
         INIT_LENGTH_LIMIT = ThraxConfig.INITIAL_PHRASE_LIMIT;
         SOURCE_LENGTH_LIMIT = ThraxConfig.SOURCE_LENGTH_LIMIT;
         NT_LIMIT = ThraxConfig.ARITY;

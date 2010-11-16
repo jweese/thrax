@@ -5,7 +5,7 @@ package edu.jhu.thrax.util;
  * not known by Thrax.
  */
 @SuppressWarnings("serial")
-public class UnknownGrammarTypeException extends InvalidConfigurationException {
+public class UnknownGrammarTypeException extends Exception {
 
     private String type;
 
