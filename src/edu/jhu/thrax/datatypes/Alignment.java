@@ -9,13 +9,6 @@ import java.util.Arrays;
 public class Alignment {
 
     /**
-     * A unique identifier for this Alignment.
-     */
-    public final int id;
-
-    private static int currentId = 0;
-
-    /**
      * A list of alignment points, arranged by source-side index.
      */
     public int [][] f2e;
@@ -56,8 +49,6 @@ public class Alignment {
             ip.reverse();
         Arrays.sort(ips);
         e2f = convertIntPairsTo2DArray(ips);
-
-        this.id = currentId++;
     }
 
     private static int [][] convertIntPairsTo2DArray(IntPair [] ips)
