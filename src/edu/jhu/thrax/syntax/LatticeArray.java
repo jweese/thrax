@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
+import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.util.ExternalizableToUtf8;
 import edu.jhu.thrax.util.io.LineReader;
@@ -65,6 +66,102 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         }
         return labels;
     }
+
+    public int getOneConstituent(int from, int to)
+    {
+        int spanLength = to - from;
+        Stack<Integer> stack = new Stack<Integer>();
+
+        for (int i = forwardIndex.get(from); i < forwardIndex.get(from+1); i+=2) {
+            int currentSpan = forwardLattice.get(i+1);
+            if (currentSpan == spanLength) {
+                if ("top".equals(ThraxConfig.UNARY_CATEGORY_HANDLER))
+                    return forwardLattice.get(i);
+                stack.push(forwardLattice.get(i));
+            }
+            else if (currentSpan < spanLength)
+                break;
+        }
+        if (stack.isEmpty())
+            return -1;
+        if ("bottom".equals(ThraxConfig.UNARY_CATEGORY_HANDLER))
+            return stack.pop();
+        StringBuilder sb = new StringBuilder();
+        while (!stack.isEmpty()) {
+            String w = Vocabulary.getWord(stack.pop());
+            if (sb.length() != 0)
+                sb.append(":");
+            sb.append(w);
+        }
+        String label = sb.toString();
+        return Vocabulary.getId(label);
+    }
+
+    public int getOneSingleConcatenation(int from, int to)
+    {
+        for (int midpt = from + 1; midpt < to; midpt++) {
+            int x = getOneConstituent(from, midpt);
+            if (x < 0)
+                break;
+            int y = getOneConstituent(midpt, to);
+            if (y < 0)
+                break;
+            String label = Vocabulary.getWord(x) + "+" + Vocabulary.getWord(y);
+            return Vocabulary.getId(label);
+        }
+        return -1;
+    }
+
+    public int getOneDoubleConcatenation(int from, int to)
+    {
+        for (int a = from + 1; a < to - 1; a++) {
+            for (int b = a + 1; b < to; b++) {
+                int x = getOneConstituent(from, a);
+                if (x < 0)
+                    break;
+                int y = getOneConstituent(a, b);
+                if (y < 0)
+                    break;
+                int z = getOneConstituent(b, to);
+                if (z < 0)
+                    break;
+                String label = Vocabulary.getWord(x) + "+" + Vocabulary.getWord(y) + "+" + Vocabulary.getWord(z);
+                return Vocabulary.getId(label);
+            }
+        }
+        return -1;
+    }
+
+    public int getOneRightSideCCG(int from, int to)
+    {
+        for (int end = to + 1; end <= forwardLattice.size(); end++) {
+            int x = getOneConstituent(from, end);
+            if (x < 0)
+                break;
+            int y = getOneConstituent(to, end);
+            if (y < 0)
+                break;
+            String label = Vocabulary.getWord(x) + "/" + Vocabulary.getWord(y);
+            return Vocabulary.getId(label);
+        }
+        return -1;
+    }
+
+    public int getOneLeftSideCCG(int from, int to)
+    {
+        for (int start = from - 1; start >= 0; start--) {
+            int x = getOneConstituent(start, to);
+            if (x < 0)
+                break;
+            int y = getOneConstituent(start, from);
+            if (y < 0)
+                break;
+            String label = Vocabulary.getWord(x) + "\\" + Vocabulary.getWord(y);
+            return Vocabulary.getId(label);
+        }
+        return -1;
+    }
+                    
 
     /**
      * Returns a collection of concatenated non-terminal labels that exactly 

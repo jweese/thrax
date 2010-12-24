@@ -87,6 +87,11 @@ public class ThraxConfig {
     public static boolean LABEL_FEATURE_SCORES = false;
 
     /**
+     * How to handle unary categories in SAMT labelling.
+     */
+    public static String UNARY_CATEGORY_HANDLER = "all";
+
+    /**
      * Sets the various static configuration variables by reading them from
      * a configuration file.
      *
@@ -146,6 +151,9 @@ public class ThraxConfig {
             }
             else if ("label-feature-scores".equals(key)) {
                 LABEL_FEATURE_SCORES = Boolean.parseBoolean(value);
+            }
+            else if ("unary-category-handler".equals(key)) {
+                UNARY_CATEGORY_HANDLER = value;
             }
         }
     }
