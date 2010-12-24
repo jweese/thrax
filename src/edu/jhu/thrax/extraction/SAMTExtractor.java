@@ -91,15 +91,39 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 int to = pp.targetEnd;
                 IntPair span = new IntPair(from, to);
                 Collection<Integer> c = new HashSet<Integer>();
-                Collection<Integer> labels;
-                labels = lattice.getConstituentLabels(from, to);
-                addUpTo(ThraxConfig.MAX_CONSTITUENT_LABELS, labels, c);
-                labels = lattice.getConcatenatedLabels(from, to);
-                addUpTo(ThraxConfig.MAX_CAT_LABELS, labels, c);
-                labels = lattice.getCcgLabels(from, to);
-                addUpTo(ThraxConfig.MAX_CCG_LABELS, labels, c);
-                if (c.isEmpty())
-                    c = HieroRuleExtractor.HIERO_LABELS;
+                int x = lattice.getOneConstituent(from, to);
+                if (x >= 0) {
+                    c.add(x);
+                    labelsBySpan.put(span, c);
+                    break;
+                }
+                x = lattice.getOneSingleConcatenation(from, to);
+                if (x >= 0) {
+                    c.add(x);
+                    labelsBySpan.put(span, c);
+                    break;
+                }
+                x = lattice.getOneRightSideCCG(from, to);
+                if (x >= 0) {
+                    c.add(x);
+                    labelsBySpan.put(span, c);
+                    break;
+                }
+                x = lattice.getOneLeftSideCCG(from, to);
+                if (x >= 0) {
+                    c.add(x);
+                    labelsBySpan.put(span, c);
+                    break;
+                }
+                if (ThraxConfig.ALLOW_DOUBLE_CONCAT) {
+                    x = lattice.getOneDoubleConcatenation(from, to);
+                    if (x >= 0) {
+                        c.add(x);
+                        labelsBySpan.put(span, c);
+                        break;
+                    }
+                }
+                c = HieroRuleExtractor.HIERO_LABELS;
                 labelsBySpan.put(span, c);
             }
         }

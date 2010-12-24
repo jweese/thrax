@@ -92,6 +92,11 @@ public class ThraxConfig {
     public static String UNARY_CATEGORY_HANDLER = "all";
 
     /**
+     * Allow double concatenation in SAMT labelling.
+     */
+    public static boolean ALLOW_DOUBLE_CONCAT = false;
+
+    /**
      * Sets the various static configuration variables by reading them from
      * a configuration file.
      *
@@ -154,6 +159,9 @@ public class ThraxConfig {
             }
             else if ("unary-category-handler".equals(key)) {
                 UNARY_CATEGORY_HANDLER = value;
+            }
+            else if ("allow-double-plus".equals(key)) {
+                ALLOW_DOUBLE_CONCAT = Boolean.parseBoolean(value);
             }
         }
     }
