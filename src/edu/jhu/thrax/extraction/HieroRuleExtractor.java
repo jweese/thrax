@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
+import java.util.Scanner;
+
+import java.io.IOException;
 
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.util.Vocabulary;
@@ -83,16 +86,16 @@ public class HieroRuleExtractor implements RuleExtractor {
 
     protected List<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart, HashMap<IntPair,Collection<Integer>> labelsBySpan)
     {
-        int numPrototypes = 0;
         List<Rule> rules = new ArrayList<Rule>();
         while (q.peek() != null) {
             Rule r = q.poll();
 
-            if (isWellFormed(r)) {
-                numPrototypes++;
-                for (Rule s : getLabelVariants(r, labelsBySpan)) {
-                    rules.add(s);
-                }
+	    for (Rule t : getAlignmentVariants(r)) {
+                if (isWellFormed(t)) {
+			for (Rule s : getLabelVariants(t, labelsBySpan)) {
+			    rules.add(s);
+			}
+		}
             }
             if (r.appendPoint > phrasesByStart.length - 1)
                 continue;
@@ -104,7 +107,7 @@ public class HieroRuleExtractor implements RuleExtractor {
                 Rule s = r.copy();
                 s.extendWithTerminal();
                 q.offer(s);
-                    }
+	    }
 
             for (PhrasePair pp : phrasesByStart[r.appendPoint]) {
                 if (pp.sourceEnd - r.rhs.sourceStart > INIT_LENGTH_LIMIT ||
@@ -130,10 +133,11 @@ public class HieroRuleExtractor implements RuleExtractor {
             return false;
         if (r.rhs.targetEnd - r.rhs.targetStart > INIT_LENGTH_LIMIT)
             return false;
-        if (!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1) ||
-                !r.alignment.sourceIsAligned(r.rhs.sourceStart) ||
-                !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
-                !r.alignment.targetIsAligned(r.rhs.targetStart))
+        if (!ALLOW_LOOSE_BOUNDS &&
+		(!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1) ||
+                 !r.alignment.sourceIsAligned(r.rhs.sourceStart) ||
+                 !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
+                 !r.alignment.targetIsAligned(r.rhs.targetStart)))
             return false;
         for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
             if (r.targetLex[i] < 0) {
@@ -142,7 +146,7 @@ public class HieroRuleExtractor implements RuleExtractor {
                 else
                     r.targetLex[i] = 0;
             }
-            if (r.targetLex[i] == 0) {
+            if (r.targetLex[i] == 0 && r.alignment.targetIsAligned(i)) {
                 for (int k : r.alignment.e2f[i]) {
                     if (r.sourceLex[k] != 0)
                         return false;
@@ -150,6 +154,45 @@ public class HieroRuleExtractor implements RuleExtractor {
             }
         }
         return (r.alignedWords >= LEXICAL_MINIMUM);
+    }
+
+    private Collection<Rule> getAlignmentVariants(Rule r)
+    {
+	List<Rule> result = new ArrayList<Rule>();
+	result.add(r);
+	if (!ALLOW_LOOSE_BOUNDS)
+	    return result;
+	if (r.rhs.sourceStart < 0 || r.rhs.sourceEnd < 0 ||
+	    r.rhs.targetStart < 0 || r.rhs.targetEnd < 0)
+	    return result;
+	int targetStart = r.rhs.targetStart;
+	while (targetStart > 0 && !r.alignment.targetIsAligned(targetStart - 1)) {
+	    targetStart--;
+	}
+	int targetEnd = r.rhs.targetEnd;
+	while (targetEnd < r.target.length && !r.alignment.targetIsAligned(targetEnd)) {
+	    targetEnd++;
+	}
+	for (int i = targetStart; i < r.rhs.targetStart; i++) {
+	    Rule s = r.copy();
+	    s.rhs.targetStart = i;
+	    s.targetLex[i] = 0;
+	    result.add(s);
+	}
+	if (targetEnd == r.rhs.targetEnd) {
+	    return result;
+	}
+	List<Rule> otherResult = new ArrayList<Rule>();
+        for (Rule x : result) {
+	    for (int j = r.rhs.targetEnd + 1; j <= targetEnd; j++) {
+		Rule s = x.copy();
+		s.rhs.targetEnd = j;
+		s.targetLex[j-1] = 0;
+		otherResult.add(s);
+	    }
+	}
+	result.addAll(otherResult);
+	return result;
     }
 
     protected Collection<Rule> getLabelVariants(Rule r, HashMap<IntPair,Collection<Integer>> labelsBySpan)
@@ -190,8 +233,8 @@ public class HieroRuleExtractor implements RuleExtractor {
     {
 
         PhrasePair [][] result = new PhrasePair[f.length][];
+        List<PhrasePair> list = new ArrayList<PhrasePair>();
 
-        ArrayList<PhrasePair> list = new ArrayList<PhrasePair>();
         for (int i = 0; i < f.length; i++) {
             list.clear();
             int maxlen = f.length - i < INIT_LENGTH_LIMIT ? f.length - i : INIT_LENGTH_LIMIT;
@@ -199,13 +242,15 @@ public class HieroRuleExtractor implements RuleExtractor {
                 if (!ALLOW_LOOSE_BOUNDS && 
                         (!a.sourceIsAligned(i) || !a.sourceIsAligned(i+len-1)))
                     continue;
-                PhrasePair pp = a.getPairFromSource(i, i+len);
-                if (pp != null && pp.targetEnd - pp.targetStart <= INIT_LENGTH_LIMIT) {
-                    list.add(pp);
+                for (PhrasePair pp : a.getAllPairsFromSource(i, i+len, ALLOW_LOOSE_BOUNDS, e.length)) {
+                    if (pp.targetEnd - pp.targetStart <= INIT_LENGTH_LIMIT) {
+                        list.add(pp);
+		    }
                 }
             }
             result[i] = new PhrasePair[list.size()];
-            list.toArray(result[i]);
+            for (int j = 0; j < result[i].length; j++)
+                result[i][j] = list.get(j);
         }
         return result;
     }
@@ -223,5 +268,23 @@ public class HieroRuleExtractor implements RuleExtractor {
             }
         }
         return labelsBySpan;
+    }
+
+    public static void main(String [] argv) throws IOException
+    {
+        if (argv.length < 1) {
+            System.err.println("usage: HieroRuleExtractor <conf file>");
+            return;
+        }
+        ThraxConfig.configure(argv[0]);
+        Scanner scanner = new Scanner(System.in);
+        HieroRuleExtractor extractor = new HieroRuleExtractor();
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String [] tokens = line.split(ThraxConfig.DELIMITER_REGEX);
+            for (Rule r : extractor.extract(tokens))
+                System.out.println(r);
+        }
+        return;
     }
 }

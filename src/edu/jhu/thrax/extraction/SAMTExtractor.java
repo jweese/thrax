@@ -12,6 +12,9 @@ import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Scanner;
+
+import java.io.IOException;
 
 public class SAMTExtractor extends HieroRuleExtractor {
 
@@ -146,5 +149,22 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
     }
 
+    public static void main(String [] argv) throws IOException
+    {
+        if (argv.length < 1) {
+            System.err.println("usage: SAMTExtractor <conf file>");
+            return;
+        }
+        ThraxConfig.configure(argv[0]);
+        SAMTExtractor extractor = new SAMTExtractor();
+        Scanner scanner = new Scanner(System.in);
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            String [] tokens = line.split(ThraxConfig.DELIMITER_REGEX);
+            for (Rule r : extractor.extract(tokens))
+                System.out.println(r);
+        }
+        return;
+    }
 
 }
