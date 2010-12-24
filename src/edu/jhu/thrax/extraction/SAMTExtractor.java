@@ -98,32 +98,32 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 if (x >= 0) {
                     c.add(x);
                     labelsBySpan.put(span, c);
-                    break;
+                    continue;
                 }
                 x = lattice.getOneSingleConcatenation(from, to);
                 if (x >= 0) {
                     c.add(x);
                     labelsBySpan.put(span, c);
-                    break;
+                    continue;
                 }
                 x = lattice.getOneRightSideCCG(from, to);
                 if (x >= 0) {
                     c.add(x);
                     labelsBySpan.put(span, c);
-                    break;
+                    continue;
                 }
                 x = lattice.getOneLeftSideCCG(from, to);
                 if (x >= 0) {
                     c.add(x);
                     labelsBySpan.put(span, c);
-                    break;
+                    continue;
                 }
                 if (ThraxConfig.ALLOW_DOUBLE_CONCAT) {
                     x = lattice.getOneDoubleConcatenation(from, to);
                     if (x >= 0) {
                         c.add(x);
                         labelsBySpan.put(span, c);
-                        break;
+                        continue;
                     }
                 }
                 c = HieroRuleExtractor.HIERO_LABELS;

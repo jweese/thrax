@@ -102,10 +102,10 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         for (int midpt = from + 1; midpt < to; midpt++) {
             int x = getOneConstituent(from, midpt);
             if (x < 0)
-                break;
+                continue;
             int y = getOneConstituent(midpt, to);
             if (y < 0)
-                break;
+                continue;
             String label = Vocabulary.getWord(x) + "+" + Vocabulary.getWord(y);
             return Vocabulary.getId(label);
         }
@@ -118,13 +118,13 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
             for (int b = a + 1; b < to; b++) {
                 int x = getOneConstituent(from, a);
                 if (x < 0)
-                    break;
+                    continue;
                 int y = getOneConstituent(a, b);
                 if (y < 0)
-                    break;
+                    continue;
                 int z = getOneConstituent(b, to);
                 if (z < 0)
-                    break;
+                    continue;
                 String label = Vocabulary.getWord(x) + "+" + Vocabulary.getWord(y) + "+" + Vocabulary.getWord(z);
                 return Vocabulary.getId(label);
             }
@@ -137,10 +137,10 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         for (int end = to + 1; end <= forwardLattice.size(); end++) {
             int x = getOneConstituent(from, end);
             if (x < 0)
-                break;
+                continue;
             int y = getOneConstituent(to, end);
             if (y < 0)
-                break;
+                continue;
             String label = Vocabulary.getWord(x) + "/" + Vocabulary.getWord(y);
             return Vocabulary.getId(label);
         }
@@ -152,11 +152,11 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         for (int start = from - 1; start >= 0; start--) {
             int x = getOneConstituent(start, to);
             if (x < 0)
-                break;
+                continue;
             int y = getOneConstituent(start, from);
             if (y < 0)
-                break;
-            String label = Vocabulary.getWord(x) + "\\" + Vocabulary.getWord(y);
+                continue;
+            String label = Vocabulary.getWord(y) + "\\" + Vocabulary.getWord(x);
             return Vocabulary.getId(label);
         }
         return -1;
