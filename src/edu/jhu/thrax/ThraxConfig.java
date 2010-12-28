@@ -97,6 +97,11 @@ public class ThraxConfig {
     public static boolean ALLOW_DOUBLE_CONCAT = false;
 
     /**
+     * Phrase penalty for each rule.
+     */
+    public static double PHRASE_PENALTY = 0.0;
+
+    /**
      * Sets the various static configuration variables by reading them from
      * a configuration file.
      *
@@ -162,6 +167,9 @@ public class ThraxConfig {
             }
             else if ("allow-double-plus".equals(key)) {
                 ALLOW_DOUBLE_CONCAT = Boolean.parseBoolean(value);
+            }
+            else if ("phrase-penalty".equals(key)) {
+                PHRASE_PENALTY = Double.parseDouble(value);
             }
         }
     }
