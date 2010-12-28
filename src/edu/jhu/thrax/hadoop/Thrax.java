@@ -48,7 +48,6 @@ public class Thrax extends Configured implements Tool
             thraxConf += Path.SEPARATOR + "thrax.config";
         }
         ThraxConfig.configure(thraxConf);
-        FeatureFactory factory = new FeatureFactory(ThraxConfig.FEATURES);
 
         job.setJarByClass(Thrax.class);
         job.setMapperClass(ExtractionMapper.class);
@@ -73,6 +72,7 @@ public class Thrax extends Configured implements Tool
 
         job.waitForCompletion(true);
 
+        FeatureFactory factory = new FeatureFactory(ThraxConfig.FEATURES);
         List<MapReduceFeature> features = factory.getMapReduceFeatures();
         for (int j = 0; j < features.size(); j++) {
             MapReduceFeature f = features.get(j);

@@ -12,17 +12,21 @@ import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.datatypes.Rule;
 import edu.jhu.thrax.datatypes.IntPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.features.FeatureFactory;
+import edu.jhu.thrax.hadoop.features.SimpleFeature;
 import edu.jhu.thrax.extraction.RuleExtractor;
 import edu.jhu.thrax.extraction.RuleExtractorFactory;
 import edu.jhu.thrax.util.UnknownGrammarTypeException;
 
 import java.io.IOException;
+import java.util.List;
 
 public class ExtractionMapper extends Mapper<LongWritable, Text,
                                              RuleWritable, IntWritable>
 {
     private RuleExtractor extractor;
     private IntWritable one = new IntWritable(1);
+    private List<SimpleFeature> features;
 
     private Path [] localFiles;
 
@@ -42,6 +46,8 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
                 String thraxConfigFile = localWorkDir + sep + "thrax.config";
                 ThraxConfig.configure(thraxConfigFile);
             }
+            FeatureFactory factory = new FeatureFactory(ThraxConfig.FEATURES);
+            features = factory.getSimpleFeatures();
             extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
         }
         catch (UnknownGrammarTypeException ex) {
@@ -66,8 +72,12 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
             }
             inputs = realInputs;
         }
-        for (Rule r : extractor.extract(inputs))
-            context.write(new RuleWritable(r), one);
+        for (Rule r : extractor.extract(inputs)) {
+            RuleWritable rw = new RuleWritable(r);
+            for (SimpleFeature f : features)
+                f.score(rw);
+            context.write(rw, one);
+        }
     }
 }
 
