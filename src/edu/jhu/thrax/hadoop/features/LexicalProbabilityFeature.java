@@ -19,11 +19,11 @@ import java.util.Scanner;
 import java.io.File;
 import java.io.IOException;
 
-public class LexicalProbabilityFeature extends Feature
+public class LexicalProbabilityFeature extends MapReduceFeature
 {
-    public String name()
+    public LexicalProbabilityFeature()
     {
-        return "lex";
+        super("lexprob");
     }
 
     public Class<? extends Mapper> mapperClass()

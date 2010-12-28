@@ -5,25 +5,51 @@ import java.util.ArrayList;
 
 public class FeatureFactory
 {
-    public static void get(List<Feature> list, String name)
+    private List<SimpleFeature> simpleFeatures;
+    private List<MapReduceFeature> mapReduceFeatures;
+
+    public FeatureFactory(String feats)
     {
-        if (name.equals("lex")) {
-            list.add(new LexicalProbabilityFeature());
-        }
-        else if (name.equals("phrase")) {
-            list.add(new SourcePhraseGivenTargetFeature());
-            list.add(new TargetPhraseGivenSourceFeature());
-        }
-        else if (name.equals("samt")) {
-            list.add(new SAMTFeatureSet());
+        simpleFeatures = new ArrayList<SimpleFeature>();
+        mapReduceFeatures = new ArrayList<MapReduceFeature>();
+
+        String [] fs = feats.split("\\s+");
+        for (String f : fs) {
+            Feature curr = get(f);
+            if (curr instanceof SimpleFeature) {
+                simpleFeatures.add((SimpleFeature) curr);
+            }
+            else if (curr instanceof MapReduceFeature) {
+                mapReduceFeatures.add((MapReduceFeature) curr);
+            }
         }
     }
 
-    public static List<Feature> getAll(String [] names)
+    private Feature get(String name)
     {
-        List<Feature> result = new ArrayList<Feature>();
-        for (String s : names)
-            get(result, s);
-        return result;
+        if (name.equals("lexprob")) {
+            return new LexicalProbabilityFeature();
+        }
+        else if (name.equals("e2fphrase")) {
+            return new SourcePhraseGivenTargetFeature();
+        }
+        else if (name.equals("f2ephrase")) {
+            return new TargetPhraseGivenSourceFeature();
+        }
+        else if (name.equals("samt")) {
+            return new SAMTFeatureSet();
+        }
+        return null;
+    }
+
+    public List<SimpleFeature> getSimpleFeatures()
+    {
+        return simpleFeatures;
+    }
+
+    public List<MapReduceFeature> getMapReduceFeatures()
+    {
+        return mapReduceFeatures;
     }
 }
+

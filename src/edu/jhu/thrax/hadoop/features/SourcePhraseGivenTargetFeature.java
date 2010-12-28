@@ -13,11 +13,11 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class SourcePhraseGivenTargetFeature extends Feature
+public class SourcePhraseGivenTargetFeature extends MapReduceFeature
 {
-    public String name()
+    public SourcePhraseGivenTargetFeature()
     {
-        return "phrasal-e2f";
+        super("phrasal-e2f");
     }
 
     public Class<? extends WritableComparator> sortComparatorClass()

@@ -22,6 +22,8 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.extraction.ExtractionMapper;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
 import edu.jhu.thrax.hadoop.features.Feature;
+import edu.jhu.thrax.hadoop.features.SimpleFeature;
+import edu.jhu.thrax.hadoop.features.MapReduceFeature;
 import edu.jhu.thrax.hadoop.features.FeatureFactory;
 
 import java.util.List;
@@ -46,6 +48,8 @@ public class Thrax extends Configured implements Tool
             thraxConf += Path.SEPARATOR + "thrax.config";
         }
         ThraxConfig.configure(thraxConf);
+        FeatureFactory factory = new FeatureFactory(ThraxConfig.FEATURES);
+
         job.setJarByClass(Thrax.class);
         job.setMapperClass(ExtractionMapper.class);
         job.setCombinerClass(IntSumReducer.class);
@@ -69,15 +73,15 @@ public class Thrax extends Configured implements Tool
 
         job.waitForCompletion(true);
 
-        List<Feature> features = FeatureFactory.getAll(ThraxConfig.FEATURES.split("\\s+"));
+        List<MapReduceFeature> features = factory.getMapReduceFeatures();
         for (int j = 0; j < features.size(); j++) {
-            Feature f = features.get(j);
+            MapReduceFeature f = features.get(j);
             if (f == null) {
                 // the factory didn't know what feature to make
                 // let's silently ignore it
                 continue;
             }
-            Job fjob = new Job(conf, String.format("thrax-%d-%s", j, f.name()));
+            Job fjob = new Job(conf, String.format("thrax-%d-%s", j, f.getName()));
             fjob.setInputFormatClass(SequenceFileInputFormat.class);
             fjob.setMapOutputKeyClass(RuleWritable.class);
             fjob.setMapOutputValueClass(IntWritable.class);
@@ -92,7 +96,7 @@ public class Thrax extends Configured implements Tool
             fjob.setJarByClass(Thrax.class);
 
             inputPath = outputPath;
-            outputPath = argv[1] + String.format("feature-%d-%s", j, f.name());
+            outputPath = argv[1] + String.format("feature-%d-%s", j, f.getName());
             FileInputFormat.setInputPaths(fjob, new Path(inputPath));
             FileOutputFormat.setOutputPath(fjob, new Path(outputPath));
             fjob.waitForCompletion(true);

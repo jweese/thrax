@@ -15,9 +15,9 @@ import java.util.HashMap;
 
 public class TargetPhraseGivenSourceFeature extends Feature
 {
-    public String name()
+    public TargetPhraseGivenSourceFeature()
     {
-        return "phrasal-f2e";
+        super("phrasal-f2e");
     }
 
     public Class<? extends WritableComparator> sortComparatorClass()
