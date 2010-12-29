@@ -57,6 +57,9 @@ public class FeatureFactory
         else if (name.equals("monotonic")) {
             return new MonotonicFeature();
         }
+        else if (name.equals("phrase-penalty")) {
+            return new PhrasePenaltyFeature();
+        }
         return null;
     }
 
