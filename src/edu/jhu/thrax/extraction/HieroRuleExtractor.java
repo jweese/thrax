@@ -230,12 +230,12 @@ public class HieroRuleExtractor implements RuleExtractor {
             r.setNT(i, -1);
         Collection<Integer> lhsLabels = labelsBySpan.get(new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
         if (lhsLabels == null || lhsLabels.isEmpty()) {
-            System.err.println("WARNING: no labels for left-hand side of rule. Span is " + new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
+//            System.err.println("WARNING: no labels for left-hand side of rule. Span is " + new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
+            if (!ThraxConfig.ALLOW_X_NONLEX &&
+                r.numNTs > 0)
+                return result;
             lhsLabels = HIERO_LABELS;
         }
-        if (!ThraxConfig.ALLOW_X_NONLEX_LHS &&
-            r.numNTs > 0 && lhsLabels.equals(HIERO_LABELS))
-            return result;
         for (int lhs : lhsLabels) {
             Rule s = r.copy();
             s.setLhs(lhs);
@@ -244,7 +244,9 @@ public class HieroRuleExtractor implements RuleExtractor {
         for (int i = 0; i < r.numNTs; i++) {
             Collection<Integer> labels = labelsBySpan.get(r.ntSpan(i));
             if (labels == null || labels.isEmpty()) {
-                System.err.println("WARNING: no labels for target-side span of " + r.ntSpan(i));
+//                System.err.println("WARNING: no labels for target-side span of " + r.ntSpan(i));
+                if (!ThraxConfig.ALLOW_X_NONLEX)
+                    return result;
                 labels = HIERO_LABELS;
             }
             for (Rule s = q.peek(); s != null && s.getNT(i) == -1; s = q.peek()) {

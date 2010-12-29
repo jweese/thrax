@@ -126,7 +126,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
                         continue;
                     }
                 }
-                c = HieroRuleExtractor.HIERO_LABELS;
+//                c = HieroRuleExtractor.HIERO_LABELS;
                 labelsBySpan.put(span, c);
             }
         }
