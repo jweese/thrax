@@ -229,6 +229,9 @@ public class HieroRuleExtractor implements RuleExtractor {
             System.err.println("WARNING: no labels for left-hand side of rule. Span is " + new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
             lhsLabels = HIERO_LABELS;
         }
+        if (!ThraxConfig.ALLOW_X_NONLEX_LHS &&
+            r.numNTs > 0 && lhsLabels.equals(HIERO_LABELS))
+            return result;
         for (int lhs : lhsLabels) {
             Rule s = r.copy();
             s.setLhs(lhs);

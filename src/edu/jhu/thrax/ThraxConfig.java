@@ -116,6 +116,14 @@ public class ThraxConfig {
      * Phrase penalty for each rule.
      */
     public static double PHRASE_PENALTY = 0.0;
+    /**
+     * Whether to allow X on the left-hand side of a lexical rule.
+     */
+    public static boolean ALLOW_X_NONLEX_LHS = false;
+    /**
+     * Allow abstract rules to be extracted.
+     */
+    public static boolean ALLOW_ABSTRACT = false;
 
     /**
      * Sets the various static configuration variables by reading them from
@@ -198,6 +206,12 @@ public class ThraxConfig {
             }
             else if ("phrase-penalty".equals(key)) {
                 PHRASE_PENALTY = Double.parseDouble(value);
+            }
+            else if ("allow-nonlexical-lhs-x".equals(key)) {
+                ALLOW_X_NONLEX_LHS = Boolean.parseBoolean(value);
+            }
+            else if ("allow-abstract-rules".equals(key)) {
+                ALLOW_ABSTRACT = Boolean.parseBoolean(value);
             }
         }
     }
