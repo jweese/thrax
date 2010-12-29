@@ -45,6 +45,22 @@ public class ThraxConfig {
      */
     public static int SOURCE_LENGTH_LIMIT = 5;
     /**
+     * Maximum number of symbols on the source side of non-lexical rules.
+     */
+    public static int NONLEX_SOURCE_LENGTH_LIMIT = 5;
+    /**
+     * Maximum number of terminals on the source side of non-lexical rules.
+     */
+    public static int NONLEX_SOURCE_WORD_LIMIT = 5;
+    /**
+     * Maximum number of symbols on the target side of non-lexical rules.
+     */
+    public static int NONLEX_TARGET_LENGTH_LIMIT = 5;
+    /**
+     * Maximum number of terminals on the target side of non-lexical rules.
+     */
+    public static int NONLEX_TARGET_WORD_LIMIT = 5;
+    /**
      * Maximum number of nonterminal symbols in extracted rules.
      */
     public static int ARITY = 2;
@@ -131,6 +147,18 @@ public class ThraxConfig {
             }
             else if ("rule-source-length".equals(key)) {
                 SOURCE_LENGTH_LIMIT = Integer.parseInt(value);
+            }
+            else if ("nonlex-source-length".equals(key)) {
+                NONLEX_SOURCE_LENGTH_LIMIT = Integer.parseInt(value);
+            }
+            else if ("nonlex-source-words".equals(key)) {
+                NONLEX_SOURCE_WORD_LIMIT = Integer.parseInt(value);
+            }
+            else if ("nonlex-target-length".equals(key)) {
+                NONLEX_TARGET_LENGTH_LIMIT = Integer.parseInt(value);
+            }
+            else if ("nonlex-target-words".equals(key)) {
+                NONLEX_TARGET_WORD_LIMIT = Integer.parseInt(value);
             }
             else if ("arity".equals(key)) {
                 ARITY = Integer.parseInt(value);

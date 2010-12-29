@@ -31,6 +31,10 @@ public class HieroRuleExtractor implements RuleExtractor {
 
     public int INIT_LENGTH_LIMIT = 10;
     public int SOURCE_LENGTH_LIMIT = 5;
+    public int NONLEX_SOURCE_LENGTH_LIMIT = 5;
+    public int NONLEX_SOURCE_WORD_LIMIT = 5;
+    public int NONLEX_TARGET_LENGTH_LIMIT = 5;
+    public int NONLEX_TARGET_WORD_LIMIT = 5;
     public int NT_LIMIT = 2;
     public int LEXICAL_MINIMUM = 1;
     public boolean ALLOW_ADJACENT_NTS = false;
@@ -47,6 +51,10 @@ public class HieroRuleExtractor implements RuleExtractor {
     {
         INIT_LENGTH_LIMIT = ThraxConfig.INITIAL_PHRASE_LIMIT;
         SOURCE_LENGTH_LIMIT = ThraxConfig.SOURCE_LENGTH_LIMIT;
+        NONLEX_SOURCE_LENGTH_LIMIT = ThraxConfig.NONLEX_SOURCE_LENGTH_LIMIT;
+        NONLEX_SOURCE_WORD_LIMIT = ThraxConfig.NONLEX_SOURCE_WORD_LIMIT;
+        NONLEX_TARGET_LENGTH_LIMIT = ThraxConfig.NONLEX_TARGET_LENGTH_LIMIT;
+        NONLEX_TARGET_WORD_LIMIT = ThraxConfig.NONLEX_TARGET_WORD_LIMIT;
         NT_LIMIT = ThraxConfig.ARITY;
         LEXICAL_MINIMUM = ThraxConfig.LEXICALITY;
         ALLOW_ADJACENT_NTS = ThraxConfig.ADJACENT;
@@ -133,12 +141,19 @@ public class HieroRuleExtractor implements RuleExtractor {
             return false;
         if (r.rhs.targetEnd - r.rhs.targetStart > INIT_LENGTH_LIMIT)
             return false;
+        if (r.numNTs > 0) {
+            if (r.numTerminals > NONLEX_SOURCE_WORD_LIMIT)
+                return false;
+            if (r.numTerminals + r.numNTs > NONLEX_SOURCE_LENGTH_LIMIT)
+                return false;
+        }
         if (!ALLOW_LOOSE_BOUNDS &&
 		(!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1) ||
                  !r.alignment.sourceIsAligned(r.rhs.sourceStart) ||
                  !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
                  !r.alignment.targetIsAligned(r.rhs.targetStart)))
             return false;
+        int targetTerminals = 0;
         for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
             if (r.targetLex[i] < 0) {
                 if (r.alignment.targetIsAligned(i))
@@ -146,12 +161,20 @@ public class HieroRuleExtractor implements RuleExtractor {
                 else
                     r.targetLex[i] = 0;
             }
+            if (r.targetLex[i] == 0)
+                targetTerminals++;
             if (r.targetLex[i] == 0 && r.alignment.targetIsAligned(i)) {
                 for (int k : r.alignment.e2f[i]) {
                     if (r.sourceLex[k] != 0)
                         return false;
                 }
             }
+        }
+        if (r.numNTs > 0) {
+            if (targetTerminals > NONLEX_TARGET_WORD_LIMIT)
+                return false;
+            if (targetTerminals + r.numNTs > NONLEX_TARGET_LENGTH_LIMIT)
+                return false;
         }
         return (r.alignedWords >= LEXICAL_MINIMUM);
     }
