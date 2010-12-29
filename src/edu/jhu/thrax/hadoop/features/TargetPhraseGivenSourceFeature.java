@@ -13,7 +13,7 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import java.io.IOException;
 import java.util.HashMap;
 
-public class TargetPhraseGivenSourceFeature extends Feature
+public class TargetPhraseGivenSourceFeature extends MapReduceFeature
 {
     public TargetPhraseGivenSourceFeature()
     {
