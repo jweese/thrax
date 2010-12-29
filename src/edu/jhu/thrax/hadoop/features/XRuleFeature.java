@@ -11,7 +11,7 @@ public class XRuleFeature extends SimpleFeature
     private static final Text LABEL = new Text("ContainsX");
     private static final IntWritable ZERO = new IntWritable(0);
     private static final IntWritable ONE = new IntWritable(1);
-    private final String PATTERN = String.format("[%s", ThraxConfig.DEFAULT_NT);
+    private final String PATTERN = String.format("[%s]", ThraxConfig.DEFAULT_NT);
 
     public XRuleFeature()
     {
@@ -20,7 +20,7 @@ public class XRuleFeature extends SimpleFeature
 
     public void score(RuleWritable r)
     {
-        r.features.put(LABEL, r.source.toString().indexOf(PATTERN) == -1 ? ZERO : ONE);
+        r.features.put(LABEL, r.lhs.toString().equals(PATTERN) ? ONE : ZERO);
         return;
     }
 }
