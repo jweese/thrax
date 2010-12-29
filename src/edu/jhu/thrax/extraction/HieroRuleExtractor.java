@@ -176,6 +176,10 @@ public class HieroRuleExtractor implements RuleExtractor {
             if (targetTerminals + r.numNTs > NONLEX_TARGET_LENGTH_LIMIT)
                 return false;
         }
+        if (!ThraxConfig.ALLOW_ABSTRACT &&
+            r.numTerminals == 0 &&
+            targetTerminals == 0)
+            return false;
         return (r.alignedWords >= LEXICAL_MINIMUM);
     }
 
