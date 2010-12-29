@@ -13,7 +13,7 @@ public class CreateGlueGrammar
 
     private static String phrasePenalty;
 
-    private static final String RULE_ONE = "[%1$s] ||| [%2$s] ||| [%2$s] ||| ";
+    private static final String RULE_ONE = "[%1$s] ||| [%2$s,1] ||| [%2$s,1] ||| ";
     private static final String RULE_TWO = "[%1$s] ||| [%1$s,1] [%2$s,2] ||| [%1$s,1] [%2$s,2] ||| ";
 
     private static void getFeatureOrder(String rule)
