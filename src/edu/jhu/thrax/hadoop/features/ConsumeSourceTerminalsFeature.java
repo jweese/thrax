@@ -18,18 +18,19 @@ public class ConsumeSourceTerminalsFeature extends SimpleFeature
 
     public void score(RuleWritable r)
     {
-        for (String tok : r.source.toString().split("\\s+")) {
-            if (!tok.startsWith("[")) {
-                break;
-            }
-        }
         for (String tok : r.target.toString().split("\\s+")) {
             if (!tok.startsWith("[")) {
                 r.features.put(LABEL, ZERO);
                 return;
             }
         }
-        r.features.put(LABEL, ONE);
+        for (String tok : r.source.toString().split("\\s+")) {
+            if (!tok.startsWith("[")) {
+                r.features.put(LABEL, ONE);
+                return;
+            }
+        }
+        r.features.put(LABEL, ZERO);
         return;
     }
 }
