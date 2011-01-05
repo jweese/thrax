@@ -128,14 +128,14 @@ public class HieroRuleExtractor implements RuleExtractor {
                     Rule s = r.copy();
                     s.extendWithNonterminal(pp);
                     q.offer(s);
-                        }
+                }
             }
 
         }
         return rules;
     }
 
-    private boolean isWellFormed(Rule r)
+    protected boolean isWellFormed(Rule r)
     {
         if (r.rhs.targetStart < 0)
             return false;

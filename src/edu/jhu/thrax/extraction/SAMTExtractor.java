@@ -64,7 +64,11 @@ public class SAMTExtractor extends HieroRuleExtractor {
         for (int i = 0; i < source.length; i++)
             q.offer(new Rule(source, target, alignment, i, NT_LIMIT));
 
-        return processQueue(q, phrasesByStart, labelsBySpan);
+        List<Rule> result = processQueue(q, phrasesByStart, labelsBySpan);
+        if (source.length > INIT_LENGTH_LIMIT || target.length > INIT_LENGTH_LIMIT) {
+            // handle full-sentence rules
+        }
+        return result;
     }
 
 
@@ -101,49 +105,51 @@ public class SAMTExtractor extends HieroRuleExtractor {
         HashMap<IntPair,Collection<Integer>> labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
         for (PhrasePair [] plist : phrases) {
             for (PhrasePair pp : plist) {
-                int from = pp.targetStart;
-                int to = pp.targetEnd;
-                IntPair span = new IntPair(from, to);
-                Collection<Integer> c = new HashSet<Integer>();
-                if (from == 0 && to == targetLength)
-                    c.add(FULL_SENTENCE_ID);
-                int x = lattice.getOneConstituent(from, to);
-                if (x >= 0) {
-                    c.add(x);
-                    labelsBySpan.put(span, c);
-                    continue;
-                }
-                x = lattice.getOneSingleConcatenation(from, to);
-                if (x >= 0) {
-                    c.add(x);
-                    labelsBySpan.put(span, c);
-                    continue;
-                }
-                x = lattice.getOneRightSideCCG(from, to);
-                if (x >= 0) {
-                    c.add(x);
-                    labelsBySpan.put(span, c);
-                    continue;
-                }
-                x = lattice.getOneLeftSideCCG(from, to);
-                if (x >= 0) {
-                    c.add(x);
-                    labelsBySpan.put(span, c);
-                    continue;
-                }
-                if (ThraxConfig.ALLOW_DOUBLE_CONCAT) {
-                    x = lattice.getOneDoubleConcatenation(from, to);
-                    if (x >= 0) {
-                        c.add(x);
-                        labelsBySpan.put(span, c);
-                        continue;
-                    }
-                }
-//                c = HieroRuleExtractor.HIERO_LABELS;
+                Collection<Integer> c = spanLabels(pp, targetLength);
+                IntPair span = new IntPair(pp.targetStart, pp.targetEnd);
                 labelsBySpan.put(span, c);
             }
         }
         return labelsBySpan;
+    }
+
+    private Collection<Integer> spanLabels(PhrasePair pp, int targetLength)
+    {
+        int from = pp.targetStart;
+        int to = pp.targetEnd;
+        IntPair span = new IntPair(from, to);
+        Collection<Integer> c = new HashSet<Integer>();
+        if (from == 0 && to == targetLength)
+            c.add(FULL_SENTENCE_ID);
+        int x = lattice.getOneConstituent(from, to);
+        if (x >= 0) {
+            c.add(x);
+            return c;
+        }
+        x = lattice.getOneSingleConcatenation(from, to);
+        if (x >= 0) {
+            c.add(x);
+            return c;
+        }
+        x = lattice.getOneRightSideCCG(from, to);
+        if (x >= 0) {
+            c.add(x);
+            return c;
+        }
+        x = lattice.getOneLeftSideCCG(from, to);
+        if (x >= 0) {
+            c.add(x);
+            return c;
+        }
+        if (ThraxConfig.ALLOW_DOUBLE_CONCAT) {
+            x = lattice.getOneDoubleConcatenation(from, to);
+            if (x >= 0) {
+                c.add(x);
+                return c;
+            }
+        }
+        //                c = HieroRuleExtractor.HIERO_LABELS;
+        return c;
     }
 
     private static <T> void addUpTo(int limit, Collection<T> src,
