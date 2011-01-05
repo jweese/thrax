@@ -378,6 +378,10 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
             }
             if (next_nt) {
                 // get NT id
+                // replace "," with "COMMA"
+                if (",".equals(token)) {
+                    token = "COMMA";
+                }
                 current_id = Vocabulary.getId(token);
                 // add into lattice
                 forwardLattice.add(current_id);
