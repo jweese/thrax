@@ -20,6 +20,9 @@ public class SAMTExtractor extends HieroRuleExtractor {
 
     public static String name = "samt";
 
+    private static final String FULL_SENTENCE_SYMBOL = "_S";
+    private static final int FULL_SENTENCE_ID = Vocabulary.getId(FULL_SENTENCE_SYMBOL);
+
     public String [] requiredInputs()
     {
         return new String [] { "source", "parse", "alignment" };
@@ -55,7 +58,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
-        HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart);
+        HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart, target.length);
 
         Queue<Rule> q = new LinkedList<Rule>();
         for (int i = 0; i < source.length; i++)
@@ -93,7 +96,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         return ret;
     }
 
-    protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases)
+    protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases, int targetLength)
     {
         HashMap<IntPair,Collection<Integer>> labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
         for (PhrasePair [] plist : phrases) {
@@ -102,6 +105,8 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 int to = pp.targetEnd;
                 IntPair span = new IntPair(from, to);
                 Collection<Integer> c = new HashSet<Integer>();
+                if (from == 0 && to == targetLength)
+                    c.add(FULL_SENTENCE_ID);
                 int x = lattice.getOneConstituent(from, to);
                 if (x >= 0) {
                     c.add(x);

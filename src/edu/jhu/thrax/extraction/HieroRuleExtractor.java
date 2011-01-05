@@ -83,7 +83,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         }
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
-        HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart);
+        HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart, target.length);
 
         Queue<Rule> q = new LinkedList<Rule>();
         for (int i = 0; i < source.length; i++)
@@ -289,7 +289,7 @@ public class HieroRuleExtractor implements RuleExtractor {
     }
 
     static Collection<Integer> HIERO_LABELS = new ArrayList<Integer>();
-    protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases)
+    protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases, int targetLength)
     {
         HashMap<IntPair,Collection<Integer>> labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
         for (PhrasePair [] plist : phrases) {
