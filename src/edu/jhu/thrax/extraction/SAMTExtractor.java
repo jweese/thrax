@@ -76,7 +76,15 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 i++;
             else if (")".equals(t));
             // do nothing
-            else
+            else if ("``".equals(t))
+                result.add(Vocabulary.getId("\""));
+            else if ("''".equals(t))
+                result.add(Vocabulary.getId("\""));
+            else if ("-lrb-".equalsIgnoreCase(t))
+                result.add(Vocabulary.getId("("));
+            else if ("-rrb-".equalsIgnoreCase(t))
+                result.add(Vocabulary.getId(")"));
+            else 
                 result.add(Vocabulary.getId(t.toLowerCase()));
         }
         int [] ret = new int[result.size()];

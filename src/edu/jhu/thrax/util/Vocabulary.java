@@ -49,8 +49,21 @@ public class Vocabulary {
     public static int [] getIds(String [] words)
     {
         int [] ret = new int[words.length];
-        for (int i = 0; i < words.length; i++)
+        for (int i = 0; i < words.length; i++) {
+            if ("``".equals(words[i])) {
+                words[i] = "\"";
+            }
+            else if ("''".equals(words[i])) {
+                words[i] = "\"";
+            }
+            else if ("-lrb-".equalsIgnoreCase(words[i])) {
+                words[i] = "(";
+            }
+            else if ("-rrb-".equalsIgnoreCase(words[i])) {
+                words[i] = ")";
+            }
             ret[i] = getId(words[i]);
+        }
         return ret;
     }
 
