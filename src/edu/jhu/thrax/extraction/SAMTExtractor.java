@@ -110,6 +110,11 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 labelsBySpan.put(span, c);
             }
         }
+        IntPair sentence = new IntPair(0, targetLength);
+        if (!labelsBySpan.containsKey(sentence)) {
+            PhrasePair pp = new PhrasePair(0, 0, 0, targetLength);
+            labelsBySpan.put(sentence, spanLabels(pp, targetLength));
+        }
         return labelsBySpan;
     }
 
