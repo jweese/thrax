@@ -30,7 +30,6 @@ public class HieroRuleExtractor implements RuleExtractor {
     }
 
     public int INIT_LENGTH_LIMIT = 10;
-    public int SOURCE_LENGTH_LIMIT = 5;
     public int NONLEX_SOURCE_LENGTH_LIMIT = 5;
     public int NONLEX_SOURCE_WORD_LIMIT = 5;
     public int NONLEX_TARGET_LENGTH_LIMIT = 5;
@@ -53,7 +52,6 @@ public class HieroRuleExtractor implements RuleExtractor {
     public HieroRuleExtractor()
     {
         INIT_LENGTH_LIMIT = ThraxConfig.INITIAL_PHRASE_LIMIT;
-        SOURCE_LENGTH_LIMIT = ThraxConfig.SOURCE_LENGTH_LIMIT;
         NONLEX_SOURCE_LENGTH_LIMIT = ThraxConfig.NONLEX_SOURCE_LENGTH_LIMIT;
         NONLEX_SOURCE_WORD_LIMIT = ThraxConfig.NONLEX_SOURCE_WORD_LIMIT;
         NONLEX_TARGET_LENGTH_LIMIT = ThraxConfig.NONLEX_TARGET_LENGTH_LIMIT;

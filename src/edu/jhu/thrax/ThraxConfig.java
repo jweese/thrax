@@ -41,10 +41,6 @@ public class ThraxConfig {
      */
     public static int INITIAL_PHRASE_LIMIT = 10;
     /**
-     * Maximum number of symbols on the source side of extracted rules.
-     */
-    public static int SOURCE_LENGTH_LIMIT = 5;
-    /**
      * Maximum number of symbols on the source side of non-lexical rules.
      */
     public static int NONLEX_SOURCE_LENGTH_LIMIT = 5;
@@ -168,9 +164,6 @@ public class ThraxConfig {
             }
             else if ("initial-phrase-length".equals(key)) {
                 INITIAL_PHRASE_LIMIT = Integer.parseInt(value);
-            }
-            else if ("rule-source-length".equals(key)) {
-                SOURCE_LENGTH_LIMIT = Integer.parseInt(value);
             }
             else if ("nonlex-source-length".equals(key)) {
                 NONLEX_SOURCE_LENGTH_LIMIT = Integer.parseInt(value);
