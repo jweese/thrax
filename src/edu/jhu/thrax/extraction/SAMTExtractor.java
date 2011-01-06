@@ -65,12 +65,8 @@ public class SAMTExtractor extends HieroRuleExtractor {
             q.offer(new Rule(source, target, alignment, i, NT_LIMIT));
 
         List<Rule> result = processQueue(q, phrasesByStart, labelsBySpan);
-        if (source.length > INIT_LENGTH_LIMIT || target.length > INIT_LENGTH_LIMIT) {
-            // handle full-sentence rules
-        }
         return result;
     }
-
 
     private int [] yield(String parse)
     {

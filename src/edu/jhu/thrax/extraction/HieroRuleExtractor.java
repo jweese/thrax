@@ -39,6 +39,9 @@ public class HieroRuleExtractor implements RuleExtractor {
     public int LEXICAL_MINIMUM = 1;
     public boolean ALLOW_ADJACENT_NTS = false;
     public boolean ALLOW_LOOSE_BOUNDS = false;
+    public int RULE_SPAN_LIMIT = 12;
+    public int LEX_TARGET_LENGTH_LIMIT;
+    public int LEX_SOURCE_LENGTH_LIMIT;
 
     public int X_ID;
 
@@ -59,6 +62,9 @@ public class HieroRuleExtractor implements RuleExtractor {
         LEXICAL_MINIMUM = ThraxConfig.LEXICALITY;
         ALLOW_ADJACENT_NTS = ThraxConfig.ADJACENT;
         ALLOW_LOOSE_BOUNDS = ThraxConfig.LOOSE;
+        RULE_SPAN_LIMIT = ThraxConfig.RULE_SPAN_LIMIT;
+        LEX_TARGET_LENGTH_LIMIT = ThraxConfig.LEX_TARGET_LENGTH_LIMIT;
+        LEX_SOURCE_LENGTH_LIMIT = ThraxConfig.LEX_SOURCE_LENGTH_LIMIT;
         X_ID = Vocabulary.getId(ThraxConfig.DEFAULT_NT);
         if (HIERO_LABELS.isEmpty())
             HIERO_LABELS.add(X_ID);
@@ -110,20 +116,32 @@ public class HieroRuleExtractor implements RuleExtractor {
             if (phrasesByStart[r.appendPoint] == null)
                 continue;
 
-            if (r.numNTs + r.numTerminals < SOURCE_LENGTH_LIMIT &&
-                    r.appendPoint - r.rhs.sourceStart < INIT_LENGTH_LIMIT) {
+//            if (r.numNTs + r.numTerminals < SOURCE_LENGTH_LIMIT &&
+//                    r.appendPoint - r.rhs.sourceStart < RULE_SPAN_LIMIT) {
+            if ((ThraxConfig.ALLOW_FULL_SENTENCE_RULES &&
+                r.rhs.sourceStart == 0)
+                ||
+                (r.numNTs == 0 &&
+                 r.appendPoint - r.rhs.sourceStart < LEX_SOURCE_LENGTH_LIMIT)
+                ||
+                (r.numNTs + r.numTerminals < NONLEX_SOURCE_LENGTH_LIMIT &&
+                 r.appendPoint - r.rhs.sourceStart < RULE_SPAN_LIMIT)) {
                 Rule s = r.copy();
                 s.extendWithTerminal();
                 q.offer(s);
 	    }
 
             for (PhrasePair pp : phrasesByStart[r.appendPoint]) {
-                if (pp.sourceEnd - r.rhs.sourceStart > INIT_LENGTH_LIMIT ||
-                        (r.rhs.targetStart >= 0 &&
-                         pp.targetEnd - r.rhs.targetStart > INIT_LENGTH_LIMIT))
-                    continue;
+                if (pp.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT
+                    || 
+                    (r.rhs.targetStart >= 0 &&
+                     pp.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT)) {
+                    if (!ThraxConfig.ALLOW_FULL_SENTENCE_RULES ||
+                        r.rhs.sourceStart != 0)
+                        continue;
+                }
                 if (r.numNTs < NT_LIMIT &&
-                        r.numNTs + r.numTerminals < SOURCE_LENGTH_LIMIT &&
+                        r.numNTs + r.numTerminals < LEX_SOURCE_LENGTH_LIMIT &&
                         (!r.sourceEndsWithNT || ALLOW_ADJACENT_NTS)) {
                     Rule s = r.copy();
                     s.extendWithNonterminal(pp);
@@ -139,20 +157,22 @@ public class HieroRuleExtractor implements RuleExtractor {
     {
         if (r.rhs.targetStart < 0)
             return false;
-        if (r.rhs.targetEnd - r.rhs.targetStart > INIT_LENGTH_LIMIT)
-            return false;
-        if (r.numNTs > 0) {
-            if (r.numTerminals > NONLEX_SOURCE_WORD_LIMIT)
-                return false;
-            if (r.numTerminals + r.numNTs > NONLEX_SOURCE_LENGTH_LIMIT)
-                return false;
-        }
-        if (!ALLOW_LOOSE_BOUNDS &&
-		(!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1) ||
-                 !r.alignment.sourceIsAligned(r.rhs.sourceStart) ||
-                 !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
-                 !r.alignment.targetIsAligned(r.rhs.targetStart)))
-            return false;
+//        if (r.rhs.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT ||
+//            r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT) {
+//            if (!ThraxConfig.ALLOW_FULL_SENTENCE_RULES ||
+//                r.rhs.sourceStart != 0 ||
+//                r.rhs.sourceEnd != r.source.length ||
+//                r.rhs.targetStart != 0 ||
+//                r.rhs.targetEnd != r.target.length) {
+//                return false;
+//            }
+//        }
+//        if (r.numNTs > 0) {
+//            if (r.numTerminals > NONLEX_SOURCE_WORD_LIMIT)
+//                return false;
+//            if (r.numTerminals + r.numNTs > NONLEX_SOURCE_LENGTH_LIMIT)
+//                return false;
+//        }
         int targetTerminals = 0;
         for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
             if (r.targetLex[i] < 0) {
@@ -171,14 +191,47 @@ public class HieroRuleExtractor implements RuleExtractor {
             }
         }
         if (r.numNTs > 0) {
+            if (r.numTerminals > NONLEX_SOURCE_WORD_LIMIT)
+                return false;
+            if (r.numTerminals + r.numNTs > NONLEX_SOURCE_LENGTH_LIMIT)
+                return false;
             if (targetTerminals > NONLEX_TARGET_WORD_LIMIT)
                 return false;
             if (targetTerminals + r.numNTs > NONLEX_TARGET_LENGTH_LIMIT)
                 return false;
         }
+        else if (r.numNTs == 0) { 
+            if (r.numTerminals > LEX_SOURCE_LENGTH_LIMIT ||
+                targetTerminals > LEX_TARGET_LENGTH_LIMIT) {
+//                if (!ThraxConfig.ALLOW_FULL_SENTENCE_RULES ||
+//                    r.rhs.sourceStart != 0 ||
+//                    r.rhs.sourceEnd != r.source.length ||
+//                    r.rhs.targetStart != 0 ||
+//                    r.rhs.targetEnd != r.target.length) {
+                    return false;
+//                }
+            }
+        }
         if (!ThraxConfig.ALLOW_ABSTRACT &&
             r.numTerminals == 0 &&
             targetTerminals == 0)
+            return false;
+        if (r.rhs.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT ||
+            r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT) {
+            if (ThraxConfig.ALLOW_FULL_SENTENCE_RULES &&
+                r.rhs.sourceStart == 0 &&
+                r.rhs.sourceEnd == r.source.length &&
+                r.rhs.targetStart == 0 &&
+                r.rhs.targetEnd == r.target.length) {
+                return true;
+            }
+            return false;
+        }
+        if (!ALLOW_LOOSE_BOUNDS &&
+		(!r.alignment.sourceIsAligned(r.rhs.sourceEnd - 1) ||
+                 !r.alignment.sourceIsAligned(r.rhs.sourceStart) ||
+                 !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
+                 !r.alignment.targetIsAligned(r.rhs.targetStart)))
             return false;
         return (r.alignedWords >= LEXICAL_MINIMUM);
     }

@@ -61,6 +61,14 @@ public class ThraxConfig {
      */
     public static int NONLEX_TARGET_WORD_LIMIT = 5;
     /**
+     * Maximum number of source side terminals in purely lexical rules.
+     */
+    public static int LEX_SOURCE_LENGTH_LIMIT = 12;
+    /**
+     * Maximum number of target side terminals in purely lexical rules.
+     */
+    public static int LEX_TARGET_LENGTH_LIMIT = 12;
+    /**
      * Maximum number of nonterminal symbols in extracted rules.
      */
     public static int ARITY = 2;
@@ -124,6 +132,14 @@ public class ThraxConfig {
      * Allow abstract rules to be extracted.
      */
     public static boolean ALLOW_ABSTRACT = false;
+    /**
+     * Allow full-sentence rules regardless of size.
+     */
+    public static boolean ALLOW_FULL_SENTENCE_RULES = true;
+    /**
+     * Limit to the span of right hand sides of rules.
+     */
+    public static int RULE_SPAN_LIMIT = 12;
 
     /**
      * Sets the various static configuration variables by reading them from
@@ -167,6 +183,12 @@ public class ThraxConfig {
             }
             else if ("nonlex-target-words".equals(key)) {
                 NONLEX_TARGET_WORD_LIMIT = Integer.parseInt(value);
+            }
+            else if ("lex-source-words".equals(key)) {
+                LEX_SOURCE_LENGTH_LIMIT = Integer.parseInt(value);
+            }
+            else if ("lex-target-words".equals(key)) {
+                LEX_TARGET_LENGTH_LIMIT = Integer.parseInt(value);
             }
             else if ("arity".equals(key)) {
                 ARITY = Integer.parseInt(value);
@@ -212,6 +234,12 @@ public class ThraxConfig {
             }
             else if ("allow-abstract-rules".equals(key)) {
                 ALLOW_ABSTRACT = Boolean.parseBoolean(value);
+            }
+            else if ("allow-full-sentence-rules".equals(key)) {
+                ALLOW_FULL_SENTENCE_RULES = Boolean.parseBoolean(value);
+            }
+            else if ("rule-span-limit".equals(key)) {
+                RULE_SPAN_LIMIT = Integer.parseInt(value);
             }
         }
     }
