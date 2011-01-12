@@ -33,6 +33,10 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     public static final byte [] MARGINAL_BYTES = MARGINAL.getBytes();
     public static final int MARGINAL_LENGTH = MARGINAL.getLength();
 
+    private static final Text DOUBLE_QUOTE = new Text("\"");
+    private static final Text LRB = new Text("(");
+    private static final Text RRB = new Text(")");
+
     private static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
@@ -68,6 +72,14 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 if (alignment.sourceIsAligned(i)) {
                     for (int x : alignment.f2e[i]) {
                         Text tgt = new Text(target[x]);
+                        if ("``".equals(target[x]))
+                            tgt = DOUBLE_QUOTE;
+                        else if ("''".equals(target[x]))
+                            tgt = DOUBLE_QUOTE;
+                        else if ("-lrb-".equalsIgnoreCase(target[x]))
+                            tgt = LRB;
+                        else if ("-rrb-".equalsIgnoreCase(target[x]))
+                            tgt = RRB;
                         TextPair tp = new TextPair(src, tgt);
                         counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
                     }
@@ -146,6 +158,14 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 
             for (int i = 0; i < target.length; i++) {
                 Text tgt = new Text(target[i]);
+                if ("``".equals(target[i]))
+                    tgt = DOUBLE_QUOTE;
+                else if ("''".equals(target[i]))
+                    tgt = DOUBLE_QUOTE;
+                else if ("-lrb-".equalsIgnoreCase(target[i]))
+                    tgt = LRB;
+                else if ("-rrb-".equalsIgnoreCase(target[i]))
+                    tgt = RRB;
                 if (alignment.targetIsAligned(i)) {
                     for (int x : alignment.e2f[i]) {
                         Text src = new Text(source[x]);
