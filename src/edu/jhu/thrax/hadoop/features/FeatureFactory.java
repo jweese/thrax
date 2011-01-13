@@ -60,6 +60,9 @@ public class FeatureFactory
         else if (name.equals("phrase-penalty")) {
             return new PhrasePenaltyFeature();
         }
+        else if (name.equals("target-word-count")) {
+            return new TargetWordCounterFeature();
+        }
         return null;
     }
 
