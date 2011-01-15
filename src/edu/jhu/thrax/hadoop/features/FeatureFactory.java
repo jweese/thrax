@@ -63,6 +63,9 @@ public class FeatureFactory
         else if (name.equals("target-word-count")) {
             return new TargetWordCounterFeature();
         }
+        else if (name.equals("rarity")) {
+            return new RarityPenaltyFeature();
+        }
         return null;
     }
 
