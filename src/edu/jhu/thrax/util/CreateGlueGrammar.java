@@ -99,6 +99,15 @@ public class CreateGlueGrammar
         else if ("TargetPhraseGivenSource".equals(feat)) {
             return "0.0";
         }
+        else if ("UnalignedSource".equals(feat)) {
+            return "0";
+        }
+        else if ("UnalignedTarget".equals(feat)) {
+            return "0";
+        }
+        else if ("RarityPenalty".equals(feat)) {
+            return "1.0";
+        }
         return "0";
     }
 
@@ -139,6 +148,15 @@ public class CreateGlueGrammar
         }
         else if ("TargetPhraseGivenSource".equals(feat)) {
             return "0.0";
+        }
+        else if ("UnalignedSource".equals(feat)) {
+            return "0";
+        }
+        else if ("UnalignedTarget".equals(feat)) {
+            return "0";
+        }
+        else if ("RarityPenalty".equals(feat)) {
+            return "1.0";
         }
         return "0";
     }
