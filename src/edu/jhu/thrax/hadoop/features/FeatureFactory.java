@@ -66,6 +66,9 @@ public class FeatureFactory
         else if (name.equals("rarity")) {
             return new RarityPenaltyFeature();
         }
+        else if (name.equals("unaligned-count")) {
+            return new UnalignedWordCounterFeature();
+        }
         return null;
     }
 
