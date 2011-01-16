@@ -91,11 +91,12 @@ $HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.Thrax -D thrax_
 outfile=`$THRAX/lib/getoption.pl $config output`
 if [[ -z "$outfile" || "$outfile" = "stdout" ]]
 then
-    $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u
-elif [[ `$THRAX/lib/getoption.pl $config gzip` = "true" ]]
-then
-    $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u | gzip >$outfile
+    $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/*
 else
-    $HADOOP/bin/hadoop fs -cat $HADOOP_WORK/final/* | sort -u >$outfile
+    $HADOOP/bin/hadoop fs -getmerge $HADOOP_WORK/final/ $outfile
+    if [[ `$THRAX/lib/getoption.pl $config gzip` = "true" ]]
+    then
+        gzip $outfile
+    fi
 fi
 
