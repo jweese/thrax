@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="0.80/alpha"
+VERSION="0.90/beta"
 
 if [[ -z "$THRAX" ]]
 then
@@ -9,7 +9,7 @@ fi
 version () {
     cat <<END_VERSION
 Thrax grammar extractor $VERSION
-Copyright (C) 2010 Jonny Weese <jonny@cs.jhu.edu>
+Copyright (C) 2010-11 Jonny Weese <jonny@cs.jhu.edu>
 MIT License: <http://www.opensource.org/licenses/mit-license.php>
 This is free software: you are free to change and redistribute it.
 There is NO WARRANTY, to the extent permitted by law.
