@@ -40,6 +40,8 @@ public class SAMTExtractor extends HieroRuleExtractor {
             if (i.trim().equals("") || i.trim().equals("()"))
                 return new ArrayList<Rule>();
         }
+        for (int j = 0; j < inputs.length; j++)
+            inputs[j] = inputs[j].trim();
 
         int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
         String parse = inputs[1];
