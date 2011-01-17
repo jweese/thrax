@@ -24,11 +24,6 @@ public class HieroRuleExtractor implements RuleExtractor {
 
     public static String name = "hiero";
 
-    public String [] requiredInputs()
-    {
-        return new String [] { "source", "target", "alignment" };
-    }
-
     public int INIT_LENGTH_LIMIT = 10;
     public int NONLEX_SOURCE_LENGTH_LIMIT = 5;
     public int NONLEX_SOURCE_WORD_LIMIT = 5;
@@ -68,8 +63,9 @@ public class HieroRuleExtractor implements RuleExtractor {
             HIERO_LABELS.add(X_ID);
     }
 
-    public List<Rule> extract(String [] inputs)
+    public List<Rule> extract(String inp)
     {
+        String [] inputs = inp.split(ThraxConfig.DELIMITER_REGEX);
         if (inputs.length < 3) {
             return new ArrayList<Rule>();
         }
@@ -365,8 +361,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         HieroRuleExtractor extractor = new HieroRuleExtractor();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            String [] tokens = line.split(ThraxConfig.DELIMITER_REGEX);
-            for (Rule r : extractor.extract(tokens))
+            for (Rule r : extractor.extract(line))
                 System.out.println(r);
         }
         return;

@@ -23,11 +23,6 @@ public class SAMTExtractor extends HieroRuleExtractor {
     private static final String FULL_SENTENCE_SYMBOL = "_S";
     private static final int FULL_SENTENCE_ID = Vocabulary.getId(FULL_SENTENCE_SYMBOL);
 
-    public String [] requiredInputs()
-    {
-        return new String [] { "source", "parse", "alignment" };
-    }
-
     private LatticeArray lattice;
 
     public SAMTExtractor()
@@ -35,8 +30,9 @@ public class SAMTExtractor extends HieroRuleExtractor {
         super();
     }
 
-    public List<Rule> extract(String [] inputs)
+    public List<Rule> extract(String inp)
     {
+        String [] inputs = inp.split(ThraxConfig.DELIMITER_REGEX);
         if (inputs.length < 3) {
             return new ArrayList<Rule>();
         }
@@ -180,8 +176,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            String [] tokens = line.split(ThraxConfig.DELIMITER_REGEX);
-            for (Rule r : extractor.extract(tokens))
+            for (Rule r : extractor.extract(line))
                 System.out.println(r);
         }
         return;
