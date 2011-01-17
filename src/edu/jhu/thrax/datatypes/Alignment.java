@@ -35,7 +35,7 @@ public class Alignment {
         for (String t : ts) {
             IntPair ip = IntPair.alignmentFormat(t);
             if (ip == null) {
-                System.err.println("WARNING: malformed alignment " + t + " (skipping)");
+                System.err.println("WARNING: malformed alignment ``" + t + "'' (skipping)");
                 continue;
             }
             ipList.add(ip);
