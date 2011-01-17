@@ -69,6 +69,8 @@ public class HieroRuleExtractor implements RuleExtractor {
         if (inputs.length < 3) {
             return new ArrayList<Rule>();
         }
+        for (int i = 0; i < inputs.length; i++)
+            inputs[i] = inputs[i].trim();
         for (String i : inputs) {
             if (i.trim().equals(""))
                 return new ArrayList<Rule>();
