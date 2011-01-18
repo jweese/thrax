@@ -56,13 +56,16 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         private double maxf2e;
         private double maxe2f;
 
-        private static final double DEFAULT_PROB = 1.0;
+        private int errors;
+        private static final int MAX_ERRORS = 1000;
+        private static final double DEFAULT_PROB = 1e-7;
 
         private static final Text SGT_LABEL = new Text("LexprobSourceGivenTarget");
         private static final Text TGS_LABEL = new Text("LexprobTargetGivenSource");
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
+            errors = 0;
             current = new RuleWritable();
             ruleCounts = new HashMap<RuleWritable,IntWritable>();
             Configuration conf = context.getConfiguration();
@@ -143,6 +146,9 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                         System.err.println("WARNING: could not read word-level lexprob for pair " + tp);
                         System.err.println(r.toString());
                         System.err.println(String.format("Assuming prob is %f", DEFAULT_PROB));
+                        errors++;
+                        if (errors == MAX_ERRORS)
+                            prob += currP;
                         prob += DEFAULT_PROB;
                     }
                     else {
@@ -170,6 +176,9 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                         System.err.println("WARNING: could not read word-level lexprob for pair " + tp);
                         System.err.println(r.toString());
                         System.err.println(String.format("Assuming prob is %f", DEFAULT_PROB));
+                        errors++;
+                        if (errors == MAX_ERRORS)
+                            prob += currP;
                         prob += DEFAULT_PROB;
                     }
                     else {
@@ -194,6 +203,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 double score = Double.parseDouble(tokens[2]);
                 result.put(tp, score);
             }
+            System.err.println(String.format("readTable: map contains %d keys", result.keySet().size()));
             return result;
         }
     }
