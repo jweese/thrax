@@ -56,6 +56,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         private double maxf2e;
         private double maxe2f;
 
+        private static final double DEFAULT_PROB = 1.0;
+
         private static final Text SGT_LABEL = new Text("LexprobSourceGivenTarget");
         private static final Text TGS_LABEL = new Text("LexprobTargetGivenSource");
 
@@ -136,7 +138,16 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 TextPair tp = new TextPair(tgt, new Text());
                 for (int j = 1; j < pairs.length; j++) {
                     tp.snd.set(pairs[j]);
-                    prob += e2f.get(tp);
+                    Double currP = e2f.get(tp);
+                    if (currP == null) {
+                        System.err.println("WARNING: could not read word-level lexprob for pair " + tp);
+                        System.err.println(r.toString());
+                        System.err.println(String.format("Assuming prob is %f", DEFAULT_PROB));
+                        prob += DEFAULT_PROB;
+                    }
+                    else {
+                        prob += currP;
+                    }
                 }
                 result += Math.log(prob);
             }
@@ -154,7 +165,16 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 TextPair tp = new TextPair(src, new Text());
                 for (int j = 1; j < pairs.length; j++) {
                     tp.snd.set(pairs[j]);
-                    prob += f2e.get(tp);
+                    Double currP = f2e.get(tp);
+                    if (currP == null) {
+                        System.err.println("WARNING: could not read word-level lexprob for pair " + tp);
+                        System.err.println(r.toString());
+                        System.err.println(String.format("Assuming prob is %f", DEFAULT_PROB));
+                        prob += DEFAULT_PROB;
+                    }
+                    else {
+                        prob += currP;
+                    }
                 }
                 result += Math.log(prob);
             }
