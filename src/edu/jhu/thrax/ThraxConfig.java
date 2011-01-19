@@ -2,7 +2,10 @@ package edu.jhu.thrax;
 
 import edu.jhu.thrax.util.ConfFileParser;
 
+import org.apache.hadoop.conf.Configuration;
+
 import java.util.Map;
+import java.util.HashMap;
 import java.io.IOException;
 
 /**
@@ -147,6 +150,24 @@ public class ThraxConfig {
     public static void configure(String filename) throws IOException
     {
         Map<String,String> configMap = ConfFileParser.parse(filename);
+        configure(configMap);
+    }
+
+    public static void configure(Configuration hadoopConfig)
+    {
+        Map<String,String> result = new HashMap<String,String>();
+        for (Map.Entry<String,String> keyval : hadoopConfig) {
+            if (keyval.getKey().startsWith("thrax.")) {
+                String key = keyval.getKey();
+                String realKey = key.substring(key.indexOf(".") + 1);
+                result.put(realKey, keyval.getValue());
+            }
+        }
+        configure(result);
+    }
+
+    public static void configure(Map<String,String> configMap)
+    {
         for (String key : configMap.keySet()) {
             String value = configMap.get(key);
 

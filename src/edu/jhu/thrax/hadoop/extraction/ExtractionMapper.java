@@ -20,6 +20,7 @@ import edu.jhu.thrax.util.UnknownGrammarTypeException;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 public class ExtractionMapper extends Mapper<LongWritable, Text,
                                              RuleWritable, IntWritable>
@@ -32,36 +33,43 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
 
     protected void setup(Context context) throws IOException, InterruptedException
     {
+        Configuration conf = context.getConfiguration();
+        for (Map.Entry<String,String> entry : conf) {
+//            if (entry.getKey().startsWith("thrax"))
+                System.out.println(entry.getKey() + "=" + entry.getValue());
+        }
+//        Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
+//        if (localFiles != null) {
+//            // we are in distributed mode
+//            ThraxConfig.configure("thrax.config");
+//        }
+//        else {
+            // we are in local mode, DistributedCache doesn't work
+//            String localWorkDir = conf.getRaw("thrax_work");
+//            String sep = localWorkDir.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
+//            String thraxConfigFile = localWorkDir + sep + "thrax.config";
+//            ThraxConfig.configure(thraxConfigFile);
+//        }
+//            FeatureFactory factory = new FeatureFactory(ThraxConfig.FEATURES);
+//            features = factory.getSimpleFeatures();
+        ThraxConfig.configure(conf);
         try {
-            Configuration conf = context.getConfiguration();
-            Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
-            if (localFiles != null) {
-                // we are in distributed mode
-                ThraxConfig.configure("thrax.config");
-            }
-            else {
-                // we are in local mode, DistributedCache doesn't work
-                String localWorkDir = conf.getRaw("thrax_work");
-                String sep = localWorkDir.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
-                String thraxConfigFile = localWorkDir + sep + "thrax.config";
-                ThraxConfig.configure(thraxConfigFile);
-            }
-            FeatureFactory factory = new FeatureFactory(ThraxConfig.FEATURES);
-            features = factory.getSimpleFeatures();
             extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
         }
         catch (UnknownGrammarTypeException ex) {
-            // do nothing? I don't know what to do here
+            System.err.println("WARNING: cannot extract unknown grammar type " + ThraxConfig.GRAMMAR);
         }
     }
 
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
     {
+        if (extractor == null)
+            return;
         String line = value.toString();
         for (Rule r : extractor.extract(line)) {
             RuleWritable rw = new RuleWritable(r);
-            for (SimpleFeature f : features)
-                f.score(rw);
+//            for (SimpleFeature f : features)
+//                f.score(rw);
             context.write(rw, one);
         }
     }

@@ -27,7 +27,7 @@ public class FeatureTool extends Configured implements Tool
     public int run(String [] argv) throws Exception
     {
         if (argv.length < 2) {
-            System.err.println("usage: FeatureTool <input path> <feature>");
+            System.err.println("usage: FeatureTool <work directory> <feature>");
         }
         Configuration conf = getConf();
         Job job = new Job(conf, String.format("thrax-%s", argv[1]));
@@ -39,7 +39,7 @@ public class FeatureTool extends Configured implements Tool
         }
         MapReduceFeature f = (MapReduceFeature) feat;
 
-//        job.setJarByClass(Feature.class);
+        job.setJarByClass(Feature.class);
         job.setMapperClass(f.mapperClass());
         job.setCombinerClass(f.combinerClass());
         job.setSortComparatorClass(f.sortComparatorClass());

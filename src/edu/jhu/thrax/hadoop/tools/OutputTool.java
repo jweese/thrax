@@ -31,7 +31,7 @@ public class OutputTool extends Configured implements Tool
     public int run(String [] argv) throws Exception
     {
         if (argv.length < 2) {
-            System.err.println("usage: OutputTool <true|false> <work dir> [f1 f2 ...]");
+            System.err.println("usage: OutputTool <true|false> <work directory> [f1 f2 ...]");
             return 1;
         }
         boolean label = Boolean.parseBoolean(argv[0]);

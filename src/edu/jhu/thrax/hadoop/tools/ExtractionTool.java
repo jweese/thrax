@@ -18,26 +18,32 @@ import org.apache.hadoop.io.IntWritable;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.extraction.ExtractionMapper;
+import edu.jhu.thrax.util.ConfFileParser;
+
+import java.util.Map;
 
 public class ExtractionTool extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
     {
-        if (argv.length < 2) {
-            System.err.println("USAGE: ExtractionTool <input path> <work directory>");
+        if (argv.length < 3) {
+            System.err.println("USAGE: ExtractionTool <conf file> <input path> <work directory>");
             return 1;
         }
+        String thraxConf = argv[0];
+        String inputPath = argv[1];
+        String workDir = argv[2];
         Configuration conf = getConf();
         Job job = new Job(conf, "thrax");
 
-        String thraxConf = conf.getRaw("thrax_work");
-        if (thraxConf.endsWith(Path.SEPARATOR))
-            thraxConf += "thrax.config";
-        else
-            thraxConf += Path.SEPARATOR + "thrax.config";
-        ThraxConfig.configure(thraxConf);
+        Map<String,String> options = ConfFileParser.parse(thraxConf);
+        for (String opt : options.keySet()) {
+            System.err.print(opt + "=");
+            conf.set("thrax." + opt, options.get(opt));
+            System.err.println(conf.getRaw("thrax." + opt));
+        }
 
-//        job.setJarByClass(ExtractionMapper.class);
+        job.setJarByClass(ExtractionMapper.class);
         job.setMapperClass(ExtractionMapper.class);
         job.setCombinerClass(IntSumReducer.class);
         job.setReducerClass(IntSumReducer.class);
@@ -50,10 +56,10 @@ public class ExtractionTool extends Configured implements Tool
 
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        FileInputFormat.setInputPaths(job, new Path(argv[0]));
-        if (!argv[1].endsWith(Path.SEPARATOR))
-            argv[1] += Path.SEPARATOR;
-        FileOutputFormat.setOutputPath(job, new Path(argv[1] + "rules"));
+        FileInputFormat.setInputPaths(job, new Path(inputPath));
+        if (!workDir.endsWith(Path.SEPARATOR))
+            workDir += Path.SEPARATOR;
+        FileOutputFormat.setOutputPath(job, new Path(workDir + "rules"));
 
         job.submit();
         return 0;
