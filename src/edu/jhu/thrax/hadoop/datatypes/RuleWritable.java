@@ -4,6 +4,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.TwoDArrayWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableComparable;
@@ -27,6 +28,8 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     public Text target;
     public AlignmentArray f2e;
     public AlignmentArray e2f;
+    public Text featureLabel;
+    public DoubleWritable featureScore;
     public MapWritable features;
 
     public RuleWritable()
@@ -36,6 +39,8 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         target = new Text();
         f2e = new AlignmentArray();
         e2f = new AlignmentArray();
+        featureLabel = new Text();
+        featureScore = new DoubleWritable();
         features = new MapWritable();
     }
 
@@ -46,6 +51,8 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         target = new Text(r.target);
         f2e = new AlignmentArray(r.f2e.get());
         e2f = new AlignmentArray(r.e2f.get());
+        featureLabel = new Text(r.featureLabel);
+        featureScore = new DoubleWritable(r.featureScore.get());
         features = new MapWritable(r.features);
     }
 
@@ -57,6 +64,8 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         target = new Text(parts[2].trim());
         f2e = new AlignmentArray(sourceAlignmentArray(r));
         e2f = new AlignmentArray(targetAlignmentArray(r));
+        featureLabel = new Text();
+        featureScore = new DoubleWritable();
         features = new MapWritable();
     }
 
@@ -76,6 +85,8 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         target.write(out);
         f2e.write(out);
         e2f.write(out);
+        featureLabel.write(out);
+        featureScore.write(out);
         features.write(out);
     }
 
@@ -86,6 +97,8 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         target.readFields(in);
         f2e.readFields(in);
         e2f.readFields(in);
+        featureLabel.readFields(in);
+        featureScore.readFields(in);
         features.readFields(in);
     }
 
