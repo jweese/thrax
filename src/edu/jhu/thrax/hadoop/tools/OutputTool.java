@@ -30,7 +30,7 @@ public class OutputTool extends Configured implements Tool
     public int run(String [] argv) throws Exception
     {
         if (argv.length < 2) {
-            System.err.println("usage: OutputTool <work dir> <f1,f2,...>");
+            System.err.println("usage: OutputTool <work dir> <f1 f2 ...>");
             return 1;
         }
         Configuration conf = getConf();
@@ -56,8 +56,10 @@ public class OutputTool extends Configured implements Tool
 
         if (!argv[0].endsWith(Path.SEPARATOR))
             argv[0] += Path.SEPARATOR;
-        for (String x : argv[1].split(",")) {
-            FileInputFormat.addInputPath(job, new Path(argv[0] + x));
+        for (int i = 1; i < argv.length; i++) {
+            if (FeatureFactory.get(argv[i]) instanceof MapReduceFeature) {
+                FileInputFormat.addInputPath(job, new Path(argv[0] + argv[i]));
+            }
         }
         FileOutputFormat.setOutputPath(job, new Path(argv[0] + "final"));
 
