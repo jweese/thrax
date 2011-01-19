@@ -92,7 +92,13 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                     IntWritable cnt = ruleCounts.get(r);
                     r.features.put(TGS_LABEL, tgsWritable);
                     r.features.put(SGT_LABEL, sgtWritable);
+                    r.featureLabel.set(TGS_LABEL);
+                    r.featureScore.set(-maxf2e);
                     context.write(r, cnt);
+                    RuleWritable r2 = new RuleWritable(r);
+                    r2.featureLabel.set(SGT_LABEL);
+                    r2.featureScore.set(-maxe2f);
+                    context.write(r2, cnt);
                 }
                 ruleCounts.clear();
                 maxe2f = sourceGivenTarget(key);
@@ -123,7 +129,13 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 IntWritable cnt = ruleCounts.get(r);
                 r.features.put(TGS_LABEL, tgsWritable);
                 r.features.put(SGT_LABEL, sgtWritable);
+                r.featureLabel.set(TGS_LABEL);
+                r.featureScore.set(-maxf2e);
                 context.write(r, cnt);
+                RuleWritable r2 = new RuleWritable(r);
+                r2.featureLabel.set(SGT_LABEL);
+                r2.featureScore.set(-maxe2f);
+                context.write(r2, cnt);
             }
         }
 

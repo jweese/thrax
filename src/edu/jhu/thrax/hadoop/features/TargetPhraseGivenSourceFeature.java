@@ -66,6 +66,8 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
                 DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
                 for (RuleWritable r : rules.keySet()) {
                     r.features.put(NAME, result);
+                    r.featureLabel.set(NAME);
+                    r.featureScore.set(-Math.log(count / (double) marginal));
                     context.write(r, rules.get(r));
                 }
                 currentTarget.set(WordLexicalProbabilityCalculator.MARGINAL);
@@ -85,6 +87,8 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
                 DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
                 for (RuleWritable r : rules.keySet()) {
                     r.features.put(NAME, result);
+                    r.featureLabel.set(NAME);
+                    r.featureScore.set(-Math.log(count / (double) marginal));
                     context.write(r, rules.get(r));
                 }
                 rules.clear();
@@ -104,6 +108,8 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
             DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
             for (RuleWritable r : rules.keySet()) {
                 r.features.put(NAME, result);
+                r.featureLabel.set(NAME);
+                r.featureScore.set(-Math.log(count / (double) marginal));
                 context.write(r, rules.get(r));
             }
         }

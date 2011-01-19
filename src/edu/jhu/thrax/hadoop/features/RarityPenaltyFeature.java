@@ -70,6 +70,8 @@ public class RarityPenaltyFeature extends MapReduceFeature
                 for (RuleWritable r : ruleCounts.keySet()) {
                     IntWritable cnt = ruleCounts.get(r);
                     r.features.put(LABEL, score);
+                    r.featureLabel.set(LABEL);
+                    r.featureScore.set(Math.exp(1 - totalCount));
                     context.write(r, cnt);
                 }
                 ruleCounts.clear();
@@ -94,6 +96,8 @@ public class RarityPenaltyFeature extends MapReduceFeature
             for (RuleWritable r : ruleCounts.keySet()) {
                 IntWritable cnt = ruleCounts.get(r);
                 r.features.put(LABEL, score);
+                r.featureLabel.set(LABEL);
+                r.featureScore.set(Math.exp(1 - totalCount));
                 context.write(r, cnt);
             }
         }
