@@ -181,7 +181,9 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                    source.equals(that.source) &&
                    target.equals(that.target) &&
                    f2e.equals(that.f2e) &&
-                   e2f.equals(that.e2f);
+                   e2f.equals(that.e2f) &&
+                   featureLabel.equals(that.featureLabel) &&
+                   featureScore.equals(that.featureScore);
         }
         return false;
     }
@@ -194,6 +196,8 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         result = 37 * result + target.hashCode();
         result = 37 * result + f2e.hashCode();
         result = 37 * result + e2f.hashCode();
+        result = 37 * result + featureLabel.hashCode();
+        result = 37 * result + featureScore.hashCode();
         return result;
     }
 
@@ -222,7 +226,13 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         cmp = f2e.compareTo(that.f2e);
         if (cmp != 0)
             return cmp;
-        return e2f.compareTo(that.e2f);
+        cmp = e2f.compareTo(that.e2f);
+        if (cmp != 0)
+            return cmp;
+        cmp = featureLabel.compareTo(that.featureLabel);
+        if (cmp != 0)
+            return cmp;
+        return featureScore.compareTo(that.featureScore);
     }
 
     public static class YieldComparator extends WritableComparator
@@ -273,7 +283,13 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                 len1 = AA_COMPARATOR.encodedLength(b1, start1);
                 len2 = AA_COMPARATOR.encodedLength(b2, start2);
                 cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                return cmp;
+                if (cmp != 0)
+                    return cmp;
+                start1 += len1;
+                start2 += len2;
+                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
+                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
+                return TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
 
             }
             catch (IOException e) {
@@ -337,7 +353,14 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                 start2 += len2;
                 len1 = AA_COMPARATOR.encodedLength(b1, start1);
                 len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                return AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                if (cmp != 0)
+                    return cmp;
+                start1 += len1;
+                start2 += len2;
+                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
+                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
+                return TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
             }
             catch (IOException ex)
             {
@@ -393,7 +416,14 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                 start2 += len2;
                 len1 = AA_COMPARATOR.encodedLength(b1, start1);
                 len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                return AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                if (cmp != 0)
+                    return cmp;
+                start1 += len1;
+                start2 += len2;
+                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
+                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
+                return TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
             }
             catch (IOException ex)
             {
