@@ -30,12 +30,16 @@ public class FeatureTool extends Configured implements Tool
             System.err.println("usage: FeatureTool <work directory> <feature>");
             return 1;
         }
+        String workDir = argv[0];
+        if (!workDir.endsWith(Path.SEPARATOR))
+            workDir += Path.SEPARATOR;
+        String featureName = argv[1];
         Configuration conf = getConf();
-        Job job = new Job(conf, String.format("thrax-%s", argv[1]));
+        Job job = new Job(conf, String.format("thrax-%s", featureName));
 
-        Feature feat = FeatureFactory.get(argv[1]);
+        Feature feat = FeatureFactory.get(featureName);
         if (!(feat instanceof MapReduceFeature)) {
-            System.err.println("Not a MapReduceFeature: " + argv[1]);
+            System.err.println("Not a MapReduceFeature: " + featureName);
             return 1;
         }
         MapReduceFeature f = (MapReduceFeature) feat;
@@ -57,10 +61,8 @@ public class FeatureTool extends Configured implements Tool
 
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        if (!argv[0].endsWith(Path.SEPARATOR))
-            argv[0] += Path.SEPARATOR;
-        FileInputFormat.setInputPaths(job, new Path(argv[0] + "rules"));
-        FileOutputFormat.setOutputPath(job, new Path(argv[0] + argv[1]));
+        FileInputFormat.setInputPaths(job, new Path(workDir + "rules"));
+        FileOutputFormat.setOutputPath(job, new Path(workDir + featureName));
 
         job.submit();
         return 0;
