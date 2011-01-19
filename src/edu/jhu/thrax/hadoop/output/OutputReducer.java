@@ -27,6 +27,7 @@ import edu.jhu.thrax.hadoop.features.SimpleFeature;
 public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, NullWritable>
 {
     private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
+    private static final Text EMPTY = new Text("");
     private boolean label;
 
     private RuleWritable currentRule;
@@ -66,7 +67,8 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
         }
         Text currLabel = new Text(key.featureLabel);
         DoubleWritable currScore = new DoubleWritable(key.featureScore.get());
-        features.put(currLabel, currScore);
+        if (!currLabel.equals(EMPTY))
+            features.put(currLabel, currScore);
     }
 
     protected void cleanup(Context context) throws IOException, InterruptedException

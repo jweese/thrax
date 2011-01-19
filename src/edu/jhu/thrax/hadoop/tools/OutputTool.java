@@ -59,6 +59,8 @@ public class OutputTool extends Configured implements Tool
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
             }
         }
+        if (FileInputFormat.getInputPaths(job).length == 0)
+            FileInputFormat.addInputPath(job, new Path(workDir + "rules"));
         FileOutputFormat.setOutputPath(job, new Path(workDir + "final"));
 
         job.submit();

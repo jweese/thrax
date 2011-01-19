@@ -34,10 +34,6 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
     protected void setup(Context context) throws IOException, InterruptedException
     {
         Configuration conf = context.getConfiguration();
-        for (Map.Entry<String,String> entry : conf) {
-//            if (entry.getKey().startsWith("thrax"))
-                System.out.println(entry.getKey() + "=" + entry.getValue());
-        }
 //        Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
 //        if (localFiles != null) {
 //            // we are in distributed mode

@@ -34,15 +34,13 @@ public class ExtractionTool extends Configured implements Tool
         String inputPath = argv[1];
         String workDir = argv[2];
         Configuration conf = getConf();
-        Job job = new Job(conf, "thrax");
 
         Map<String,String> options = ConfFileParser.parse(thraxConf);
         for (String opt : options.keySet()) {
-            System.err.print(opt + "=");
             conf.set("thrax." + opt, options.get(opt));
-            System.err.println(conf.getRaw("thrax." + opt));
         }
 
+        Job job = new Job(conf, "thrax");
         job.setJarByClass(ExtractionMapper.class);
         job.setMapperClass(ExtractionMapper.class);
         job.setCombinerClass(IntSumReducer.class);
