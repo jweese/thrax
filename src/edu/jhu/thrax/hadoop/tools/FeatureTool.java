@@ -28,6 +28,7 @@ public class FeatureTool extends Configured implements Tool
     {
         if (argv.length < 2) {
             System.err.println("usage: FeatureTool <work directory> <feature>");
+            return 1;
         }
         Configuration conf = getConf();
         Job job = new Job(conf, String.format("thrax-%s", argv[1]));

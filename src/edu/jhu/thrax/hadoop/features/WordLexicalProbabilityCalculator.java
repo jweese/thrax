@@ -48,7 +48,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         return;
     }
 
-    private static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
+    public static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
         private boolean parsed;
@@ -124,7 +124,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         }
     }
 
-    private static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
+    public static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
         private boolean parsed;
@@ -188,7 +188,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         }
     }
 
-    private static class Reduce extends Reducer<TextPair, IntWritable, TextPair, DoubleWritable>
+    public static class Reduce extends Reducer<TextPair, IntWritable, TextPair, DoubleWritable>
     {
         private Text current = new Text();
         private int marginalCount;
@@ -212,7 +212,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         }
     }
 
-    private static class Partition extends Partitioner<TextPair,IntWritable>
+    public static class Partition extends Partitioner<TextPair,IntWritable>
     {
         public int getPartition(TextPair key, IntWritable value, int numPartitions)
         {
