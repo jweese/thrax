@@ -58,13 +58,6 @@ then
     echo "Please set the 'input-file' key in your Thrax conf file."
     exit 1
 fi
-LOCAL_WORK=`$THRAX/lib/getoption.pl $config work-dir`
-if [[ -z "$LOCAL_WORK" ]]
-then
-    echo "No local work directory specified!"
-    LOCAL_WORK="./thrax_tmp"
-    echo "Using '$LOCAL_WORK'"
-fi
 HADOOP_WORK=`$THRAX/lib/getoption.pl $config hadoop-work-dir`
 if [[ -z "$HADOOP_WORK" ]]
 then
@@ -73,9 +66,14 @@ then
     HADOOP_WORK="thrax_run_$datestr"
     echo "Using '$HADOOP_WORK'"
 fi
-mkdir -p $LOCAL_WORK
-cp $config $LOCAL_WORK/thrax.config
-files="$LOCAL_WORK/thrax.config"
 
-$HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.tools.ExtractionTool -D thrax_work=$LOCAL_WORK -files $files $INPUT_FILE $HADOOP_WORK
+$HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.tools.ExtractionTool $config $INPUT_FILE $HADOOP_WORK
+
+features=`$THRAX/lib/getoption.pl $config features`
+for f in $features
+do
+    $HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.tools.FeatureTool $HADOOP_WORK $f 2>$f.log
+done
+
+$HADOOP/bin/hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.hadoop.tools.OutputTool $label $HADOOP_WORK $features
 # now either hadoop fs -cat or hadoop fs -getmerge
