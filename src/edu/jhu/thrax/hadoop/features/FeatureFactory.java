@@ -25,7 +25,7 @@ public class FeatureFactory
         }
     }
 
-    private Feature get(String name)
+    public static Feature get(String name)
     {
         if (name.equals("lexprob")) {
             return new LexicalProbabilityFeature();

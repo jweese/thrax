@@ -17,18 +17,17 @@ import org.apache.hadoop.io.IntWritable;
 
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.hadoop.extraction.ExtractionMapper;
 
-public class ExtractionTool extends Configured implements Tool
+import edu.jhu.thrax.hadoop.features.Feature;
+import edu.jhu.thrax.hadoop.features.MapReduceFeature;
+import edu.jhu.thrax.hadoop.features.FeatureFactory;
+
+public class FeatureTool extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
     {
-        if (argv.length < 2) {
-            System.err.println("USAGE: ExtractionTool <input path> <work directory>");
-            return 1;
-        }
         Configuration conf = getConf();
-        Job job = new Job(conf, "thrax");
+        Job job = new Job(conf, String.format("thrax-%s", argv[1]));
 
         String thraxConf = conf.getRaw("thrax_work");
         if (thraxConf.endsWith(Path.SEPARATOR))
@@ -37,10 +36,21 @@ public class ExtractionTool extends Configured implements Tool
             thraxConf += Path.SEPARATOR + "thrax.config";
         ThraxConfig.configure(thraxConf);
 
-//        job.setJarByClass(ExtractionMapper.class);
-        job.setMapperClass(ExtractionMapper.class);
-        job.setCombinerClass(IntSumReducer.class);
-        job.setReducerClass(IntSumReducer.class);
+        Feature feat = FeatureFactory.get(argv[1]);
+        if (!(feat instanceof MapReduceFeature)) {
+            System.err.println("Not a MapReduceFeature: " + argv[1]);
+            return 1;
+        }
+        MapReduceFeature f = (MapReduceFeature) feat;
+
+//        job.setJarByClass(Feature.class);
+        job.setMapperClass(f.mapperClass());
+        job.setCombinerClass(f.combinerClass());
+        job.setSortComparatorClass(f.sortComparatorClass());
+        job.setPartitionerClass(f.partitionerClass());
+        job.setReducerClass(f.reducerClass());
+
+        job.setInputFormatClass(SequenceFileInputFormat.class);
 
         job.setMapOutputKeyClass(RuleWritable.class);
         job.setMapOutputValueClass(IntWritable.class);
@@ -50,10 +60,10 @@ public class ExtractionTool extends Configured implements Tool
 
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        FileInputFormat.setInputPaths(job, new Path(argv[0]));
-        if (!argv[1].endsWith(Path.SEPARATOR))
-            argv[1] += Path.SEPARATOR;
-        FileOutputFormat.setOutputPath(job, new Path(argv[1] + "rules"));
+        if (!argv[0].endsWith(Path.SEPARATOR))
+            argv[0] += Path.SEPARATOR;
+        FileInputFormat.setInputPaths(job, new Path(argv[0] + "rules"));
+        FileOutputFormat.setOutputPath(job, new Path(argv[0] + argv[1]));
 
         job.submit();
         return 0;
@@ -61,7 +71,7 @@ public class ExtractionTool extends Configured implements Tool
 
     public static void main(String [] argv) throws Exception
     {
-        int exitCode = ToolRunner.run(null, new ExtractionTool(), argv);
+        int exitCode = ToolRunner.run(null, new FeatureTool(), argv);
         return;
     }
 }
