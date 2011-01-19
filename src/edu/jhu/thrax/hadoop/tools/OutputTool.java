@@ -31,18 +31,17 @@ public class OutputTool extends Configured implements Tool
     public int run(String [] argv) throws Exception
     {
         if (argv.length < 2) {
-            System.err.println("usage: OutputTool <work dir> <f1 f2 ...>");
+            System.err.println("usage: OutputTool <true|false> <work dir> [f1 f2 ...]");
             return 1;
         }
+        boolean label = Boolean.parseBoolean(argv[0]);
+        String workDir = argv[1];
+        if (!workDir.endsWith(Path.SEPARATOR))
+            workDir += Path.SEPARATOR;
         Configuration conf = getConf();
+        conf.setBoolean("thrax.label.features", label);
+        conf.setStrings("thrax.features", argv);
         Job job = new Job(conf, "thrax-collect");
-
-        String thraxConf = conf.getRaw("thrax_work");
-        if (thraxConf.endsWith(Path.SEPARATOR))
-            thraxConf += "thrax.config";
-        else
-            thraxConf += Path.SEPARATOR + "thrax.config";
-        ThraxConfig.configure(thraxConf);
 
         job.setMapperClass(OutputMapper.class);
         job.setReducerClass(OutputReducer.class);
@@ -55,14 +54,12 @@ public class OutputTool extends Configured implements Tool
         job.setOutputKeyClass(RuleWritable.class);
         job.setOutputValueClass(NullWritable.class);
 
-        if (!argv[0].endsWith(Path.SEPARATOR))
-            argv[0] += Path.SEPARATOR;
-        for (int i = 1; i < argv.length; i++) {
-            if (FeatureFactory.get(argv[i]) instanceof MapReduceFeature) {
-                FileInputFormat.addInputPath(job, new Path(argv[0] + argv[i]));
+        for (String feature : conf.getStrings("thrax.features", "")) {
+            if (FeatureFactory.get(feature) instanceof MapReduceFeature) {
+                FileInputFormat.addInputPath(job, new Path(workDir + feature));
             }
         }
-        FileOutputFormat.setOutputPath(job, new Path(argv[0] + "final"));
+        FileOutputFormat.setOutputPath(job, new Path(workDir + "final"));
 
         job.submit();
         return 0;

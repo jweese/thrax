@@ -26,15 +26,11 @@ public class FeatureTool extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
     {
+        if (argv.length < 2) {
+            System.err.println("usage: FeatureTool <input path> <feature>");
+        }
         Configuration conf = getConf();
         Job job = new Job(conf, String.format("thrax-%s", argv[1]));
-
-        String thraxConf = conf.getRaw("thrax_work");
-        if (thraxConf.endsWith(Path.SEPARATOR))
-            thraxConf += "thrax.config";
-        else
-            thraxConf += Path.SEPARATOR + "thrax.config";
-        ThraxConfig.configure(thraxConf);
 
         Feature feat = FeatureFactory.get(argv[1]);
         if (!(feat instanceof MapReduceFeature)) {

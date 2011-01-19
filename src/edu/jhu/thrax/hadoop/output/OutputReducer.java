@@ -36,19 +36,19 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
     protected void setup(Context context) throws IOException, InterruptedException
     {
         Configuration conf = context.getConfiguration();
-        Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
-        if (localFiles != null) {
+//        Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
+//        if (localFiles != null) {
             // we are in distributed mode
-            ThraxConfig.configure("thrax.config");
-        }
-        else {
+//            ThraxConfig.configure("thrax.config");
+//        }
+//        else {
             // distributed cache will not work in local mode
-            String localWorkDir = conf.getRaw("thrax_work");
-            String sep = localWorkDir.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
-            ThraxConfig.configure(localWorkDir + sep + "thrax.config");
-        }
-        label = ThraxConfig.LABEL_FEATURE_SCORES;
-        allFeatureNames = ThraxConfig.FEATURES.split("\\s+");
+//            String localWorkDir = conf.getRaw("thrax_work");
+//            String sep = localWorkDir.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
+//            ThraxConfig.configure(localWorkDir + sep + "thrax.config");
+//        }
+        label = conf.getBoolean("thrax.label.features", true);
+        allFeatureNames = conf.getStrings("thrax.features", "");
         currentRule = null;
         features = new TreeMap<Text,Writable>(); //new FeatureOrder(ThraxConfig.FEATURES.split("\\s+")));
     }
@@ -62,15 +62,11 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
             else
                 context.write(ruleToText(currentRule, features), NullWritable.get());
             currentRule.set(key);
-            System.err.println("New current rule: " + currentRule);
             features.clear();
         }
-        System.err.println("Feature label: " + key.featureLabel);
         Text currLabel = new Text(key.featureLabel);
-        System.err.println("Feature score: " + key.featureScore);
         DoubleWritable currScore = new DoubleWritable(key.featureScore.get());
         features.put(currLabel, currScore);
-        System.err.println("features keyset size is now " + features.keySet().size());
     }
 
     protected void cleanup(Context context) throws IOException, InterruptedException
@@ -98,7 +94,6 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
 
     private Text ruleToText(RuleWritable r, Map<Text,Writable> fs)
     {
-        System.err.println("Getting rule text for " + r);
         for (String featureName : allFeatureNames) {
             Feature f = FeatureFactory.get(featureName);
             if (f instanceof SimpleFeature) {
@@ -106,7 +101,6 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
                 simple.score(r, fs);
             }
         }
-        System.err.println("feature keyset size is " + fs.keySet().size());
         StringBuilder sb = new StringBuilder();
         sb.append(r.lhs);
         sb.append(DELIM);
@@ -115,7 +109,6 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
         sb.append(r.target);
         sb.append(DELIM);
         for (Text t : fs.keySet()) {
-            System.err.println("\t" + t);
             if (label)
                 sb.append(String.format("%s=%s ", t, fs.get(t)));
             else
