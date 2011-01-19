@@ -20,6 +20,10 @@ import java.util.Comparator;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
+import edu.jhu.thrax.hadoop.features.Feature;
+import edu.jhu.thrax.hadoop.features.FeatureFactory;
+import edu.jhu.thrax.hadoop.features.SimpleFeature;
+
 public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, NullWritable>
 {
     private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
@@ -27,6 +31,7 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
 
     private RuleWritable currentRule;
     private TreeMap<Text,Writable> features;
+    private String [] allFeatureNames;
 
     protected void setup(Context context) throws IOException, InterruptedException
     {
@@ -43,6 +48,7 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
             ThraxConfig.configure(localWorkDir + sep + "thrax.config");
         }
         label = ThraxConfig.LABEL_FEATURE_SCORES;
+        allFeatureNames = ThraxConfig.FEATURES.split("\\s+");
         currentRule = null;
         features = new TreeMap<Text,Writable>(); //new FeatureOrder(ThraxConfig.FEATURES.split("\\s+")));
     }
@@ -93,6 +99,13 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
     private Text ruleToText(RuleWritable r, Map<Text,Writable> fs)
     {
         System.err.println("Getting rule text for " + r);
+        for (String featureName : allFeatureNames) {
+            Feature f = FeatureFactory.get(featureName);
+            if (f instanceof SimpleFeature) {
+                SimpleFeature simple = (SimpleFeature) f;
+                simple.score(r, fs);
+            }
+        }
         System.err.println("feature keyset size is " + fs.keySet().size());
         StringBuilder sb = new StringBuilder();
         sb.append(r.lhs);
