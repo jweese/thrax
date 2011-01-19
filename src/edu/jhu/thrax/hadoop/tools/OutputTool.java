@@ -23,6 +23,7 @@ import edu.jhu.thrax.hadoop.features.Feature;
 import edu.jhu.thrax.hadoop.features.MapReduceFeature;
 import edu.jhu.thrax.hadoop.features.FeatureFactory;
 
+import edu.jhu.thrax.hadoop.output.OutputMapper;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
 
 public class OutputTool extends Configured implements Tool
@@ -43,13 +44,13 @@ public class OutputTool extends Configured implements Tool
             thraxConf += Path.SEPARATOR + "thrax.config";
         ThraxConfig.configure(thraxConf);
 
-        job.setCombinerClass(IntSumReducer.class);
+        job.setMapperClass(OutputMapper.class);
         job.setReducerClass(OutputReducer.class);
 
         job.setInputFormatClass(SequenceFileInputFormat.class);
 
         job.setMapOutputKeyClass(RuleWritable.class);
-        job.setMapOutputValueClass(IntWritable.class);
+        job.setMapOutputValueClass(NullWritable.class);
 
         job.setOutputKeyClass(RuleWritable.class);
         job.setOutputValueClass(NullWritable.class);

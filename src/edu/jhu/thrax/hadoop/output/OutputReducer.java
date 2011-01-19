@@ -5,6 +5,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.conf.Configuration;
@@ -12,13 +13,14 @@ import org.apache.hadoop.conf.Configuration;
 import java.io.IOException;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.Comparator;
 
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
-public class OutputReducer extends Reducer<RuleWritable, IntWritable, Text, NullWritable>
+public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, NullWritable>
 {
     private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
     private boolean label;
@@ -42,10 +44,10 @@ public class OutputReducer extends Reducer<RuleWritable, IntWritable, Text, Null
         }
         label = ThraxConfig.LABEL_FEATURE_SCORES;
         currentRule = null;
-        features = new TreeMap<Text,Writable>(new FeatureOrder(ThraxConfig.FEATURES.split("\\s+")));
+        features = new TreeMap<Text,Writable>(); //new FeatureOrder(ThraxConfig.FEATURES.split("\\s+")));
     }
 
-    protected void reduce(RuleWritable key, Iterable<IntWritable> values,
+    protected void reduce(RuleWritable key, Iterable<NullWritable> values,
                           Context context) throws IOException, InterruptedException
     {
         if (currentRule == null || !key.sameYield(currentRule)) {
@@ -54,9 +56,15 @@ public class OutputReducer extends Reducer<RuleWritable, IntWritable, Text, Null
             else
                 context.write(ruleToText(currentRule, features), NullWritable.get());
             currentRule.set(key);
+            System.err.println("New current rule: " + currentRule);
             features.clear();
         }
-        features.put(key.featureLabel, key.featureScore);
+        System.err.println("Feature label: " + key.featureLabel);
+        Text currLabel = new Text(key.featureLabel);
+        System.err.println("Feature score: " + key.featureScore);
+        DoubleWritable currScore = new DoubleWritable(key.featureScore.get());
+        features.put(currLabel, currScore);
+        System.err.println("features keyset size is now " + features.keySet().size());
     }
 
     protected void cleanup(Context context) throws IOException, InterruptedException
@@ -82,8 +90,10 @@ public class OutputReducer extends Reducer<RuleWritable, IntWritable, Text, Null
         return new Text(sb.toString());
     }
 
-    private Text ruleToText(RuleWritable r, TreeMap<Text,Writable> fs)
+    private Text ruleToText(RuleWritable r, Map<Text,Writable> fs)
     {
+        System.err.println("Getting rule text for " + r);
+        System.err.println("feature keyset size is " + fs.keySet().size());
         StringBuilder sb = new StringBuilder();
         sb.append(r.lhs);
         sb.append(DELIM);
@@ -92,6 +102,7 @@ public class OutputReducer extends Reducer<RuleWritable, IntWritable, Text, Null
         sb.append(r.target);
         sb.append(DELIM);
         for (Text t : fs.keySet()) {
+            System.err.println("\t" + t);
             if (label)
                 sb.append(String.format("%s=%s ", t, fs.get(t)));
             else
