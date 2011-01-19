@@ -4,6 +4,9 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+
+import java.util.Map;
 
 public class TargetWordCounterFeature extends SimpleFeature
 {
@@ -23,6 +26,18 @@ public class TargetWordCounterFeature extends SimpleFeature
             }
         }
         r.features.put(LABEL, new IntWritable(words));
+        return;
+    }
+
+    public void score(RuleWritable r, Map<Text,Writable> map)
+    {
+        int words = 0;
+        for (String tok : r.target.toString().split("\\s+")) {
+            if (!tok.startsWith("[")) {
+                words++;
+            }
+        }
+        map.put(LABEL, new IntWritable(words));
         return;
     }
 }

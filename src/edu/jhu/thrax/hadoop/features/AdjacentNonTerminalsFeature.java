@@ -4,6 +4,9 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+
+import java.util.Map;
 
 public class AdjacentNonTerminalsFeature extends SimpleFeature
 {
@@ -19,6 +22,12 @@ public class AdjacentNonTerminalsFeature extends SimpleFeature
     public void score(RuleWritable r)
     {
         r.features.put(LABEL, r.source.toString().indexOf("] [") == -1 ? ZERO : ONE);
+        return;
+    }
+
+    public void score(RuleWritable r, Map<Text,Writable> map)
+    {
+        map.put(LABEL, r.source.toString().indexOf("] [") == -1 ? ZERO : ONE);
         return;
     }
 }

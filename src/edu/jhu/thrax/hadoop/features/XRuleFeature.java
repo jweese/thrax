@@ -5,6 +5,9 @@ import edu.jhu.thrax.ThraxConfig;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+
+import java.util.Map;
 
 public class XRuleFeature extends SimpleFeature
 {
@@ -21,6 +24,12 @@ public class XRuleFeature extends SimpleFeature
     public void score(RuleWritable r)
     {
         r.features.put(LABEL, r.lhs.toString().equals(PATTERN) ? ONE : ZERO);
+        return;
+    }
+
+    public void score(RuleWritable r, Map<Text,Writable> map)
+    {
+        map.put(LABEL, r.lhs.toString().equals(PATTERN) ? ONE : ZERO);
         return;
     }
 }

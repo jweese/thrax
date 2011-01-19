@@ -4,6 +4,9 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+
+import java.util.Map;
 
 public class MonotonicFeature extends SimpleFeature
 {
@@ -21,5 +24,13 @@ public class MonotonicFeature extends SimpleFeature
         r.features.put(LABEL, r.target.toString().matches("2\\].*1\\]") ? ZERO : ONE);
         return;
     }
+
+    public void score(RuleWritable r, Map<Text,Writable> map)
+    {
+        map.put(LABEL, r.target.toString().matches("2\\].*1\\]") ? ZERO : ONE);
+        return;
+    }
 }
+
+
 

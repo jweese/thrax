@@ -5,6 +5,9 @@ import edu.jhu.thrax.ThraxConfig;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Writable;
+
+import java.util.Map;
 
 public class PhrasePenaltyFeature extends SimpleFeature
 {
@@ -19,6 +22,11 @@ public class PhrasePenaltyFeature extends SimpleFeature
     public void score(RuleWritable r)
     {
         r.features.put(LABEL, VALUE);
+    }
+
+    public void score(RuleWritable r, Map<Text,Writable> map)
+    {
+        map.put(LABEL, VALUE);
     }
 }
 
