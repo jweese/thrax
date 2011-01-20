@@ -85,8 +85,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
 //                e2f = readTable(localWorkDir + "lexprobs.e2f");
 //            }
             String workDir = conf.getRaw("thrax.work-dir");
-            String e2fpath = workDir + "lexprobse2f/*";
-            String f2epath = workDir + "lexprobsf2e/*";
+            String e2fpath = workDir + "lexprobse2f/part-*";
+            String f2epath = workDir + "lexprobsf2e/part-*";
 
             FileStatus [] e2ffiles = FileSystem.get(conf).globStatus(new Path(e2fpath));
             if (e2ffiles.length == 0)
