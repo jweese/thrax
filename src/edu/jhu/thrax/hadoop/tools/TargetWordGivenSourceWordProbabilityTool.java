@@ -17,23 +17,42 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.DoubleWritable;
 
 import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 
 import edu.jhu.thrax.hadoop.features.Feature;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
+import java.util.Map;
 
 public class TargetWordGivenSourceWordProbabilityTool extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
     {
-        if (argv.length < 2) {
-            System.err.println("usage: TargetWordGivenSourceWordProbabilityTool <input file> <work directory>");
+        if (argv.length < 1) {
+            System.err.println("usage: TargetWordGivenSourceWordProbabilityTool <conf file>");
             return 1;
         }
-        String input = argv[0];
-        String workDir = argv[1];
+        String confFile = argv[0];
         Configuration conf = getConf();
+        Map<String,String> options = ConfFileParser.parse(confFile);
+        for (String opt : options.keySet()) {
+            conf.set("thrax." + opt, options.get(opt));
+        }
+        String input = conf.get("thrax.input-file");
+        if (input == null) {
+            System.err.println("set input-file key in conf file " + confFile + "!");
+            return 1;
+        }
+        String workDir = conf.get("thrax.work-dir");
+        if (workDir == null) {
+            System.err.println("set work-dir key in conf file " + confFile + "!");
+            return 1;
+        }
+        if (!workDir.endsWith(Path.SEPARATOR)) {
+            workDir += Path.SEPARATOR;
+            conf.set("thrax.work-dir", workDir);
+        }
         Job job = new Job(conf, "thrax-tgs-word-lexprob");
 
         job.setJarByClass(Feature.class);
@@ -51,8 +70,6 @@ public class TargetWordGivenSourceWordProbabilityTool extends Configured impleme
 
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        if (!workDir.endsWith(Path.SEPARATOR))
-            workDir += Path.SEPARATOR;
         FileInputFormat.setInputPaths(job, new Path(input));
         FileOutputFormat.setOutputPath(job, new Path(workDir + "lexprobsf2e"));
 
