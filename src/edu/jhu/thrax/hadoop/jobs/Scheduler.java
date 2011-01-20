@@ -48,19 +48,35 @@ public class Scheduler
     {
         for (Class<? extends ThraxJob> c : jobs.keySet()) {
             JobState state = jobs.get(c);
-            if (state.equals(JobState.SUCCESS) ||
-                state.equals(JobState.FAILED) ||
-                state.equals(JobState.PREREQ_FAILED) ||
-                state.equals(JobState.RUNNING))
-                continue;
-            ThraxJob job;
-            try {
-                job = c.newInstance();
-            }
-            catch (Exception e) {
-                throw new SchedulerException(e.getMessage());
+            switch (state) {
+            case WAITING:
+                checkReady();
+                // fall through
+            case READY:
+                checkFailedPrereq()
+                // fall through
+            default:
+                // do nothing
             }
         }
+    }
+
+    public void checkReady() throws SchedulerException
+    {
+        ThraxJob job;
+        try {
+            job = c.newInstance();
+        }
+        catch (Exception e) {
+            throw new SchedulerException(e.getMessage());
+        }
+        // check all succeeded
+        // if state changes, have to recall check all states
+    }
+
+    public void checkFailedPrereq() throws SchedulerException
+    {
+
     }
 
     
