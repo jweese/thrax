@@ -65,10 +65,11 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
             if (key.source.equals(WordLexicalProbabilityCalculator.MARGINAL)) {
                 DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
                 for (RuleWritable r : rules.keySet()) {
+                    IntWritable cnt = rules.get(r);
                     r.features.put(NAME, result);
                     r.featureLabel.set(NAME);
                     r.featureScore.set(-Math.log(count / (double) marginal));
-                    context.write(r, rules.get(r));
+                    context.write(r, cnt);
                 }
                 currentSource.set(WordLexicalProbabilityCalculator.MARGINAL);
                 if (!key.target.equals(currentTarget)) {
@@ -86,10 +87,11 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
             if (!key.source.equals(currentSource)) {
                 DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
                 for (RuleWritable r : rules.keySet()) {
+                    IntWritable cnt = rules.get(r);
                     r.features.put(NAME, result);
                     r.featureLabel.set(NAME);
                     r.featureScore.set(-Math.log(count / (double) marginal));
-                    context.write(r, rules.get(r));
+                    context.write(r, cnt);
                 }
                 rules.clear();
                 count = 0;
@@ -107,10 +109,11 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
         {
             DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
             for (RuleWritable r : rules.keySet()) {
+                IntWritable cnt = rules.get(r);
                 r.features.put(NAME, result);
                 r.featureLabel.set(NAME);
                 r.featureScore.set(-Math.log(count / (double) marginal));
-                context.write(r, rules.get(r));
+                context.write(r, cnt);
             }
         }
     }
