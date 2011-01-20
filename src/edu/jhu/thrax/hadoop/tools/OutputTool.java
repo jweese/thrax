@@ -53,6 +53,7 @@ public class OutputTool extends Configured implements Tool
             conf.set("thrax.work-dir", workDir);
         }
         Job job = new Job(conf, "thrax-collect");
+        job.setJarByClass(OutputMapper.class);
 
         job.setMapperClass(OutputMapper.class);
         job.setReducerClass(OutputReducer.class);
