@@ -122,7 +122,7 @@ public class ThraxConfig {
     /**
      * Phrase penalty for each rule.
      */
-    public static double PHRASE_PENALTY = 0.0;
+    public static double PHRASE_PENALTY = 2.718;
     /**
      * Whether to allow X on the left-hand side of a lexical rule.
      */
