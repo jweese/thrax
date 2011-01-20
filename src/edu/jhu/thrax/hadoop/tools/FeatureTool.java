@@ -16,33 +16,46 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 
 import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 import edu.jhu.thrax.hadoop.features.Feature;
 import edu.jhu.thrax.hadoop.features.MapReduceFeature;
 import edu.jhu.thrax.hadoop.features.FeatureFactory;
 
+import java.util.Map;
+
 public class FeatureTool extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
     {
         if (argv.length < 2) {
-            System.err.println("usage: FeatureTool <work directory> <feature>");
+            System.err.println("usage: FeatureTool <conf file> <feature>");
             return 1;
         }
-        String workDir = argv[0];
-        if (!workDir.endsWith(Path.SEPARATOR))
-            workDir += Path.SEPARATOR;
+        String confFile = argv[0];
         String featureName = argv[1];
-        Configuration conf = getConf();
-        conf.set("thrax.work.directory", workDir);
-        Job job = new Job(conf, String.format("thrax-%s", featureName));
-
         Feature feat = FeatureFactory.get(featureName);
         if (!(feat instanceof MapReduceFeature)) {
             System.err.println("Not a MapReduceFeature: " + featureName);
             return 1;
         }
+        Configuration conf = getConf();
+        Map<String,String> options = ConfFileParser.parse(confFile);
+        for (String opt : options.keySet()) {
+            conf.set("thrax." + opt, options.get(opt));
+        }
+        String workDir = conf.get("thrax.work-dir");
+        if (workDir == null) {
+            System.err.println("set work-dir key in conf file " + confFile + "!");
+            return 1;
+        }
+        if (!workDir.endsWith(Path.SEPARATOR)) {
+            workDir += Path.SEPARATOR;
+            conf.set("thrax.work-dir", workDir);
+        }
+        Job job = new Job(conf, String.format("thrax-%s", featureName));
+
         MapReduceFeature f = (MapReduceFeature) feat;
 
         job.setJarByClass(Feature.class);

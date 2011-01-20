@@ -26,18 +26,26 @@ public class ExtractionTool extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
     {
-        if (argv.length < 3) {
-            System.err.println("USAGE: ExtractionTool <conf file> <input path> <work directory>");
+        if (argv.length < 1) {
+            System.err.println("USAGE: ExtractionTool <conf file>");
             return 1;
         }
         String thraxConf = argv[0];
-        String inputPath = argv[1];
-        String workDir = argv[2];
         Configuration conf = getConf();
 
         Map<String,String> options = ConfFileParser.parse(thraxConf);
         for (String opt : options.keySet()) {
             conf.set("thrax." + opt, options.get(opt));
+        }
+        String inputPath = conf.get("thrax.input-file");
+        if (inputPath == null) {
+            System.err.println("Set input-file key in conf file " + thraxConf + "!");
+            return 1;
+        }
+        String workDir = conf.get("thrax.work-dir");
+        if (workDir == null) {
+            System.err.println("Set work-dir key in conf file " + thraxConf + "!");
+            return 1;
         }
 
         Job job = new Job(conf, "thrax");
