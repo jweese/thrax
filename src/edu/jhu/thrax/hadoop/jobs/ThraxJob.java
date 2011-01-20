@@ -10,12 +10,12 @@ import java.io.IOException;
 
 public abstract class ThraxJob
 {
-    public static Job getJob(Configuration conf) throws IOException
+    public Job getJob(Configuration conf) throws IOException
     {
         return new Job(conf);
     }
 
-    public static Set<Class<? extends ThraxJob>> getPrerequisites()
+    public Set<Class<? extends ThraxJob>> getPrerequisites()
     {
         return new HashSet<Class<? extends ThraxJob>>();
     }

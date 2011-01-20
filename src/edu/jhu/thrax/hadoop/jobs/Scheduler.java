@@ -34,14 +34,35 @@ public class Scheduler
         return true;
     }
 
-    public boolean setState(Class<? extends ThraxJob> jobClass, JobState state)
+    public boolean setState(Class<? extends ThraxJob> jobClass, JobState state) throws SchedulerException
     {
         if (jobs.containsKey(jobClass)) {
             jobs.put(jobClass, state);
+            updateAllStates();
             return true;
         }
         return false;
     }
+
+    public void updateAllStates() throws SchedulerException
+    {
+        for (Class<? extends ThraxJob> c : jobs.keySet()) {
+            JobState state = jobs.get(c);
+            if (state.equals(JobState.SUCCESS) ||
+                state.equals(JobState.FAILED) ||
+                state.equals(JobState.PREREQ_FAILED) ||
+                state.equals(JobState.RUNNING))
+                continue;
+            ThraxJob job;
+            try {
+                job = c.newInstance();
+            }
+            catch (Exception e) {
+                throw new SchedulerException(e.getMessage());
+            }
+        }
+    }
+
     
     public JobState getState(Class<? extends ThraxJob> jobClass)
     {
