@@ -15,9 +15,9 @@ public abstract class ThraxJob
         return new Job(conf);
     }
 
-    public static Set<Class<? extends Job>> getPrerequisites()
+    public static Set<Class<? extends ThraxJob>> getPrerequisites()
     {
-        return new HashSet<Class<? extends Job>>();
+        return new HashSet<Class<? extends ThraxJob>>();
     }
 }
 
