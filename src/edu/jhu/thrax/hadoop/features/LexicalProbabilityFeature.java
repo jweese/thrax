@@ -8,8 +8,12 @@ import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.conf.Configuration;
+
+import org.apache.hadoop.io.SequenceFile;
 
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
@@ -66,20 +70,33 @@ public class LexicalProbabilityFeature extends MapReduceFeature
             current = new RuleWritable();
             ruleCounts = new HashMap<RuleWritable,IntWritable>();
             Configuration conf = context.getConfiguration();
-            Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
-            if (localFiles != null) {
+//            Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
+//            if (localFiles != null) {
                 // we are in distributed mode
-                f2e = readTable("lexprobs.f2e");
-                e2f = readTable("lexprobs.e2f");
-            }
-            else {
+//                f2e = readTable("lexprobs.f2e");
+//                e2f = readTable("lexprobs.e2f");
+//            }
+//            else {
                 // in local mode; distributed cache does not work
-                String localWorkDir = conf.getRaw("thrax_work");
-                if (!localWorkDir.endsWith(Path.SEPARATOR))
-                    localWorkDir += Path.SEPARATOR;
-                f2e = readTable(localWorkDir + "lexprobs.f2e");
-                e2f = readTable(localWorkDir + "lexprobs.e2f");
-            }
+//                String localWorkDir = conf.getRaw("thrax_work");
+//                if (!localWorkDir.endsWith(Path.SEPARATOR))
+//                    localWorkDir += Path.SEPARATOR;
+//                f2e = readTable(localWorkDir + "lexprobs.f2e");
+//                e2f = readTable(localWorkDir + "lexprobs.e2f");
+//            }
+            String workDir = conf.getRaw("thrax.work.directory");
+            String e2fpath = workDir + "lexprobse2f/*";
+            String f2epath = workDir + "lexprobsf2e/*";
+
+            FileStatus [] e2ffiles = FileSystem.get(conf).globStatus(new Path(e2fpath));
+            if (e2ffiles.length == 0)
+                throw new IOException("no files found in e2f word level lexprob glob: " + e2fpath);
+            FileStatus [] f2efiles = FileSystem.get(conf).globStatus(new Path(f2epath));
+            if (e2ffiles.length == 0)
+                throw new IOException("no files found in f2e word level lexprob glob: " + f2epath);
+
+            e2f = readWordLexprobTable(e2ffiles, conf);
+            f2e = readWordLexprobTable(f2efiles, conf);
         }
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
@@ -203,6 +220,22 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                                            new Text(tokens[1]));
                 double score = Double.parseDouble(tokens[2]);
                 result.put(tp, score);
+            }
+            return result;
+        }
+
+        private HashMap<TextPair,Double> readWordLexprobTable(FileStatus [] files, Configuration conf) throws IOException
+        {
+            HashMap<TextPair,Double> result = new HashMap<TextPair,Double>();
+            for (FileStatus stat : files) {
+                SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.get(conf), stat.getPath(), conf);
+                TextPair tp = new TextPair();
+                DoubleWritable d = new DoubleWritable(0.0);
+                while (reader.next(tp, d)) {
+                    Text car = new Text(tp.fst);
+                    Text cdr = new Text(tp.snd);
+                    result.put(new TextPair(car, cdr), d.get());
+                }
             }
             return result;
         }

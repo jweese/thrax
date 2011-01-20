@@ -49,6 +49,8 @@ public class SourceWordGivenTargetWordProbabilityTool extends Configured impleme
         job.setOutputKeyClass(TextPair.class);
         job.setOutputValueClass(DoubleWritable.class);
 
+        job.setOutputFormatClass(SequenceFileOutputFormat.class);
+
         if (!workDir.endsWith(Path.SEPARATOR))
             workDir += Path.SEPARATOR;
         FileInputFormat.setInputPaths(job, new Path(input));

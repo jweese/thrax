@@ -35,6 +35,7 @@ public class FeatureTool extends Configured implements Tool
             workDir += Path.SEPARATOR;
         String featureName = argv[1];
         Configuration conf = getConf();
+        conf.set("thrax.work.directory", workDir);
         Job job = new Job(conf, String.format("thrax-%s", featureName));
 
         Feature feat = FeatureFactory.get(featureName);
