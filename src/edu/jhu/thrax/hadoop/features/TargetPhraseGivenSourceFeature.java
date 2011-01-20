@@ -66,7 +66,6 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
                 DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
                 for (RuleWritable r : rules.keySet()) {
                     IntWritable cnt = rules.get(r);
-                    r.features.put(NAME, result);
                     r.featureLabel.set(NAME);
                     r.featureScore.set(-Math.log(count / (double) marginal));
                     context.write(r, cnt);
@@ -88,7 +87,6 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
                 DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
                 for (RuleWritable r : rules.keySet()) {
                     IntWritable cnt = rules.get(r);
-                    r.features.put(NAME, result);
                     r.featureLabel.set(NAME);
                     r.featureScore.set(-Math.log(count / (double) marginal));
                     context.write(r, cnt);
@@ -110,7 +108,6 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
             DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
             for (RuleWritable r : rules.keySet()) {
                 IntWritable cnt = rules.get(r);
-                r.features.put(NAME, result);
                 r.featureLabel.set(NAME);
                 r.featureScore.set(-Math.log(count / (double) marginal));
                 context.write(r, cnt);

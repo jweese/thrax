@@ -19,24 +19,6 @@ public class ConsumeSourceTerminalsFeature extends SimpleFeature
         super("source-no-target");
     }
 
-    public void score(RuleWritable r)
-    {
-        for (String tok : r.target.toString().split("\\s+")) {
-            if (!tok.startsWith("[")) {
-                r.features.put(LABEL, ZERO);
-                return;
-            }
-        }
-        for (String tok : r.source.toString().split("\\s+")) {
-            if (!tok.startsWith("[")) {
-                r.features.put(LABEL, ONE);
-                return;
-            }
-        }
-        r.features.put(LABEL, ZERO);
-        return;
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         for (String tok : r.target.toString().split("\\s+")) {

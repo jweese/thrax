@@ -14,8 +14,6 @@ public abstract class SimpleFeature extends Feature
         super(name);
     }
 
-    public abstract void score(RuleWritable r);
-
     public abstract void score(RuleWritable r, Map<Text,Writable> map);
 }
 

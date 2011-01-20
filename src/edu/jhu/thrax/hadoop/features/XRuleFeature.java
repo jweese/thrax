@@ -21,12 +21,6 @@ public class XRuleFeature extends SimpleFeature
         super("xrule");
     }
 
-    public void score(RuleWritable r)
-    {
-        r.features.put(LABEL, r.lhs.toString().equals(PATTERN) ? ONE : ZERO);
-        return;
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         map.put(LABEL, r.lhs.toString().equals(PATTERN) ? ONE : ZERO);

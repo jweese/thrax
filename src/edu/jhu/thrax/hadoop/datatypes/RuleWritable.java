@@ -30,7 +30,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     public AlignmentArray e2f;
     public Text featureLabel;
     public DoubleWritable featureScore;
-    public MapWritable features;
 
     public RuleWritable()
     {
@@ -41,7 +40,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         e2f = new AlignmentArray();
         featureLabel = new Text();
         featureScore = new DoubleWritable();
-        features = new MapWritable();
     }
 
     public RuleWritable(RuleWritable r)
@@ -53,7 +51,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         e2f = new AlignmentArray(r.e2f.get());
         featureLabel = new Text(r.featureLabel);
         featureScore = new DoubleWritable(r.featureScore.get());
-        features = new MapWritable(r.features);
     }
 
     public RuleWritable(Rule r)
@@ -66,7 +63,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         e2f = new AlignmentArray(targetAlignmentArray(r));
         featureLabel = new Text();
         featureScore = new DoubleWritable();
-        features = new MapWritable();
     }
 
     public void set(RuleWritable r)
@@ -87,7 +83,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         e2f.write(out);
         featureLabel.write(out);
         featureScore.write(out);
-        features.write(out);
     }
 
     public void readFields(DataInput in) throws IOException
@@ -99,7 +94,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         e2f.readFields(in);
         featureLabel.readFields(in);
         featureScore.readFields(in);
-        features.readFields(in);
     }
 
     private static Text [][] sourceAlignmentArray(Rule r)

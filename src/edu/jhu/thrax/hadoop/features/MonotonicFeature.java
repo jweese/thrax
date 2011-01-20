@@ -19,12 +19,6 @@ public class MonotonicFeature extends SimpleFeature
         super("monotonic");
     }
 
-    public void score(RuleWritable r)
-    {
-        r.features.put(LABEL, r.target.toString().matches("2\\].*1\\]") ? ZERO : ONE);
-        return;
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         map.put(LABEL, r.target.toString().matches("2\\].*1\\]") ? ZERO : ONE);

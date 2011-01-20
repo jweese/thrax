@@ -19,12 +19,6 @@ public class AdjacentNonTerminalsFeature extends SimpleFeature
         super("adjacent");
     }
 
-    public void score(RuleWritable r)
-    {
-        r.features.put(LABEL, r.source.toString().indexOf("] [") == -1 ? ZERO : ONE);
-        return;
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         map.put(LABEL, r.source.toString().indexOf("] [") == -1 ? ZERO : ONE);

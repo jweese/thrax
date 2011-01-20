@@ -19,11 +19,6 @@ public class PhrasePenaltyFeature extends SimpleFeature
         super("phrase-penalty");
     }
 
-    public void score(RuleWritable r)
-    {
-        r.features.put(LABEL, VALUE);
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         map.put(LABEL, VALUE);

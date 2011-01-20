@@ -76,24 +76,6 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
         context.write(ruleToText(currentRule, features), NullWritable.get());
     }
 
-    private Text ruleToText(RuleWritable r)
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(r.lhs);
-        sb.append(DELIM);
-        sb.append(r.source);
-        sb.append(DELIM);
-        sb.append(r.target);
-        sb.append(DELIM);
-        for (Writable key : r.features.keySet()) {
-            if (label)
-                sb.append(String.format("%s=%s ", key, r.features.get(key)));
-            else
-                sb.append(String.format("%s ", r.features.get(key)));
-        }
-        return new Text(sb.toString());
-    }
-
     private Text ruleToText(RuleWritable r, Map<Text,Writable> fs)
     {
         for (String featureName : allFeatureNames) {

@@ -107,8 +107,6 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 DoubleWritable sgtWritable = new DoubleWritable(-maxe2f);
                 for (RuleWritable r : ruleCounts.keySet()) {
                     IntWritable cnt = ruleCounts.get(r);
-                    r.features.put(TGS_LABEL, tgsWritable);
-                    r.features.put(SGT_LABEL, sgtWritable);
                     r.featureLabel.set(TGS_LABEL);
                     r.featureScore.set(-maxf2e);
                     context.write(r, cnt);
@@ -144,8 +142,6 @@ public class LexicalProbabilityFeature extends MapReduceFeature
             DoubleWritable sgtWritable = new DoubleWritable(-maxe2f);
             for (RuleWritable r : ruleCounts.keySet()) {
                 IntWritable cnt = ruleCounts.get(r);
-                r.features.put(TGS_LABEL, tgsWritable);
-                r.features.put(SGT_LABEL, sgtWritable);
                 r.featureLabel.set(TGS_LABEL);
                 r.featureScore.set(-maxf2e);
                 context.write(r, cnt);
