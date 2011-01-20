@@ -36,34 +36,35 @@ public class Thrax extends Configured implements Tool
         return;
     }
 
-    protected synchronized void workerDone(boolean success)
+    protected synchronized void workerDone(Class<? extends ThraxJob> theClass, boolean success)
     {
-
+        scheduler.setState(theClass, success ? JobState.SUCCESS : JobState.FAILED);
         return;
     }
 
     public class ThraxJobWorker implements Runnable
     {
         private Configuration configuration;
-        private ThraxJob thraxJob;
         private Thrax thrax;
+        private Class<? extends ThraxJob> theClass;
 
-        public ThraxJobWorker(Thrax t, Class<? extends ThraxJob> c, Configuration conf) throws InstantiationException, IllegalAccessException
+        public ThraxJobWorker(Thrax t, Class<? extends ThraxJob> c, Configuration conf)
         {
             thrax = t;
             configuration = conf;
-            thraxJob = c.newInstance();
+            theClass = c;
         }
 
         public void run()
         {
             try {
+                ThraxJob thraxJob = theClass.newInstance();
                 Job job = thraxJob.getJob(conf);
                 job.waitForCompletion(false);
-                thrax.workerDone(job.isSuccessful());
+                thrax.workerDone(theClass, job.isSuccessful());
             }
             catch (Exception e) {
-                thrax.workerDone(false);
+                thrax.workerDone(theClass, false);
             }
             return;
         }
