@@ -48,8 +48,8 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
 //            String sep = localWorkDir.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
 //            ThraxConfig.configure(localWorkDir + sep + "thrax.config");
 //        }
-        label = conf.getBoolean("thrax.label.features", true);
-        allFeatureNames = conf.getStrings("thrax.features", "");
+        label = conf.getBoolean("thrax.label-feature-scores", true);
+        allFeatureNames = conf.get("thrax.features", "").split("\\s+");
         currentRule = null;
         features = new TreeMap<Text,Writable>(); //new FeatureOrder(ThraxConfig.FEATURES.split("\\s+")));
     }

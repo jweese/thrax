@@ -17,6 +17,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 
 import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 import edu.jhu.thrax.hadoop.features.Feature;
@@ -26,21 +27,31 @@ import edu.jhu.thrax.hadoop.features.FeatureFactory;
 import edu.jhu.thrax.hadoop.output.OutputMapper;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
 
+import java.util.Map;
+
 public class OutputTool extends Configured implements Tool
 {
     public int run(String [] argv) throws Exception
     {
-        if (argv.length < 2) {
-            System.err.println("usage: OutputTool <true|false> <work directory> [f1 f2 ...]");
+        if (argv.length < 1) {
+            System.err.println("usage: OutputTool <conf file>");
             return 1;
         }
-        boolean label = Boolean.parseBoolean(argv[0]);
-        String workDir = argv[1];
-        if (!workDir.endsWith(Path.SEPARATOR))
-            workDir += Path.SEPARATOR;
+        String confFile = argv[0];
+        Map<String,String> options = ConfFileParser.parse(confFile);
         Configuration conf = getConf();
-        conf.setBoolean("thrax.label.features", label);
-        conf.setStrings("thrax.features", argv);
+        for (String opt : options.keySet()) {
+            conf.set("thrax." + opt, options.get(opt));
+        }
+        String workDir = conf.get("thrax.work-dir");
+        if (workDir == null) {
+            System.err.println("Set work-dir key in conf file " + confFile + "!");
+            return 1;
+        }
+        if (!workDir.endsWith(Path.SEPARATOR)) {
+            workDir += Path.SEPARATOR;
+            conf.set("thrax.work-dir", workDir);
+        }
         Job job = new Job(conf, "thrax-collect");
 
         job.setMapperClass(OutputMapper.class);
@@ -54,7 +65,7 @@ public class OutputTool extends Configured implements Tool
         job.setOutputKeyClass(RuleWritable.class);
         job.setOutputValueClass(NullWritable.class);
 
-        for (String feature : conf.getStrings("thrax.features", "")) {
+        for (String feature : conf.get("thrax.features", "").split("\\s+")) {
             if (FeatureFactory.get(feature) instanceof MapReduceFeature) {
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
             }
