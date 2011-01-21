@@ -50,10 +50,10 @@ public class Scheduler
             JobState state = jobs.get(c);
             switch (state) {
             case WAITING:
-                checkReady();
+                checkReady(c);
                 // fall through
             case READY:
-                checkFailedPrereq()
+                checkFailedPrereq(c);
                 // fall through
             default:
                 // do nothing
@@ -61,7 +61,7 @@ public class Scheduler
         }
     }
 
-    public void checkReady() throws SchedulerException
+    public void checkReady(Class<? extends ThraxJob> c) throws SchedulerException
     {
         ThraxJob job;
         try {
@@ -74,7 +74,7 @@ public class Scheduler
         // if state changes, have to recall check all states
     }
 
-    public void checkFailedPrereq() throws SchedulerException
+    public void checkFailedPrereq(Class<? extends ThraxJob> c) throws SchedulerException
     {
 
     }
