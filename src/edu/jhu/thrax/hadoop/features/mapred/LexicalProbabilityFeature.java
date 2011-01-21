@@ -220,10 +220,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                     Text cdr = new Text(tp.snd);
                     TextPair entry = new TextPair(car, cdr);
                     result.put(entry , d.get());
-                    System.err.println("INFO:: added ``" + entry + "'' to table with probability " + d.get());
                 }
             }
-            System.err.println("INFO:: table has size " + result.size());
             return result;
         }
     }
