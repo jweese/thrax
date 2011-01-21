@@ -26,7 +26,7 @@ At the end of the compilation, ant should report that the build was successful.
 RUNNING THRAX:
 Thrax can be invoked with
 
-    thrax <configuration file>
+    hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.Thrax <configuration file>
 
 Some example configuration files have been included with this distribution:
 
