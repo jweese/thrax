@@ -10,13 +10,12 @@ COMPILING:
 
 First, you need to set two environment variables:
 $HADOOP should point to the directory where Hadoop is installed.
-$HADOOP_VERSION should be the version number of your installation of Hadoop.
-These need to be set because we need $HADOOP/hadoop-${HADOOP_VERSION}-core.jar
-in the classpath in order to compile correctly.
+$AWS_SDK should point to the directory where the Amazon Web Services SDK
+is installed.
 
 To compile, type
 
-    ant jar
+    ant
 
 This will compile all classes and package them into a jar for use on a 
 Hadoop cluster.
@@ -26,7 +25,7 @@ At the end of the compilation, ant should report that the build was successful.
 RUNNING THRAX:
 Thrax can be invoked with
 
-    hadoop jar $THRAX/bin/thrax.jar edu.jhu.thrax.Thrax <configuration file>
+    hadoop jar $THRAX/bin/thrax.jar <configuration file>
 
 Some example configuration files have been included with this distribution:
 
