@@ -1,4 +1,0 @@
-#!/bin/bash
-
-java -cp $THRAX/bin edu.jhu.thrax.util.TestSetFilter $*
-
