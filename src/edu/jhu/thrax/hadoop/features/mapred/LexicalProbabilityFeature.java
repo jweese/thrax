@@ -1,4 +1,4 @@
-package edu.jhu.thrax.hadoop.features;
+package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.IntWritable;
