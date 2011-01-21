@@ -35,6 +35,7 @@ public class Thrax extends Configured implements Tool
         scheduler = new Scheduler();
         // schedule all the jobs
         scheduler.schedule(ExtractionJob.class);
+        scheduler.schedule(OutputJob.class);
 
         do {
             for (Class<? extends ThraxJob> c : scheduler.getClassesByState(JobState.READY)) {
@@ -44,6 +45,9 @@ public class Thrax extends Configured implements Tool
             wait();
         } while (scheduler.notFinished());
         System.err.print(scheduler);
+        System.err.println("Work directory was " + workDir);
+        System.err.println("To retrieve grammar:");
+        System.err.println("hadoop fs -getmerge " + workDir + "final <destination>");
         return 0;
     }
 

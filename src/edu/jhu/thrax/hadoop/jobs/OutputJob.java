@@ -17,8 +17,15 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.output.*;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 
-public class OutputJob
+public class OutputJob extends ThraxJob
 {
+    private static HashSet<Class<? extends ThraxJob>> prereqs = new HashSet<Class<? extends ThraxJob>>();
+
+    public static void addPrerequisite(Class<? extends ThraxJob> c)
+    {
+        prereqs.add(c);
+    }
+
     public Job getJob(Configuration conf) throws IOException
     {
         Job job = new Job(conf, "collect");
@@ -47,9 +54,8 @@ public class OutputJob
 
     public Set<Class<? extends ThraxJob>> getPrerequisites()
     {
-        Set<Class<? extends ThraxJob>> result = new HashSet<Class<? extends ThraxJob>>();
-        result.add(ExtractionJob.class);
-        return result;
+        prereqs.add(ExtractionJob.class);
+        return prereqs;
     }
 }
 
