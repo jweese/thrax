@@ -38,7 +38,12 @@ public class Thrax extends Configured implements Tool
 
     protected synchronized void workerDone(Class<? extends ThraxJob> theClass, boolean success)
     {
-        scheduler.setState(theClass, success ? JobState.SUCCESS : JobState.FAILED);
+        try {
+            scheduler.setState(theClass, success ? JobState.SUCCESS : JobState.FAILED);
+        }
+        catch (SchedulerException e) {
+            System.err.println(e.getMessage());
+        }
         return;
     }
 
