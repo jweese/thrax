@@ -12,6 +12,7 @@ import java.util.Date;
 
 import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.jobs.*;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 
 public class Thrax extends Configured implements Tool
 {
@@ -35,6 +36,13 @@ public class Thrax extends Configured implements Tool
         scheduler = new Scheduler();
         // schedule all the jobs
         scheduler.schedule(ExtractionJob.class);
+        for (String feature : conf.get("thrax.features", "").split("\\s+")) {
+            MapReduceFeature f = FeatureJobFactory.get(feature);
+            if (f instanceof MapReduceFeature) {
+                scheduler.schedule(f.getClass());
+                OutputJob.addPrerequisite(f.getClass());
+            }
+        }
         scheduler.schedule(OutputJob.class);
 
         do {
