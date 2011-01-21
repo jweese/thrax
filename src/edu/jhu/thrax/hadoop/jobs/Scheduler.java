@@ -44,6 +44,7 @@ public class Scheduler
         return false;
     }
 
+    @SuppressWarnings("fallthrough")
     public void updateAllStates() throws SchedulerException
     {
         for (Class<? extends ThraxJob> c : jobs.keySet()) {
