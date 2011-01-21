@@ -20,9 +20,8 @@ import java.util.Comparator;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
-import edu.jhu.thrax.hadoop.features.Feature;
-import edu.jhu.thrax.hadoop.features.FeatureFactory;
 import edu.jhu.thrax.hadoop.features.SimpleFeature;
+import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
 
 public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, NullWritable>
 {
@@ -79,10 +78,9 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
     private Text ruleToText(RuleWritable r, Map<Text,Writable> fs)
     {
         for (String featureName : allFeatureNames) {
-            Feature f = FeatureFactory.get(featureName);
-            if (f instanceof SimpleFeature) {
-                SimpleFeature simple = (SimpleFeature) f;
-                simple.score(r, fs);
+            SimpleFeature feature = SimpleFeatureFactory.get(featureName);
+            if (feature != null) {
+                feature.score(r, fs);
             }
         }
         StringBuilder sb = new StringBuilder();
