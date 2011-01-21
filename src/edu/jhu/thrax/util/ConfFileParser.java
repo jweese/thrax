@@ -19,7 +19,14 @@ public class ConfFileParser {
         Scanner scanner;
         
         try {
-        	scanner = new Scanner(ConfigFileLoader.getConfigStream(new URI(confName)));
+                URI configURI = new URI(confName);
+                String scheme = configURI.getScheme();
+		if (scheme != null && (scheme.equalsIgnoreCase("s3n") || scheme.equalsIgnoreCase("s3"))) {
+                    scanner = new Scanner(AmazonConfigFileLoader.getConfigStream(configURI));
+                }
+                else {
+                    scanner = new Scanner(DefaultConfigFileLoader.getConfigStream(configURI));
+                }
         } catch (Exception e) {
         	throw new IllegalArgumentException(e.toString());
         }
