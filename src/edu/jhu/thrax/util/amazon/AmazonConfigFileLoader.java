@@ -1,4 +1,4 @@
-package edu.jhu.thrax.util;
+package edu.jhu.thrax.util.amazon;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,10 +17,10 @@ public class AmazonConfigFileLoader
 
     public static InputStream getConfigStream(URI configURI) throws IOException
     {
-        InputStream resStream = ConfigFileLoader.class.getResourceAsStream(CRED_PROPS);
+        InputStream resStream = AmazonConfigFileLoader.class.getResourceAsStream(CRED_PROPS);
 
         if (resStream == null) {
-            resStream = ConfigFileLoader.class.getResourceAsStream("/" + CRED_PROPS);
+            resStream = AmazonConfigFileLoader.class.getResourceAsStream("/" + CRED_PROPS);
         }
 
         if (resStream == null) {

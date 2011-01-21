@@ -6,6 +6,8 @@ import java.util.Scanner;
 
 import java.net.URI;
 
+import edu.jhu.thrax.util.amazon.AmazonConfigFileLoader;
+
 /**
  * This class parses conf files of a standard format. The '#' character is used
  * to indicate comments, and non-comment lines have a key and a value separated
