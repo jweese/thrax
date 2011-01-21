@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 import java.io.IOException;
 import java.util.HashMap;
