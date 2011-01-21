@@ -1,4 +1,4 @@
-<project name="Thrax" basedir="." default="compile">
+<project name="Thrax" basedir="." default="jar">
 
     <property environment="env"/>
 
