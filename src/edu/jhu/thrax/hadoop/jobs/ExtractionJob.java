@@ -17,9 +17,9 @@ import edu.jhu.thrax.hadoop.extraction.ExtractionMapper;
 
 import java.io.IOException;
 
-public class ExtractionJob
+public class ExtractionJob extends ThraxJob
 {
-    public static Job getJob(Configuration conf) throws IOException
+    public Job getJob(Configuration conf) throws IOException
     {
         Job job = new Job(conf, "extraction");
         job.setJarByClass(ExtractionMapper.class);

@@ -31,6 +31,7 @@ public class Scheduler
             jobs.put(jobClass, JobState.READY);
         else
             jobs.put(jobClass, JobState.WAITING);
+        System.err.println("[SCHED] scheduled job for " + jobClass);
         return true;
     }
 
@@ -38,6 +39,7 @@ public class Scheduler
     {
         if (jobs.containsKey(jobClass)) {
             jobs.put(jobClass, state);
+            System.err.println(String.format("[SCHED] %s in state %s", jobClass, state));
             updateAllStates();
             return true;
         }
@@ -73,13 +75,35 @@ public class Scheduler
         }
         // check all succeeded
         // if state changes, have to recall check all states
+        for (Class<? extends ThraxJob> p : job.getPrerequisites()) {
+            if (!jobs.get(p).equals(JobState.SUCCESS))
+                return;
+        }
+        // all prereqs are state SUCCESS
+        setState(c, JobState.READY);
     }
 
     public void checkFailedPrereq(Class<? extends ThraxJob> c) throws SchedulerException
     {
-
+        ThraxJob job;
+        try {
+            job = c.newInstance();
+        }
+        catch (Exception e) {
+            throw new SchedulerException(e.getMessage());
+        }
+        // check all succeeded
+        // if state changes, have to recall check all states
+        for (Class<? extends ThraxJob> p : job.getPrerequisites()) {
+            JobState state = jobs.get(p);
+            if (state.equals(JobState.FAILED) ||
+                state.equals(JobState.PREREQ_FAILED)) {
+                setState(c, JobState.PREREQ_FAILED);
+                return;
+            }
+        }
+        return;
     }
-
     
     public JobState getState(Class<? extends ThraxJob> jobClass)
     {
@@ -111,6 +135,16 @@ public class Scheduler
                 return true;
         }
         return false;
+    }
+
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (Class<? extends ThraxJob> c : jobs.keySet()) {
+            sb.append(c + "\t" + jobs.get(c));
+            sb.append("\n");
+        }
+        return sb.toString();
     }
 }
 

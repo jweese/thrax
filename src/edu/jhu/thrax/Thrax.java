@@ -5,7 +5,12 @@ import org.apache.hadoop.util.ToolRunner;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.fs.Path;
 
+import java.util.Map;
+import java.util.Date;
+
+import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.jobs.*;
 
 public class Thrax extends Configured implements Tool
@@ -13,20 +18,32 @@ public class Thrax extends Configured implements Tool
     private Scheduler scheduler;
     private Configuration conf;
 
-    public int run(String [] argv) throws Exception
+    public synchronized int run(String [] argv) throws Exception
     {
+        if (argv.length < 1) {
+            System.err.println("usage: Thrax <conf file>");
+            return 1;
+        }
         // do some setup of configuration
         conf = getConf();
+        Map<String,String> options = ConfFileParser.parse(argv[0]);
+        for (String opt : options.keySet())
+            conf.set("thrax." + opt, options.get(opt));
+        String date = (new Date()).toString().replaceAll("\\s+", "_").replaceAll(":", "_");
+        String workDir = "thrax_run_" + date + Path.SEPARATOR;
+        conf.set("thrax.work-dir", workDir);
         scheduler = new Scheduler();
         // schedule all the jobs
+        scheduler.schedule(ExtractionJob.class);
 
-        while (scheduler.notFinished()) {
-            wait();
+        do {
             for (Class<? extends ThraxJob> c : scheduler.getClassesByState(JobState.READY)) {
                 scheduler.setState(c, JobState.RUNNING);
                 (new Thread(new ThraxJobWorker(this, c, conf))).start();
             }
-        }
+            wait();
+        } while (scheduler.notFinished());
+        System.err.print(scheduler);
         return 0;
     }
 
@@ -44,6 +61,7 @@ public class Thrax extends Configured implements Tool
         catch (SchedulerException e) {
             System.err.println(e.getMessage());
         }
+        notify();
         return;
     }
 
