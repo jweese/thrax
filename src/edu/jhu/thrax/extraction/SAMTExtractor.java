@@ -47,7 +47,16 @@ public class SAMTExtractor extends HieroRuleExtractor {
         String parse = inputs[1];
         Alignment alignment = new Alignment(inputs[2]);
 
-        lattice = new LatticeArray(parse);
+        try {
+            lattice = new LatticeArray(parse);
+        }
+        catch (Exception e)
+        {
+            System.err.println("Could not create lattice array from parse! (skipping)");
+            System.err.println("PARSE: " + parse);
+            e.printStackTrace();
+            return new ArrayList<Rule>();
+        }
         int [] target = yield(parse);
 
         if (!alignment.consistent(source.length, target.length)) {
