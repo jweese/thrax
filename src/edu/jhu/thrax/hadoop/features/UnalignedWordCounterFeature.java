@@ -13,11 +13,6 @@ public class UnalignedWordCounterFeature extends SimpleFeature
     private static final Text SRC_LABEL = new Text("UnalignedSource");
     private static final Text TGT_LABEL = new Text("UnalignedTarget");
 
-    public UnalignedWordCounterFeature()
-    {
-        super("unaligned-word-count");
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         int srcCount = 0;

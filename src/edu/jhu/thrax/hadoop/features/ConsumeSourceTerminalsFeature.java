@@ -14,11 +14,6 @@ public class ConsumeSourceTerminalsFeature extends SimpleFeature
     private static final IntWritable ZERO = new IntWritable(0);
     private static final IntWritable ONE = new IntWritable(1);
 
-    public ConsumeSourceTerminalsFeature()
-    {
-        super("source-no-target");
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         for (String tok : r.target.toString().split("\\s+")) {

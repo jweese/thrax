@@ -12,11 +12,6 @@ public class TargetWordCounterFeature extends SimpleFeature
 {
     private static final Text LABEL = new Text("TargetWords");
 
-    public TargetWordCounterFeature()
-    {
-        super("target-word-count");
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         int words = 0;

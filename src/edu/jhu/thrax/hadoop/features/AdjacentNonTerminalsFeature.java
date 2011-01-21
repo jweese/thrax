@@ -14,11 +14,6 @@ public class AdjacentNonTerminalsFeature extends SimpleFeature
     private static final IntWritable ZERO = new IntWritable(0);
     private static final IntWritable ONE = new IntWritable(1);
 
-    public AdjacentNonTerminalsFeature()
-    {
-        super("adjacent");
-    }
-
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
         map.put(LABEL, r.source.toString().indexOf("] [") == -1 ? ZERO : ONE);
