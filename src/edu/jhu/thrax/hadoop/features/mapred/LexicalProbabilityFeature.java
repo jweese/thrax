@@ -25,6 +25,10 @@ import java.io.IOException;
 
 public class LexicalProbabilityFeature extends MapReduceFeature
 {
+    public String getName()
+    {
+        return "lexprob";
+    }
 
     public Class<? extends Mapper> mapperClass()
     {

@@ -26,7 +26,7 @@ import java.util.HashSet;
 
 public abstract class MapReduceFeature extends ThraxJob
 {
-    protected String name = "feature";
+    public abstract String getName();
 
     public Class<? extends Reducer> combinerClass()
     {
@@ -43,6 +43,7 @@ public abstract class MapReduceFeature extends ThraxJob
 
     public Job getJob(Configuration conf) throws IOException
     {
+        String name = getName();
         Job job = new Job(conf, name);
         job.setJarByClass(this.getClass());
 

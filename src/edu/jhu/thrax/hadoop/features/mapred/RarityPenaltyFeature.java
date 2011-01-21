@@ -21,6 +21,11 @@ import java.io.IOException;
 
 public class RarityPenaltyFeature extends MapReduceFeature
 {
+    public String getName()
+    {
+        return "rarity";
+    }
+
     public Class<? extends Mapper> mapperClass()
     {
         return Mapper.class;

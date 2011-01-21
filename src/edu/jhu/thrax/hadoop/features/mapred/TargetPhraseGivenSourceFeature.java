@@ -16,6 +16,10 @@ import java.util.HashMap;
 
 public class TargetPhraseGivenSourceFeature extends MapReduceFeature
 {
+    public String getName()
+    {
+        return "f2ephrase";
+    }
 
     public Class<? extends WritableComparator> sortComparatorClass()
     {
