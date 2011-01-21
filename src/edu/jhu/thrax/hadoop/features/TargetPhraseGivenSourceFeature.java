@@ -15,10 +15,6 @@ import java.util.HashMap;
 
 public class TargetPhraseGivenSourceFeature extends MapReduceFeature
 {
-    public TargetPhraseGivenSourceFeature()
-    {
-        super("phrasal-f2e");
-    }
 
     public Class<? extends WritableComparator> sortComparatorClass()
     {

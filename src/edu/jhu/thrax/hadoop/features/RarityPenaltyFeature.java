@@ -21,11 +21,6 @@ import java.io.IOException;
 
 public class RarityPenaltyFeature extends MapReduceFeature
 {
-    public RarityPenaltyFeature()
-    {
-        super("rarity");
-    }
-
     public Class<? extends Mapper> mapperClass()
     {
         return Mapper.class;

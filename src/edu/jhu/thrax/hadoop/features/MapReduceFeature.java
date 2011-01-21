@@ -12,10 +12,6 @@ import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
 public abstract class MapReduceFeature extends ThraxJob
 {
-    public MapReduceFeature(String name)
-    {
-        super(name);
-    }
 
     public Class<? extends Reducer> combinerClass()
     {
