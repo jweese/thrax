@@ -37,6 +37,9 @@
             <fileset dir="${build}">
                 <include name="**/*.class"/>
             </fileset>
+            <manifest>
+                <attribute name="Main-Class" value="edu.jhu.thrax.Thrax"/>
+            </manifest>
         </jar>
     </target>
 
