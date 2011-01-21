@@ -54,7 +54,6 @@ public class SAMTExtractor extends HieroRuleExtractor {
         {
             System.err.println("Could not create lattice array from parse! (skipping)");
             System.err.println("PARSE: " + parse);
-            e.printStackTrace();
             return new ArrayList<Rule>();
         }
         int [] target = yield(parse);
