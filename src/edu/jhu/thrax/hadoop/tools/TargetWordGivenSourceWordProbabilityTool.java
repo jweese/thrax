@@ -21,7 +21,6 @@ import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 
-import edu.jhu.thrax.hadoop.features.Feature;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 import java.util.Map;
 
@@ -55,7 +54,7 @@ public class TargetWordGivenSourceWordProbabilityTool extends Configured impleme
         }
         Job job = new Job(conf, "thrax-tgs-word-lexprob");
 
-        job.setJarByClass(Feature.class);
+        job.setJarByClass(WordLexicalProbabilityCalculator.class);
         job.setMapperClass(WordLexicalProbabilityCalculator.TargetGivenSourceMap.class);
         job.setCombinerClass(IntSumReducer.class);
         job.setSortComparatorClass(TextPair.SndMarginalComparator.class);

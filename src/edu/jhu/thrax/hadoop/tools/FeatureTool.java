@@ -20,6 +20,7 @@ import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
 
 import java.util.Map;
 
