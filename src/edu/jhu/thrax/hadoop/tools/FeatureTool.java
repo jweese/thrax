@@ -19,9 +19,7 @@ import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
-import edu.jhu.thrax.hadoop.features.Feature;
-import edu.jhu.thrax.hadoop.features.MapReduceFeature;
-import edu.jhu.thrax.hadoop.features.FeatureFactory;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 
 import java.util.Map;
 
@@ -35,8 +33,8 @@ public class FeatureTool extends Configured implements Tool
         }
         String confFile = argv[0];
         String featureName = argv[1];
-        Feature feat = FeatureFactory.get(featureName);
-        if (!(feat instanceof MapReduceFeature)) {
+        MapReduceFeature f = FeatureJobFactory.get(featureName);
+        if (!(f instanceof MapReduceFeature)) {
             System.err.println("Not a MapReduceFeature: " + featureName);
             return 1;
         }
@@ -56,9 +54,7 @@ public class FeatureTool extends Configured implements Tool
         }
         Job job = new Job(conf, String.format("thrax-%s", featureName));
 
-        MapReduceFeature f = (MapReduceFeature) feat;
-
-        job.setJarByClass(Feature.class);
+        job.setJarByClass(f.getClass());
         job.setMapperClass(f.mapperClass());
         job.setCombinerClass(f.combinerClass());
         job.setSortComparatorClass(f.sortComparatorClass());
