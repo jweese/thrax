@@ -7,6 +7,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.FileStatus;
@@ -17,9 +18,12 @@ import org.apache.hadoop.io.SequenceFile;
 
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.jobs.TargetWordGivenSourceWordProbabilityJob;
+import edu.jhu.thrax.hadoop.jobs.SourceWordGivenTargetWordProbabilityJob;
+import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
 import java.util.HashMap;
-import java.util.Scanner;
+import java.util.Set;
 import java.io.File;
 import java.io.IOException;
 
@@ -204,22 +208,6 @@ public class LexicalProbabilityFeature extends MapReduceFeature
             return result;
         }
 
-        private HashMap<TextPair,Double> readTable(String filename) throws IOException
-        {
-            HashMap<TextPair,Double> result = new HashMap<TextPair,Double>();
-            Scanner scanner = new Scanner(new File(filename), "UTF-8");
-            while (scanner.hasNextLine()) {
-                String [] tokens = scanner.nextLine().split("\\s+");
-                if (tokens.length != 3)
-                    continue;
-                TextPair tp = new TextPair(new Text(tokens[0]),
-                                           new Text(tokens[1]));
-                double score = Double.parseDouble(tokens[2]);
-                result.put(tp, score);
-            }
-            return result;
-        }
-
         private HashMap<TextPair,Double> readWordLexprobTable(FileStatus [] files, Configuration conf) throws IOException
         {
             HashMap<TextPair,Double> result = new HashMap<TextPair,Double>();
@@ -235,6 +223,14 @@ public class LexicalProbabilityFeature extends MapReduceFeature
             }
             return result;
         }
+    }
+
+    public Set<Class<? extends ThraxJob>> getPrerequisites()
+    {
+        Set<Class<? extends ThraxJob>> pqs = super.getPrerequisites();
+        pqs.add(TargetWordGivenSourceWordProbabilityJob.class);
+        pqs.add(SourceWordGivenTargetWordProbabilityJob.class);
+        return pqs;
     }
 }
 
