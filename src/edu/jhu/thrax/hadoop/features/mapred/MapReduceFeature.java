@@ -17,8 +17,12 @@ import org.apache.hadoop.fs.Path;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
+import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 
 import java.io.IOException;
+
+import java.util.Set;
+import java.util.HashSet;
 
 public abstract class MapReduceFeature extends ThraxJob
 {
@@ -58,6 +62,13 @@ public abstract class MapReduceFeature extends ThraxJob
         FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "rules"));
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + name));
         return job;
+    }
+
+    public Set<Class<? extends ThraxJob>> getPrerequisites()
+    {
+        Set<Class<? extends ThraxJob>> result = new HashSet<Class<? extends ThraxJob>>();
+        result.add(ExtractionJob.class);
+        return result;
     }
 
 }
