@@ -7,13 +7,8 @@ import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
-public abstract class SimpleFeature extends Feature
+public abstract class SimpleFeature
 {
-    public SimpleFeature(String name)
-    {
-        super(name);
-    }
-
     public abstract void score(RuleWritable r, Map<Text,Writable> map);
 }
 

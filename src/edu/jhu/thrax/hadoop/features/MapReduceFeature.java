@@ -8,8 +8,9 @@ import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
-public abstract class MapReduceFeature extends Feature
+public abstract class MapReduceFeature extends ThraxJob
 {
     public MapReduceFeature(String name)
     {
