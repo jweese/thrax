@@ -4,8 +4,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Scanner;
 
-import java.io.File;
-import java.io.IOException;
+import java.net.URI;
 
 /**
  * This class parses conf files of a standard format. The '#' character is used
@@ -14,11 +13,17 @@ import java.io.IOException;
  */
 public class ConfFileParser {
 
-    public static Map<String,String> parse(String filename) throws IOException
+    public static Map<String,String> parse(String confName)
     {
         Map<String,String> opts = new HashMap<String,String>();
-        Scanner scanner = new Scanner(new File(filename));
-
+        Scanner scanner;
+        
+        try {
+        	scanner = new Scanner(ConfigFileLoader.getConfigStream(new URI(confName)));
+        } catch (Exception e) {
+        	throw new IllegalArgumentException(e.toString());
+        }
+        
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             // strip comments

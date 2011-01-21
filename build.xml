@@ -18,12 +18,15 @@
 
     <target name="init-hadoop">
         <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation." unless="env.HADOOP"/>
-        <fail message="Please set the $HADOOP_VERSION environment variable to the version number of your Hadoop installation." unless="env.HADOOP_VERSION"/>
     </target>
 
-    <target name="compile" depends="init,init-hadoop">
+    <target name="init-amazon">
+        <fail message="Please set the $AWS_SDK environment variable to point to your Amazon Web Services SDK installation." unless="env.AWS_SDK"/>
+    </target>
+
+    <target name="compile" depends="init,init-hadoop,init-amazon">
         <javac srcdir="${src}" destdir="${build}"
-            classpath="${env.HADOOP}/hadoop-${env.HADOOP_VERSION}-core.jar"
+            classpath="${env.HADOOP}/hadoop-0.20.2-core.jar:${env.AWS_SDK}/lib/aws-java-sdk-1.1.3.jar"
             debug="on" includeantruntime="false">
             <compilerarg value="-Xlint"/>
         </javac>
