@@ -53,9 +53,11 @@ public class Thrax extends Configured implements Tool
             wait();
         } while (scheduler.notFinished());
         System.err.print(scheduler);
-        System.err.println("Work directory was " + workDir);
-        System.err.println("To retrieve grammar:");
-        System.err.println("hadoop fs -getmerge " + workDir + "final <destination>");
+        if (scheduler.getClassesByState(JobState.SUCCESS).size() == scheduler.numJobs()) {
+            System.err.println("Work directory was " + workDir);
+            System.err.println("To retrieve grammar:");
+            System.err.println("hadoop fs -getmerge " + workDir + "final <destination>");
+        }
         return 0;
     }
 

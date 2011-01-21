@@ -125,6 +125,11 @@ public class Scheduler
         return result;
     }
 
+    public int numJobs()
+    {
+        return jobs.size();
+    }
+
     public boolean notFinished()
     {
         for (Class<? extends ThraxJob> c : jobs.keySet()) {
