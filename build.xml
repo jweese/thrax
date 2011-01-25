@@ -37,6 +37,9 @@
             <fileset dir="${build}">
                 <include name="**/*.class"/>
             </fileset>
+            <fileset dir=".">
+		<include name="AwsCredentials.properties"/>
+            </fileset>
             <manifest>
                 <attribute name="Main-Class" value="edu.jhu.thrax.Thrax"/>
             </manifest>
