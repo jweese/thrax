@@ -22,7 +22,7 @@ public class Thrax extends Configured implements Tool
     public synchronized int run(String [] argv) throws Exception
     {
         if (argv.length < 1) {
-            System.err.println("usage: Thrax <conf file>");
+            System.err.println("usage: Thrax <conf file> [s3 bucket]");
             return 1;
         }
         // do some setup of configuration
@@ -33,6 +33,12 @@ public class Thrax extends Configured implements Tool
         String date = (new Date()).toString().replaceAll("\\s+", "_").replaceAll(":", "_");
         String workDir = "thrax_run_" + date + Path.SEPARATOR;
         conf.set("thrax.work-dir", workDir);
+
+        if (argv.length > 1) {
+            if (!argv[1].endsWith(Path.SEPARATOR))
+                argv[1] += Path.SEPARATOR;
+            conf.set("thrax.bucket", argv[1]);
+        }
         scheduler = new Scheduler();
         // schedule all the jobs
         scheduler.schedule(ExtractionJob.class);
