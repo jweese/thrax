@@ -107,6 +107,7 @@ public class Thrax extends Configured implements Tool
                 thrax.workerDone(theClass, job.isSuccessful());
             }
             catch (Exception e) {
+                e.printStackTrace();
                 thrax.workerDone(theClass, false);
             }
             return;
