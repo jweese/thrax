@@ -22,7 +22,7 @@ public class Thrax extends Configured implements Tool
     public synchronized int run(String [] argv) throws Exception
     {
         if (argv.length < 1) {
-            System.err.println("usage: Thrax <conf file> [s3 bucket]");
+            System.err.println("usage: Thrax <conf file> [output path]");
             return 1;
         }
         // do some setup of configuration
@@ -37,8 +37,10 @@ public class Thrax extends Configured implements Tool
         if (argv.length > 1) {
             if (!argv[1].endsWith(Path.SEPARATOR))
                 argv[1] += Path.SEPARATOR;
-            conf.set("thrax.bucket", argv[1]);
-        }
+            conf.set("thrax.outputPath", argv[1] + "final");
+        } else
+            conf.set("thrax.outputPath", workDir + "final");
+
         scheduler = new Scheduler();
         // schedule all the jobs
         scheduler.schedule(ExtractionJob.class);
@@ -62,7 +64,7 @@ public class Thrax extends Configured implements Tool
         if (scheduler.getClassesByState(JobState.SUCCESS).size() == scheduler.numJobs()) {
             System.err.println("Work directory was " + workDir);
             System.err.println("To retrieve grammar:");
-            System.err.println("hadoop fs -getmerge " + workDir + "final <destination>");
+            System.err.println("hadoop fs -getmerge " + conf.get("thrax.outputPath","") + " <destination>");
         }
         return 0;
     }

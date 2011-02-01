@@ -47,12 +47,15 @@ public class OutputJob extends ThraxJob
         }
         if (FileInputFormat.getInputPaths(job).length == 0)
             FileInputFormat.addInputPath(job, new Path(workDir + "rules"));
-        String bucket = conf.get("thrax.bucket", "");
 
-        if (! bucket.equals("")) 
-            FileOutputFormat.setOutputPath(job, new Path(bucket + "final"));
-        else
-            FileOutputFormat.setOutputPath(job, new Path(workDir + "final"));
+        String outputPath = conf.get("thrax.outputPath", "");
+
+        FileOutputFormat.setOutputPath(job, new Path(outputPath));
+
+        // if (! bucket.equals("")) 
+        //     FileOutputFormat.setOutputPath(job, new Path(bucket + "final"));
+        // else
+        //     FileOutputFormat.setOutputPath(job, new Path(workDir + "final"));
 
         return job;
     }
