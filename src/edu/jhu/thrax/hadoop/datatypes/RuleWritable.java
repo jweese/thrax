@@ -300,7 +300,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
             hash = 37 * hash + key.lhs.hashCode();
             hash = 37 * hash + key.source.hashCode();
             hash = 37 * hash + key.target.hashCode();
-            return hash % numPartitions;
+            return (hash & Integer.MAX_VALUE) % numPartitions;
         }
     }
 
@@ -367,7 +367,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     {
         public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
         {
-            return key.source.hashCode() % numPartitions;
+            return (key.source.hashCode() & Integer.MAX_VALUE) % numPartitions;
         }
     }
 
@@ -430,7 +430,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     {
         public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
         {
-            return key.target.hashCode() % numPartitions;
+            return (key.target.hashCode() & Integer.MAX_VALUE) % numPartitions;
         }
     }
 }
