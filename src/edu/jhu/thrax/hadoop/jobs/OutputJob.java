@@ -40,6 +40,8 @@ public class OutputJob extends ThraxJob
         job.setOutputKeyClass(RuleWritable.class);
         job.setOutputValueClass(NullWritable.class);
 
+        job.setPartitionerClass(RuleWritable.NullYieldPartitioner.class);
+
         for (String feature : conf.get("thrax.features", "").split("\\s+")) {
             if (FeatureJobFactory.get(feature) instanceof MapReduceFeature) {
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
@@ -49,13 +51,7 @@ public class OutputJob extends ThraxJob
             FileInputFormat.addInputPath(job, new Path(workDir + "rules"));
 
         String outputPath = conf.get("thrax.outputPath", "");
-
         FileOutputFormat.setOutputPath(job, new Path(outputPath));
-
-        // if (! bucket.equals("")) 
-        //     FileOutputFormat.setOutputPath(job, new Path(bucket + "final"));
-        // else
-        //     FileOutputFormat.setOutputPath(job, new Path(workDir + "final"));
 
         return job;
     }
