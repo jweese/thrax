@@ -216,7 +216,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     {
         public int getPartition(TextPair key, IntWritable value, int numPartitions)
         {
-            return key.fst.hashCode() % numPartitions;
+            return (key.fst.hashCode() & Integer.MAX_VALUE) % numPartitions;
         }
     }
 
