@@ -33,6 +33,11 @@ public class ExtractionJob extends ThraxJob
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));
+        int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
+        if (maxSplitSize != 0) {
+//            System.err.println("* changing max split size from " + FileInputFormat.getMaxSplitSize(job) + " to " + maxSplitSize);
+            FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
+        }
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "rules"));
 
         return job;
