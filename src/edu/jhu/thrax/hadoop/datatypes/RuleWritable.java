@@ -4,6 +4,7 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.TwoDArrayWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.io.WritableComparator;
@@ -295,6 +296,18 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     public static class YieldPartitioner extends Partitioner<RuleWritable, IntWritable>
     {
         public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        {
+            int hash = 163;
+            hash = 37 * hash + key.lhs.hashCode();
+            hash = 37 * hash + key.source.hashCode();
+            hash = 37 * hash + key.target.hashCode();
+            return (hash & Integer.MAX_VALUE) % numPartitions;
+        }
+    }
+
+    public static class NullYieldPartitioner extends Partitioner<RuleWritable, NullWritable>
+    {
+        public int getPartition(RuleWritable key, NullWritable value, int numPartitions)
         {
             int hash = 163;
             hash = 37 * hash + key.lhs.hashCode();
