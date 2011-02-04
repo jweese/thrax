@@ -19,7 +19,15 @@ public class MonotonicFeature extends SimpleFeature
         map.put(LABEL, r.target.toString().matches("2\\].*1\\]") ? ZERO : ONE);
         return;
     }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ONE);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ONE);
+    }
 }
-
-
 

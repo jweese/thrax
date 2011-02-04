@@ -31,5 +31,15 @@ public class ProduceTargetTerminalsFeature extends SimpleFeature
         map.put(LABEL, ZERO);
         return;
     }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
 }
 

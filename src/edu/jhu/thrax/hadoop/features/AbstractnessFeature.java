@@ -31,5 +31,15 @@ public class AbstractnessFeature extends SimpleFeature
         map.put(LABEL, ONE);
         return;
     }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ONE);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ONE);
+    }
 }
 
