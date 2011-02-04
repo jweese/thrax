@@ -41,6 +41,10 @@ public class SourceWordGivenTargetWordProbabilityJob extends ThraxJob
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));
+        int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
+        if (maxSplitSize != 0) {
+            FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
+        }
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "lexprobse2f"));
         return job;
     }
