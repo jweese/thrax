@@ -11,6 +11,7 @@ import java.util.Map;
 public class TargetWordCounterFeature extends SimpleFeature
 {
     private static final Text LABEL = new Text("TargetWords");
+    private static final IntWritable ZERO = new IntWritable(0);
 
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
@@ -22,6 +23,16 @@ public class TargetWordCounterFeature extends SimpleFeature
         }
         map.put(LABEL, new IntWritable(words));
         return;
+    }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
     }
 }
 

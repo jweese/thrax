@@ -18,5 +18,15 @@ public class PhrasePenaltyFeature extends SimpleFeature
     {
         map.put(LABEL, VALUE);
     }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, VALUE);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, VALUE);
+    }
 }
 

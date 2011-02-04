@@ -31,5 +31,15 @@ public class LexicalityFeature extends SimpleFeature
         map.put(LABEL, ONE);
         return;
     }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
 }
 

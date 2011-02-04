@@ -21,5 +21,15 @@ public class XRuleFeature extends SimpleFeature
         map.put(LABEL, r.lhs.toString().equals(PATTERN) ? ONE : ZERO);
         return;
     }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
 }
 

@@ -12,6 +12,7 @@ public class UnalignedWordCounterFeature extends SimpleFeature
 {
     private static final Text SRC_LABEL = new Text("UnalignedSource");
     private static final Text TGT_LABEL = new Text("UnalignedTarget");
+    private static final IntWritable ZERO = new IntWritable(0);
 
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
@@ -29,6 +30,18 @@ public class UnalignedWordCounterFeature extends SimpleFeature
         map.put(SRC_LABEL, new IntWritable(srcCount));
         map.put(TGT_LABEL, new IntWritable(tgtCount));
         return;
+    }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(SRC_LABEL, ZERO);
+        map.put(TGT_LABEL, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(SRC_LABEL, ZERO);
+        map.put(TGT_LABEL, ZERO);
     }
 }
 

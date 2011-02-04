@@ -19,5 +19,15 @@ public class AdjacentNonTerminalsFeature extends SimpleFeature
         map.put(LABEL, r.source.toString().indexOf("] [") == -1 ? ZERO : ONE);
         return;
     }
+
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(LABEL, ONE);
+    }
 }
 
