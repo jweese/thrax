@@ -1,164 +1,99 @@
 package edu.jhu.thrax.util;
 
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+
 import java.util.Scanner;
 import java.util.HashSet;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.TreeMap;
+
+import java.io.IOException;
 
 import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
+import edu.jhu.thrax.hadoop.features.SimpleFeature;
+import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 
 public class CreateGlueGrammar
 {
     private static HashSet<String> nts;
-    private static ArrayList<String> features;
 
     private static String phrasePenalty;
+    private static TreeMap<Text,Writable> unaryFeatures;
+    private static TreeMap<Text,Writable> binaryFeatures;
 
     private static final String RULE_ONE = "[%1$s] ||| [%2$s,1] ||| [%2$s,1] ||| ";
     private static final String RULE_TWO = "[%1$s] ||| [%1$s,1] [%2$s,2] ||| [%1$s,1] [%2$s,2] ||| ";
+    private static String GOAL = "GOAL";
+    private static boolean LABEL = false;
+    private static String [] FEATURES;
 
-    private static void getFeatureOrder(String rule)
-    {
-        features = new ArrayList<String>();
-        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
-        String [] feats = parts[3].trim().split("\\s+");
-        for (String f : feats) {
-            String name = f.substring(0, f.indexOf("="));
-            features.add(name);
-            if ("PhrasePenalty".equals(name))
-                phrasePenalty = f.substring(f.indexOf("=") + 1);
-        }
-        return;
-    }
-
-    public static void main(String [] argv)
+    public static void main(String [] argv) throws IOException
     {
         if (argv.length < 1) {
-            System.err.println("usage: CreateGlueGrammar <goal symbol>");
+            System.err.println("usage: CreateGlueGrammar <conf file>");
             return;
         }
+
+        unaryFeatures = new TreeMap<Text,Writable>();
+        binaryFeatures = new TreeMap<Text,Writable>();
+
+        Map<String,String> opts = ConfFileParser.parse(argv[0]);
+        if (opts.containsKey("goal-symbol"))
+            GOAL = opts.get("goal-symbol");
+        if (opts.containsKey("label-feature-scores"))
+            LABEL = Boolean.parseBoolean(opts.get("label-feature-scores"));
+        if (opts.containsKey("features"))
+            FEATURES = opts.get("features").split("\\s+");
+        else
+            FEATURES = new String[0];
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         nts = new HashSet<String>();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            if (features == null)
-                getFeatureOrder(line);
             String lhs = line.substring(line.indexOf("[") + 1, line.indexOf("]"));
             nts.add(lhs);
         }
-        for (String n : nts) {
-            StringBuilder r1 = new StringBuilder();
-            r1.append(String.format(RULE_ONE, argv[0], n));
-            StringBuilder r2 = new StringBuilder();
-            r2.append(String.format(RULE_TWO, argv[0], n));
-
-            for (String f : features) {
-                r1.append(String.format("%s=%s ", f, getValueOne(f, n)));
-                r2.append(String.format("%s=%s ", f, getValueTwo(f, n)));
+        for (String nt : nts) {
+            Text n = new Text(nt);
+            unaryFeatures.clear();
+            binaryFeatures.clear();
+            for (String f : FEATURES) {
+                SimpleFeature sf = SimpleFeatureFactory.get(f);
+                if (sf != null) {
+                    sf.unaryGlueRuleScore(n, unaryFeatures);
+                    sf.binaryGlueRuleScore(n, binaryFeatures);
+                    continue;
+                }
+                MapReduceFeature mrf = FeatureJobFactory.get(f);
+                if (mrf != null) {
+                    mrf.unaryGlueRuleScore(n, unaryFeatures);
+                    mrf.binaryGlueRuleScore(n, binaryFeatures);
+                }
             }
+            StringBuilder r1 = new StringBuilder();
+            r1.append(String.format(RULE_ONE, GOAL, n));
+            StringBuilder r2 = new StringBuilder();
+            r2.append(String.format(RULE_TWO, GOAL, n));
+
+            for (Text t : unaryFeatures.keySet()) {
+                if (LABEL) {
+                    r1.append(String.format("%s=%s ", t, unaryFeatures.get(t)));
+                    r2.append(String.format("%s=%s ", t, binaryFeatures.get(t)));
+                }
+                else {
+                    r1.append(String.format("%s ", unaryFeatures.get(t)));
+                    r2.append(String.format("%s ", binaryFeatures.get(t)));
+                }
+            }
+
             System.out.println(r1.toString());
             System.out.println(r2.toString());
         }
     }
 
-    private static String getValueOne(String feat, String nt)
-    {
-        if ("SourceTerminalsButNoTarget".equals(feat)) {
-            return "0";
-        }
-        else if ("SourcePhraseGivenTarget".equals(feat)) {
-            return "0.0";
-        }
-        else if ("Monotonic".equals(feat)) {
-            return "0";
-        }
-        else if ("PhrasePenalty".equals(feat)) {
-            return phrasePenalty;
-        }
-        else if ("TargetTerminalsButNoSource".equals(feat)) {
-            return "0";
-        }
-        else if ("LexprobTargetGivenSource".equals(feat)) {
-            return "0.0";
-        }
-        else if ("ContainsX".equals(feat)) {
-            return "0";
-        }
-        else if ("Adjacent".equals(feat)) {
-            return "0";
-        }
-        else if ("Abstract".equals(feat)) {
-            return "1";
-        }
-        else if ("Lexical".equals(feat)) {
-            return "0";
-        }
-        else if ("LexprobSourceGivenTarget".equals(feat)) {
-            return "0.0";
-        }
-        else if ("TargetPhraseGivenSource".equals(feat)) {
-            return "0.0";
-        }
-        else if ("UnalignedSource".equals(feat)) {
-            return "0";
-        }
-        else if ("UnalignedTarget".equals(feat)) {
-            return "0";
-        }
-        else if ("RarityPenalty".equals(feat)) {
-            return "1.0";
-        }
-        return "0";
-    }
-
-    private static String getValueTwo(String feat, String nt)
-    {
-        if ("SourceTerminalsButNoTarget".equals(feat)) {
-            return "0";
-        }
-        else if ("SourcePhraseGivenTarget".equals(feat)) {
-            return "0.0";
-        }
-        else if ("Monotonic".equals(feat)) {
-            return "0";
-        }
-        else if ("PhrasePenalty".equals(feat)) {
-            return phrasePenalty;
-        }
-        else if ("TargetTerminalsButNoSource".equals(feat)) {
-            return "0";
-        }
-        else if ("LexprobTargetGivenSource".equals(feat)) {
-            return "0.0";
-        }
-        else if ("ContainsX".equals(feat)) {
-            return "0";
-        }
-        else if ("Adjacent".equals(feat)) {
-            return "1";
-        }
-        else if ("Abstract".equals(feat)) {
-            return "1";
-        }
-        else if ("Lexical".equals(feat)) {
-            return "0";
-        }
-        else if ("LexprobSourceGivenTarget".equals(feat)) {
-            return "0.0";
-        }
-        else if ("TargetPhraseGivenSource".equals(feat)) {
-            return "0.0";
-        }
-        else if ("UnalignedSource".equals(feat)) {
-            return "0";
-        }
-        else if ("UnalignedTarget".equals(feat)) {
-            return "0";
-        }
-        else if ("RarityPenalty".equals(feat)) {
-            return "1.0";
-        }
-        return "0";
-    }
 }
 
