@@ -2,6 +2,7 @@ package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
@@ -23,6 +24,7 @@ import edu.jhu.thrax.hadoop.jobs.SourceWordGivenTargetWordProbabilityJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.io.File;
 import java.io.IOException;
@@ -232,6 +234,19 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         pqs.add(TargetWordGivenSourceWordProbabilityJob.class);
         pqs.add(SourceWordGivenTargetWordProbabilityJob.class);
         return pqs;
+    }
+
+    private static final DoubleWritable ONE_PROB = new DoubleWritable(0.0);
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(Reduce.SGT_LABEL, ONE_PROB);
+        map.put(Reduce.TGS_LABEL, ONE_PROB);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(Reduce.SGT_LABEL, ONE_PROB);
+        map.put(Reduce.TGS_LABEL, ONE_PROB);
     }
 }
 
