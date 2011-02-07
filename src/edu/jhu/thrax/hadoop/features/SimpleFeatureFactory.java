@@ -24,6 +24,8 @@ public class SimpleFeatureFactory
             return new ConsumeSourceTerminalsFeature();
         else if (name.equals("target-terminals-without-source"))
             return new ProduceTargetTerminalsFeature();
+        else if (name.equals("glue-rule"))
+            return new GlueRuleFeature();
 
         return null;
     }
