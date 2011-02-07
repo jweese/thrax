@@ -2,6 +2,7 @@ package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
@@ -15,6 +16,7 @@ import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +102,17 @@ public class RarityPenaltyFeature extends MapReduceFeature
             }
         }
 
+    }
+
+    private static final DoubleWritable ZERO = new DoubleWritable(0.0);
+    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(Reduce.LABEL, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
+    {
+        map.put(Reduce.LABEL, ZERO);
     }
 }
 

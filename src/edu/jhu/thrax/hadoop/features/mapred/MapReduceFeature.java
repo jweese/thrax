@@ -1,6 +1,8 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -23,6 +25,7 @@ import java.io.IOException;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
 
 public abstract class MapReduceFeature extends ThraxJob
 {
@@ -71,6 +74,10 @@ public abstract class MapReduceFeature extends ThraxJob
         result.add(ExtractionJob.class);
         return result;
     }
+
+    public abstract void unaryGlueRuleScore(Text nt, Map<Text,Writable> map);
+
+    public abstract void binaryGlueRuleScore(Text nt, Map<Text,Writable> map);
 
 }
 

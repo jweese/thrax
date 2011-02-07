@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.WritableComparator;
@@ -13,6 +14,7 @@ import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
 
 public class SourcePhraseGivenTargetFeature extends MapReduceFeature
 {
@@ -114,6 +116,17 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
                 context.write(r, cnt);
             }
         }
+    }
+
+    private static final DoubleWritable ZERO = new DoubleWritable(0.0);
+    public void unaryGlueRuleScore(Text nt, java.util.Map<Text,Writable> map)
+    {
+        map.put(Reduce.NAME, ZERO);
+    }
+
+    public void binaryGlueRuleScore(Text nt, java.util.Map<Text,Writable> map)
+    {
+        map.put(Reduce.NAME, ZERO);
     }
 }
 
