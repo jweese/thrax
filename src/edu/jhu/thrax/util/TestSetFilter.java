@@ -16,7 +16,9 @@ public class TestSetFilter
 
     private static void getTestPhrases(int phraseLength, String filename) throws IOException
     {
-        testPhrases = new HashSet<String>();
+        if (testPhrases == null) {
+            testPhrases = new HashSet<String>();
+        }
         Scanner scanner = new Scanner(new File(filename));
         StringBuilder sb = new StringBuilder();
         while (scanner.hasNextLine()) {
@@ -52,12 +54,13 @@ public class TestSetFilter
     {
         // do some setup
         if (argv.length < 2) {
-            System.err.println("usage: TestSetFilter <phrase length> <test set>");
+            System.err.println("usage: TestSetFilter <phrase length> <test set1> [test set2 ...]");
             return;
         }
         int phraseLength = Integer.parseInt(argv[0]);
-        String testFile = argv[1];
-        getTestPhrases(phraseLength, testFile);
+        for (int i = 1; i < argv.length; i++) {
+            getTestPhrases(phraseLength, argv[i]);
+        }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;

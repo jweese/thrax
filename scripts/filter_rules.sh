@@ -2,7 +2,7 @@
 
 if (($# < 2))
 then
-    echo "usage: filter_rules.sh <phrase length> <test set>"
+    echo "usage: filter_rules.sh <phrase length> <test set> [test set ...]"
     exit 1
 fi
 
