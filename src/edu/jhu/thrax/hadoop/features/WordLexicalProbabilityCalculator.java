@@ -33,21 +33,6 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     public static final byte [] MARGINAL_BYTES = MARGINAL.getBytes();
     public static final int MARGINAL_LENGTH = MARGINAL.getLength();
 
-    public static void normalize(String [] tokens)
-    {
-        for (int i = 0; i < tokens.length; i++) {
-            if ("``".equals(tokens[i]))
-                tokens[i] = "\"";
-            else if ("''".equals(tokens[i]))
-                tokens[i] = "\"";
-            else if ("-lrb-".equalsIgnoreCase(tokens[i]))
-                tokens[i] = "(";
-            else if ("-rrb-".equalsIgnoreCase(tokens[i]))
-                tokens[i] = ")";
-        }
-        return;
-    }
-
     public static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
@@ -75,8 +60,6 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 target = parseYield(parts[1]);
             else
                 target = parts[1].split("\\s+");
-            WordLexicalProbabilityCalculator.normalize(source);
-            WordLexicalProbabilityCalculator.normalize(target);
             Alignment alignment = new Alignment(parts[2]);
 
             for (int i = 0; i < source.length; i++) {
@@ -153,8 +136,6 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 target = TargetGivenSourceMap.parseYield(parts[1]);
             else 
                 target = parts[1].split("\\s+");
-            WordLexicalProbabilityCalculator.normalize(source);
-            WordLexicalProbabilityCalculator.normalize(target);
             Alignment alignment;
             if (parts.length >= 3) {
                 alignment = new Alignment(parts[2]);
