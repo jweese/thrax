@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class ProduceTargetTerminalsFeature extends SimpleFeature
+public class ProduceTargetTerminalsFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("TargetTerminalsButNoSource");
     private static final IntWritable ZERO = new IntWritable(0);

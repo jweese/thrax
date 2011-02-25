@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class GlueRuleFeature extends SimpleFeature
+public class GlueRuleFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("GlueRule");
     private static final IntWritable ZERO = new IntWritable(0);

@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class AbstractnessFeature extends SimpleFeature
+public class AbstractnessFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("Abstract");
     private static final IntWritable ZERO = new IntWritable(0);

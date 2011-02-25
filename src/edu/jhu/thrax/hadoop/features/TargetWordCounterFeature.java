@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class TargetWordCounterFeature extends SimpleFeature
+public class TargetWordCounterFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("TargetWords");
     private static final IntWritable ZERO = new IntWritable(0);

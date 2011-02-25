@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class XRuleFeature extends SimpleFeature
+public class XRuleFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("ContainsX");
     private static final IntWritable ZERO = new IntWritable(0);

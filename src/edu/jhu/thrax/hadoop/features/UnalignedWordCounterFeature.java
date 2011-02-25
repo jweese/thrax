@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class UnalignedWordCounterFeature extends SimpleFeature
+public class UnalignedWordCounterFeature implements SimpleFeature
 {
     private static final Text SRC_LABEL = new Text("UnalignedSource");
     private static final Text TGT_LABEL = new Text("UnalignedTarget");

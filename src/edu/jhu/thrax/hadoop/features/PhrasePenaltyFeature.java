@@ -9,7 +9,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class PhrasePenaltyFeature extends SimpleFeature
+public class PhrasePenaltyFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("PhrasePenalty");
     private static final DoubleWritable VALUE = new DoubleWritable(ThraxConfig.PHRASE_PENALTY);

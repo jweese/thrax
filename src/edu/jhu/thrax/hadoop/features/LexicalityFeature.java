@@ -8,7 +8,7 @@ import org.apache.hadoop.io.Writable;
 
 import java.util.Map;
 
-public class LexicalityFeature extends SimpleFeature
+public class LexicalityFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("Lexical");
     private static final IntWritable ZERO = new IntWritable(0);
