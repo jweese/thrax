@@ -53,6 +53,18 @@ instances=$THRAX_OPT_RESULT
 thrax_option $conf "amazon-instance-type" "m1.small"
 instance_type=$THRAX_OPT_RESULT
 
+thrax_option $conf "input-file"
+input=$THRAX_OPT_RESULT
+if [[ -z `s3cmd ls $input` ]]
+then
+    echo "$input not found on S3."
+    read -p "Enter local filename for upload: "
+    if [[ -n "$REPLY" ]]
+    then
+        checked_put $REPLY $input
+    fi
+fi
+
 elastic-mapreduce -c $cred \
     --create \
     --log-uri $workdir/logs \
