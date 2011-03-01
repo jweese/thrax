@@ -40,11 +40,16 @@ choose_upload() {
     if [[ -z `s3cmd ls $1` ]]
     then
         echo "$1 not found on S3."
-        read -p "Enter local filename for upload: "
-        if [[ -n "$REPLY" ]]
-        then
-            checked_put $REPLY $1
-        fi
+        while [[ ! -f "$REPLY" ]]
+        do
+            read -p "Enter local filename for upload: "
+            if [[ -f "$REPLY" ]]
+            then
+                checked_put $REPLY $1
+            else
+                echo "$REPLY is not a regular file."
+            fi
+        done
     fi
 }
 
@@ -71,6 +76,7 @@ choose_upload $input
 
 elastic-mapreduce -c $cred \
     --create \
+    --name "thrax" \
     --log-uri $workdir/logs \
     --num-instances $instances \
     --instance-type $instance_type \
