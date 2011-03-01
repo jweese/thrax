@@ -3,22 +3,21 @@
 if [[ -z "$2" ]]
 then
     cat <<END_USAGE
-usage: run_on_amazon.sh <conf file> <num instances>
+usage: run_on_amazon.sh <conf file> <credentials>
 END_USAGE
     exit 1
 fi
 
 checked_put() {
-    clean=`echo "$2" | sed s/^s3n/s3/`
-    if [[ -n "`s3cmd ls $clean`" ]]
+    if [[ -n "`s3cmd ls $2`" ]]
     then
         read -p "File $2 already exists on S3. Overwrite [y/N]? "
         if [[ $REPLY = y*  || $REPLY = Y* ]]
         then
-            s3cmd put $1 $clean
+            s3cmd put $1 $2
         fi
     else
-        s3mcd put $1 $clean
+        s3cmd put $1 $2
     fi
 }
 
@@ -38,7 +37,7 @@ thrax_option() {
 }
 
 conf=$1
-instances=$2
+cred=$2
 thrax_option $conf "amazon-work"
 workdir=$THRAX_OPT_RESULT
 
@@ -48,3 +47,17 @@ checked_put $conf $remoteconf
 thrax_option $conf "amazon-jar"
 thraxjar=$THRAX_OPT_RESULT
 checked_put $THRAX/bin/thrax.jar $thraxjar
+
+thrax_option $conf "amazon-num-instances" "5"
+instances=$THRAX_OPT_RESULT
+thrax_option $conf "amazon-instance-type" "m1.small"
+instance_type=$THRAX_OPT_RESULT
+
+elastic-mapreduce -c $cred \
+    --create \
+    --log-uri $workdir/logs \
+    --num-instances $instances \
+    --instance-type $instance_type \
+    --jar $thraxjar \
+    --arg $remoteconf \
+    --arg $workdir
