@@ -36,6 +36,18 @@ thrax_option() {
     fi
 }
 
+choose_upload() {
+    if [[ -z `s3cmd ls $1` ]]
+    then
+        echo "$1 not found on S3."
+        read -p "Enter local filename for upload: "
+        if [[ -n "$REPLY" ]]
+        then
+            checked_put $REPLY $1
+        fi
+    fi
+}
+
 conf=$1
 cred=$2
 thrax_option $conf "amazon-work"
@@ -55,15 +67,7 @@ instance_type=$THRAX_OPT_RESULT
 
 thrax_option $conf "input-file"
 input=$THRAX_OPT_RESULT
-if [[ -z `s3cmd ls $input` ]]
-then
-    echo "$input not found on S3."
-    read -p "Enter local filename for upload: "
-    if [[ -n "$REPLY" ]]
-    then
-        checked_put $REPLY $input
-    fi
-fi
+choose_upload $input
 
 elastic-mapreduce -c $cred \
     --create \
