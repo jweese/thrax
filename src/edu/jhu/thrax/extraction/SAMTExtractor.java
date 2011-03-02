@@ -4,6 +4,7 @@ import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.syntax.LatticeArray;
 import edu.jhu.thrax.datatypes.*;
+import edu.jhu.thrax.util.exceptions.*;
 
 import java.util.List;
 import java.util.HashSet;
@@ -30,38 +31,33 @@ public class SAMTExtractor extends HieroRuleExtractor {
         super();
     }
 
-    public List<Rule> extract(String inp)
+    @Override
+    public List<Rule> extract(String inp) throws MalformedInputException
     {
         String [] inputs = inp.split(ThraxConfig.DELIMITER_REGEX);
         if (inputs.length < 3) {
-            return new ArrayList<Rule>();
-        }
-        for (String i : inputs) {
-            if (i.trim().equals("") || i.trim().equals("()"))
-                return new ArrayList<Rule>();
+            throw new NotEnoughFieldsException();
         }
         for (int j = 0; j < inputs.length; j++)
             inputs[j] = inputs[j].trim();
+        if (inputs[0].equals(""))
+            throw new EmptySourceSentenceException();
+        else if (inputs[1].equals(""))
+            throw new EmptyTargetSentenceException();
+        else if (inputs[2].equals(""))
+            throw new EmptyAlignmentException();
 
         int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
         String parse = inputs[1];
-        Alignment alignment = new Alignment(inputs[2]);
-
-        try {
-            lattice = new LatticeArray(parse);
-        }
-        catch (Exception e)
-        {
-            System.err.println("Could not create lattice array from parse! (skipping)");
-            System.err.println("PARSE: " + parse);
-            return new ArrayList<Rule>();
-        }
         int [] target = yield(parse);
-
+        if (target.length == 0)
+            throw new EmptyTargetSentenceException();
+        Alignment alignment = new Alignment(inputs[2]);
         if (!alignment.consistent(source.length, target.length)) {
-            System.err.println("WARNING: inconsistent alignment (skipping)");
-            return new ArrayList<Rule>();
+            throw new InconsistentAlignmentException();
         }
+
+        lattice = new LatticeArray(parse);
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
         HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart, target.length);
@@ -167,7 +163,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
     }
 
-    public static void main(String [] argv) throws IOException
+    public static void main(String [] argv) throws IOException,MalformedInputException
     {
         if (argv.length < 1) {
             System.err.println("usage: SAMTExtractor <conf file>");

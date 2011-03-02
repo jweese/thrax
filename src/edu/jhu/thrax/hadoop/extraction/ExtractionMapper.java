@@ -14,7 +14,8 @@ import edu.jhu.thrax.datatypes.IntPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.extraction.RuleExtractor;
 import edu.jhu.thrax.extraction.RuleExtractorFactory;
-import edu.jhu.thrax.util.exceptions.UnknownGrammarTypeException;
+import edu.jhu.thrax.util.exceptions.*;
+import edu.jhu.thrax.util.MalformedInput;
 
 import java.io.IOException;
 import java.util.List;
@@ -59,11 +60,31 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
         if (extractor == null)
             return;
         String line = value.toString();
-        for (Rule r : extractor.extract(line)) {
-            RuleWritable rw = new RuleWritable(r);
+        try {
+            for (Rule r : extractor.extract(line)) {
+                RuleWritable rw = new RuleWritable(r);
 //            for (SimpleFeature f : features)
 //                f.score(rw);
-            context.write(rw, one);
+                context.write(rw, one);
+            }
+        }
+        catch (NotEnoughFieldsException e) {
+            context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
+        }
+        catch (EmptySourceSentenceException e) {
+            context.getCounter(MalformedInput.EMPTY_SOURCE_SENTENCE).increment(1);
+        }
+        catch (EmptyTargetSentenceException e) {
+            context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+        }
+        catch (EmptyAlignmentException e) {
+            context.getCounter(MalformedInput.EMPTY_ALIGNMENT).increment(1);
+        }
+        catch (InconsistentAlignmentException e) {
+            context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
+        }
+        catch (MalformedInputException e) {
+            context.getCounter(MalformedInput.UNKNOWN).increment(1);
         }
     }
 }

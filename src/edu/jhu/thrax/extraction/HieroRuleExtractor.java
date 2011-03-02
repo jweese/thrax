@@ -12,6 +12,7 @@ import java.util.Scanner;
 import java.io.IOException;
 
 import edu.jhu.thrax.datatypes.*;
+import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.ThraxConfig;
 
@@ -63,25 +64,26 @@ public class HieroRuleExtractor implements RuleExtractor {
             HIERO_LABELS.add(X_ID);
     }
 
-    public List<Rule> extract(String inp)
+    public List<Rule> extract(String inp) throws MalformedInputException
     {
         String [] inputs = inp.split(ThraxConfig.DELIMITER_REGEX);
         if (inputs.length < 3) {
-            return new ArrayList<Rule>();
+            throw new NotEnoughFieldsException();
         }
         for (int i = 0; i < inputs.length; i++)
             inputs[i] = inputs[i].trim();
-        for (String i : inputs) {
-            if (i.trim().equals(""))
-                return new ArrayList<Rule>();
-        }
+        if (inputs[0].equals(""))
+            throw new EmptySourceSentenceException();
+        else if (inputs[1].equals(""))
+            throw new EmptyTargetSentenceException();
+        else if (inputs[2].equals(""))
+            throw new EmptyAlignmentException();
 
         int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
         int [] target = Vocabulary.getIds(inputs[1].split("\\s+"));
         Alignment alignment = new Alignment(inputs[2]);
         if (!alignment.consistent(source.length, target.length)) {
-            System.err.println("WARNING: inconsistent alignment (skipping)");
-            return new ArrayList<Rule>();
+            throw new InconsistentAlignmentException();
         }
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
@@ -352,7 +354,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         return labelsBySpan;
     }
 
-    public static void main(String [] argv) throws IOException
+    public static void main(String [] argv) throws IOException,MalformedInputException
     {
         if (argv.length < 1) {
             System.err.println("usage: HieroRuleExtractor <conf file>");
