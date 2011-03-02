@@ -72,11 +72,14 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
 
     protected void cleanup(Context context) throws IOException, InterruptedException
     {
-        context.write(ruleToText(currentRule, features), NullWritable.get());
+        if (currentRule != null)
+            context.write(ruleToText(currentRule, features), NullWritable.get());
     }
 
     private Text ruleToText(RuleWritable r, Map<Text,Writable> fs)
     {
+        if (r == null)
+            throw new IllegalArgumentException("cannot convert a null rule to Text");
         for (String featureName : allFeatureNames) {
             SimpleFeature feature = SimpleFeatureFactory.get(featureName);
             if (feature != null) {
