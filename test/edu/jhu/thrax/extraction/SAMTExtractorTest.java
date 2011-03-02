@@ -79,12 +79,9 @@ public class SAMTExtractorTest
     }
 
     @Test
-    public void extraRBPair_Extract() throws MalformedInputException
+    public void emptyParse_YieldHasLengthZero() throws MalformedParseException
     {
-        SAMTExtractor e = new SAMTExtractor();
-        List<Rule> result = e.extract("hello ||| ((S world)) ||| 0-0");
-        Assert.assertEquals(result.size(), 1);        
-        Assert.assertEquals(result.get(0).toString(), "[S] ||| hello ||| world");
+        Assert.assertEquals(SAMTExtractor.yield("()").length, 0);
     }
 
 }
