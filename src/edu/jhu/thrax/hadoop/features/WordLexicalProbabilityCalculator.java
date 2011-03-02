@@ -3,6 +3,8 @@ package edu.jhu.thrax.hadoop.features;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
+import edu.jhu.thrax.util.exceptions.*;
+import edu.jhu.thrax.util.MalformedInput;
 
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -92,27 +94,28 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 context.write(tp, new IntWritable(counts.get(tp)));
             }
         }
+    }
 
-        static String [] parseYield(String parse)
-        {
-            ArrayList<String> al = new ArrayList<String>();
-            String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
-            for (int i = 0; i < tokens.length; i++) {
-                String t = tokens[i];
-                if ("(".equals(t))
-                    i++;
-                else if (")".equals(t)) {
-                    // do nothing
-                }
-                else
-                    al.add(t.toLowerCase());
+
+    static String [] parseYield(String parse)
+    {
+        ArrayList<String> al = new ArrayList<String>();
+        String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
+        for (int i = 0; i < tokens.length; i++) {
+            String t = tokens[i];
+            if ("(".equals(t))
+                i++;
+            else if (")".equals(t)) {
+                // do nothing
             }
-            String [] ret = new String[al.size()];
-            for (int j = 0; j < ret.length; j++) {
-                ret[j] = al.get(j);
-            }
-            return ret;
+            else
+                al.add(t.toLowerCase());
         }
+        String [] ret = new String[al.size()];
+        for (int j = 0; j < ret.length; j++) {
+            ret[j] = al.get(j);
+        }
+        return ret;
     }
 
     public static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
@@ -141,7 +144,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             String [] source = parts[0].split("\\s+");
             String [] target;
             if (parsed)
-                target = TargetGivenSourceMap.parseYield(parts[1]);
+                target = parseYield(parts[1]);
             else 
                 target = parts[1].split("\\s+");
             Alignment alignment;
