@@ -60,7 +60,15 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 target = parseYield(parts[1]);
             else
                 target = parts[1].split("\\s+");
-            Alignment alignment = new Alignment(parts[2]);
+            Alignment alignment;
+            if (parts.length >= 3)
+                alignment = new Alignment(parts[2]);
+            else
+                alignment = new Alignment("");
+            if (!alignment.consistent(source.length, target.length)) {
+                System.err.println("WARNING: inconsistent alignment (skipping)");
+                return;
+            }
 
             for (int i = 0; i < source.length; i++) {
                 Text src = new Text(source[i]);
@@ -142,6 +150,10 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             }
             else {
                 alignment = new Alignment("");
+            }
+            if (!alignment.consistent(source.length, target.length)) {
+                System.err.println("WARNING: inconsistent alignment (skipping)");
+                return;
             }
 
             for (int i = 0; i < target.length; i++) {
