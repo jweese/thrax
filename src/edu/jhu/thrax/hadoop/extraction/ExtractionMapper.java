@@ -77,6 +77,9 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
         catch (EmptyTargetSentenceException e) {
             context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
         }
+        catch (MalformedParseException e) {
+            context.getCounter(MalformedInput.MALFORMED_TARGET_PARSE).increment(1);
+        }
         catch (EmptyAlignmentException e) {
             context.getCounter(MalformedInput.EMPTY_ALIGNMENT).increment(1);
         }
