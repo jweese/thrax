@@ -11,11 +11,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import java.util.EmptyStackException;
 
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.util.ExternalizableToUtf8;
 import edu.jhu.thrax.util.io.LineReader;
+import edu.jhu.thrax.util.exceptions.MalformedParseException;
 
 public class LatticeArray implements ParseLattice, Externalizable, ExternalizableToUtf8 {
 
@@ -45,7 +47,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         backwardLattice = null;
     }
 
-    public LatticeArray(String parsed_line) {
+    public LatticeArray(String parsed_line) throws MalformedParseException {
         initialize();
         appendFromPennFormat(parsed_line);
     }
@@ -315,7 +317,12 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         for (String line : reader) {
             if (line.trim().equals(""))
                 continue;
-            appendFromPennFormat(line);
+            try {
+                appendFromPennFormat(line);
+            }
+            catch (MalformedParseException e) {
+                throw new IOException(line, e);
+            }
         }
     }
 
@@ -355,7 +362,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         }
     }
 
-    private void appendFromPennFormat(String line) {
+    private void appendFromPennFormat(String line) throws MalformedParseException {
         String[] tokens = line.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
 
         boolean next_nt = false;
@@ -368,11 +375,16 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
                 continue;
             }
             if (")".equals(token)) {
-                int closing_pos = stack.pop();
-                forwardLattice.set(closing_pos, forwardIndex.size() - forwardLattice.get(closing_pos));
-                if (this.useBackwardLattice) {
-                    backwardLattice.add(forwardLattice.get(closing_pos-1));
-                    backwardLattice.add(forwardLattice.get(closing_pos));
+                try {
+                    int closing_pos = stack.pop();
+                    forwardLattice.set(closing_pos, forwardIndex.size() - forwardLattice.get(closing_pos));
+                    if (this.useBackwardLattice) {
+                        backwardLattice.add(forwardLattice.get(closing_pos-1));
+                        backwardLattice.add(forwardLattice.get(closing_pos));
+                    }
+                }
+                catch (EmptyStackException e) {
+                    throw new MalformedParseException();
                 }
                 continue;
             }

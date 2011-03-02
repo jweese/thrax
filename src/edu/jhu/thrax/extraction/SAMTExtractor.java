@@ -70,22 +70,27 @@ public class SAMTExtractor extends HieroRuleExtractor {
         return result;
     }
 
-    private int [] yield(String parse) throws MalformedParseException
+    static int [] yield(String parse) throws MalformedParseException
     {
         String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
         int level = 0;
+        boolean expectNT = false;
 
         ArrayList<Integer> result = new ArrayList<Integer>();
         for (int i = 0; i < tokens.length; i++) {
             String t = tokens[i];
             if ("(".equals(t)) {
                 level++;
-                i++;
+                expectNT = true;
             }
             else if (")".equals(t)) {
                 if (level == 0)
                     throw new MalformedParseException();
                 level--;
+                expectNT = false;
+            }
+            else if (expectNT) {
+                expectNT = false;
             }
             else 
                 result.add(Vocabulary.getId(t.toLowerCase()));
