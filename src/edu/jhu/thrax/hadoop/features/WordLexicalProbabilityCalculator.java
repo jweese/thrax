@@ -51,24 +51,44 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             counts.clear();
             String line = value.toString();
             String [] parts = line.split(ThraxConfig.DELIMITER_REGEX);
-            for (int i = 0; i < parts.length; i++) {
+            if (parts.length < 3) {
+                context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
+                return;
+            }
+            for (int i = 0; i < parts.length; i++) 
                 parts[i] = parts[i].trim();
-                if (parts[i].equals("") || parts[i].equals("()"))
-                    return;
+            if (parts[0].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_SOURCE_SENTENCE).increment(1);
+                return;
+            }
+            else if (parts[1].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+                return;
+            }
+            else if (parts[2].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_ALIGNMENT).increment(1);
+                return;
             }
             String [] source = parts[0].split("\\s+");
             String [] target;
-            if (parsed)
-                target = parseYield(parts[1]);
+            if (parsed) {
+                try {
+                    target = parseYield(parts[1]);
+                    if (target.length == 0) {
+                        context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+                        return;
+                    }
+                }
+                catch (MalformedParseException e) {
+                    context.getCounter(MalformedInput.MALFORMED_TARGET_PARSE).increment(1);
+                    return;
+                }
+            }
             else
                 target = parts[1].split("\\s+");
-            Alignment alignment;
-            if (parts.length >= 3)
-                alignment = new Alignment(parts[2]);
-            else
-                alignment = new Alignment("");
+            Alignment alignment = new Alignment(parts[2]);
             if (!alignment.consistent(source.length, target.length)) {
-                System.err.println("WARNING: inconsistent alignment (skipping)");
+                context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
                 return;
             }
 
@@ -97,20 +117,31 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     }
 
 
-    static String [] parseYield(String parse)
+    static String [] parseYield(String parse) throws MalformedParseException
     {
+        int level = 0;
+        boolean expectNT = false;
         ArrayList<String> al = new ArrayList<String>();
         String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
         for (int i = 0; i < tokens.length; i++) {
             String t = tokens[i];
-            if ("(".equals(t))
-                i++;
-            else if (")".equals(t)) {
-                // do nothing
+            if ("(".equals(t)) {
+                expectNT = true;
+                level++;
             }
+            else if (")".equals(t)) {
+                expectNT = false;
+                if (level == 0)
+                    throw new MalformedParseException();
+                level--;
+            }
+            else if (expectNT)
+                expectNT = false;
             else
                 al.add(t.toLowerCase());
         }
+        if (level != 0)
+            throw new MalformedParseException();
         String [] ret = new String[al.size()];
         for (int j = 0; j < ret.length; j++) {
             ret[j] = al.get(j);
@@ -136,26 +167,45 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 
             String line = value.toString();
             String [] parts = line.trim().split(ThraxConfig.DELIMITER_REGEX);
+            if (parts.length < 3) {
+                context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
+                return;
+            }
             for (int i = 0; i < parts.length; i++) {
                 parts[i] = parts[i].trim();
-                if (parts[i].equals("") || parts[i].equals("()"))
-                    return;
+            }
+            if (parts[0].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_SOURCE_SENTENCE).increment(1);
+                return;
+            }
+            if (parts[1].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+                return;
+            }
+            if (parts[2].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_ALIGNMENT).increment(1);
+                return;
             }
             String [] source = parts[0].split("\\s+");
             String [] target;
-            if (parsed)
-                target = parseYield(parts[1]);
+            if (parsed) {
+                try {
+                    target = parseYield(parts[1]);
+                    if (target.length == 0) {
+                        context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+                        return;
+                    }
+                }
+                catch (MalformedParseException e) {
+                    context.getCounter(MalformedInput.MALFORMED_TARGET_PARSE).increment(1);
+                    return;
+                }
+            }
             else 
                 target = parts[1].split("\\s+");
-            Alignment alignment;
-            if (parts.length >= 3) {
-                alignment = new Alignment(parts[2]);
-            }
-            else {
-                alignment = new Alignment("");
-            }
+            Alignment alignment = new Alignment(parts[2]);
             if (!alignment.consistent(source.length, target.length)) {
-                System.err.println("WARNING: inconsistent alignment (skipping)");
+                context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
                 return;
             }
 
