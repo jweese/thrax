@@ -10,5 +10,11 @@
 	</packages>
     </test>
 
+    <test name="Extractors">
+        <packages>
+            <package name="edu.jhu.thrax.extraction"/>
+        </packages>
+    </test>
+
 </suite>
 
