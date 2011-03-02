@@ -1,6 +1,6 @@
 package edu.jhu.thrax.extraction;
 
-import edu.jhu.thrax.util.UnknownGrammarTypeException;
+import edu.jhu.thrax.util.exceptions.UnknownGrammarTypeException;
 
 /**
  * This class provides specific kinds of rule extractors, depending on the type

@@ -14,7 +14,7 @@ import edu.jhu.thrax.datatypes.IntPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.extraction.RuleExtractor;
 import edu.jhu.thrax.extraction.RuleExtractorFactory;
-import edu.jhu.thrax.util.UnknownGrammarTypeException;
+import edu.jhu.thrax.util.exceptions.UnknownGrammarTypeException;
 
 import java.io.IOException;
 import java.util.List;
