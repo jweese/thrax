@@ -90,7 +90,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
             else 
                 result.add(Vocabulary.getId(t.toLowerCase()));
         }
-        if (level != 0 || result.size() == 0)
+        if (level != 0)
             throw new MalformedParseException();
         int [] ret = new int[result.size()];
         for (int j = 0; j < ret.length; j++)
