@@ -5,6 +5,7 @@ import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.syntax.LatticeArray;
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.util.exceptions.*;
+import edu.jhu.thrax.util.io.InputUtilities;
 
 import java.util.List;
 import java.util.HashSet;
@@ -38,24 +39,23 @@ public class SAMTExtractor extends HieroRuleExtractor {
         if (inputs.length < 3) {
             throw new NotEnoughFieldsException();
         }
-        for (int j = 0; j < inputs.length; j++)
-            inputs[j] = inputs[j].trim();
-        if (inputs[0].equals("") || inputs[1].equals(""))
+        String [] sourceWords = InputUtilities.getWords(inputs[0], ThraxConfig.SOURCE_IS_PARSED);
+        String [] targetWords = InputUtilities.getWords(inputs[1], ThraxConfig.TARGET_IS_PARSED);
+        if (sourceWords.length == 0 || targetWords.length == 0)
             throw new EmptySentenceException();
-        else if (inputs[2].equals(""))
-            throw new EmptyAlignmentException();
-
-        int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
-        String parse = inputs[1];
-        int [] target = yield(parse);
-        if (target.length == 0)
-            throw new EmptySentenceException();
+        int [] source = Vocabulary.getIds(sourceWords);
+        int [] target = Vocabulary.getIds(targetWords);
         Alignment alignment = new Alignment(inputs[2]);
+        if (alignment.isEmpty())
+            throw new EmptyAlignmentException();
         if (!alignment.consistent(source.length, target.length)) {
             throw new InconsistentAlignmentException(inputs[2]);
         }
 
-        lattice = new LatticeArray(parse);
+        if (ThraxConfig.TARGET_IS_SAMT_SYNTAX)
+            lattice = new LatticeArray(inputs[1].trim());
+        else
+            lattice = new LatticeArray(inputs[0].trim());
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
         HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart, target.length);
