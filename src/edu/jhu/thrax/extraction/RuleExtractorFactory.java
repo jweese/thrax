@@ -1,5 +1,6 @@
 package edu.jhu.thrax.extraction;
 
+import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.exceptions.ConfigurationException;
 
 /**
@@ -24,6 +25,8 @@ public class RuleExtractorFactory {
             return new HieroRuleExtractor();
         }
         else if (gt.equals(SAMTExtractor.name)) {
+            if (!(ThraxConfig.SOURCE_IS_PARSED || ThraxConfig.TARGET_IS_PARSED))
+                throw new ConfigurationException("SAMT requires that either the source or target sentences be parsed");
             return new SAMTExtractor();
         }
         // when you create new grammars, add them here.
