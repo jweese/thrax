@@ -4,6 +4,7 @@ import org.testng.annotations.Test;
 import org.testng.Assert;
 import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.datatypes.Rule;
+import edu.jhu.thrax.ThraxConfig;
 import java.util.List;
 
 public class SAMTExtractorTest
@@ -25,6 +26,7 @@ public class SAMTExtractorTest
     @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptyParse_ThrowsException() throws MalformedInputException
     {
+        ThraxConfig.TARGET_IS_PARSED = true;
         SAMTExtractor e = new SAMTExtractor();
         e.extract("hello ||| () ||| 0-0");
     }
@@ -32,6 +34,7 @@ public class SAMTExtractorTest
     @Test(expectedExceptions = { EmptySentenceException.class })
     public void doubleEmptyParse_ThrowsException() throws MalformedInputException
     {
+        ThraxConfig.TARGET_IS_PARSED = true;
         SAMTExtractor e = new SAMTExtractor();
         e.extract("hello ||| (()) ||| 0-0");
     }
@@ -67,6 +70,7 @@ public class SAMTExtractorTest
     @Test(expectedExceptions = { MalformedParseException.class })
     public void unfinishedParse_ThrowsException() throws MalformedInputException
     {
+        ThraxConfig.TARGET_IS_PARSED = true;
         SAMTExtractor e = new SAMTExtractor();
         e.extract("hello ||| (S world ||| 0-0");
     }
