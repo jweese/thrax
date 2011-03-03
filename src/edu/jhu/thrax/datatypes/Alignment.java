@@ -30,7 +30,13 @@ public class Alignment {
      */
     public Alignment(String s)
     {
-        String [] ts = s.trim().split("\\s+");
+        String trimmed = s.trim();
+        if (trimmed.equals("")) {
+            e2f = new int[0][0];
+            f2e = new int[0][0];
+            return;
+        }
+        String [] ts = trimmed.split("\\s+");
         ArrayList<IntPair> ipList = new ArrayList<IntPair>();
         for (String t : ts) {
             IntPair ip = IntPair.alignmentFormat(t);
@@ -86,6 +92,17 @@ public class Alignment {
         for (IntPair x : list)
             ret[currfst][i++] = x.snd;
         return ret;
+    }
+
+    /**
+     * Determines whether this alignment is empty. An alignment is empty if
+     * both e2f and f2e have length zero.
+     *
+     * @return true if this alignment is empty, false otherwise
+     */
+    public boolean isEmpty()
+    {
+        return e2f.length == 0 && f2e.length == 0;
     }
 
     /**
