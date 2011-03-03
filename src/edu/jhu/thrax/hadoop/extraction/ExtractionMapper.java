@@ -50,8 +50,8 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
         try {
             extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
         }
-        catch (UnknownGrammarTypeException ex) {
-            System.err.println("WARNING: cannot extract unknown grammar type " + ThraxConfig.GRAMMAR);
+        catch (ConfigurationException ex) {
+            System.err.println(ex.getMessage());
         }
     }
 
