@@ -14,6 +14,7 @@ import java.io.IOException;
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.Vocabulary;
+import edu.jhu.thrax.util.io.InputUtilities;
 import edu.jhu.thrax.ThraxConfig;
 
 /**
@@ -70,16 +71,16 @@ public class HieroRuleExtractor implements RuleExtractor {
         if (inputs.length < 3) {
             throw new NotEnoughFieldsException();
         }
-        for (int i = 0; i < inputs.length; i++)
-            inputs[i] = inputs[i].trim();
-        if (inputs[0].equals("") || inputs[1].equals(""))
+        String [] sourceWords = InputUtilities.getWords(inputs[0], ThraxConfig.SOURCE_IS_PARSED);
+        String [] targetWords = InputUtilities.getWords(inputs[1], ThraxConfig.TARGET_IS_PARSED);
+        if (sourceWords.length == 0 || targetWords.length == 0)
             throw new EmptySentenceException();
-        else if (inputs[2].equals(""))
-            throw new EmptyAlignmentException();
 
-        int [] source = Vocabulary.getIds(inputs[0].split("\\s+"));
-        int [] target = Vocabulary.getIds(inputs[1].split("\\s+"));
+        int [] source = Vocabulary.getIds(sourceWords);
+        int [] target = Vocabulary.getIds(sourceWords);
         Alignment alignment = new Alignment(inputs[2]);
+        if (alignment.isEmpty())
+            throw new EmptyAlignmentException();
         if (!alignment.consistent(source.length, target.length)) {
             throw new InconsistentAlignmentException(inputs[2]);
         }
