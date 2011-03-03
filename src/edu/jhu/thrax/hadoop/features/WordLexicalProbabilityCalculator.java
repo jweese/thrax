@@ -43,7 +43,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         protected void setup(Context context) throws IOException, InterruptedException
         {
             Configuration conf = context.getConfiguration();
-            parsed = conf.getBoolean("thrax.english-is-parsed", false);
+            parsed = conf.getBoolean("thrax.target-is-parsed", false);
         }
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
@@ -153,7 +153,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         protected void setup(Context context) throws IOException, InterruptedException
         {
             Configuration conf = context.getConfiguration();
-            parsed = conf.getBoolean("thrax.english-is-parsed", false);
+            parsed = conf.getBoolean("thrax.target-is-parsed", false);
         }
 
  

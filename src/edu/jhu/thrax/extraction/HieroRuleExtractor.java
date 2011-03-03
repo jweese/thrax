@@ -77,12 +77,16 @@ public class HieroRuleExtractor implements RuleExtractor {
             throw new EmptySentenceException();
 
         int [] source = Vocabulary.getIds(sourceWords);
-        int [] target = Vocabulary.getIds(sourceWords);
+        int [] target = Vocabulary.getIds(targetWords);
         Alignment alignment = new Alignment(inputs[2]);
         if (alignment.isEmpty())
             throw new EmptyAlignmentException();
         if (!alignment.consistent(source.length, target.length)) {
-            throw new InconsistentAlignmentException(inputs[2]);
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("source: %s (length %d)\n", inputs[0], source.length));
+            sb.append(String.format("target: %s (length %d)\n", inputs[1], target.length));
+            sb.append("alignment: " + inputs[2]);
+            throw new InconsistentAlignmentException(sb.toString());
         }
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
