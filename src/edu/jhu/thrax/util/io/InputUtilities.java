@@ -18,13 +18,14 @@ public class InputUtilities
      */
     public static String [] parseYield(String parse) throws MalformedParseException
     {
-        if (!parse.startsWith("("))
-            throw new MalformedParseException(parse);
+        String trimmed = parse.trim();
+        if (trimmed.equals(""))
+            return new String[0];
         int level = 0;
         boolean expectNT = false;
 
         ArrayList<String> result = new ArrayList<String>();
-        String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
+        String [] tokens = trimmed.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
         for (String t : tokens) {
             if ("(".equals(t)) {
                 level++;
@@ -43,6 +44,27 @@ public class InputUtilities
         if (level != 0)
             throw new MalformedParseException(parse);
         return result.toArray(new String[result.size()]);
+    }
+
+    /**
+     * Returns the words (terminal symbols) represented by this input. If the
+     * input is a plain string, returns whitespace-delimited tokens. If the
+     * input is a parse tree, returns an array of its leaves.
+     *
+     * @param input an input string
+     * @param parsed whether the string represent a parse tree or not
+     * @return an array of the terminal symbols represented by this input
+     * @throws MalformedParseException if the input is a malformed parse tree 
+     *                                 and parsed is true
+     */
+    public static String [] getWords(String input, boolean parsed) throws MalformedInputException
+    {
+        String trimmed = input.trim();
+        if (trimmed.equals(""))
+            return new String[0];
+        if (parsed)
+            return parseYield(trimmed);
+        return trimmed.split("\\s+");
     }
 }
 
