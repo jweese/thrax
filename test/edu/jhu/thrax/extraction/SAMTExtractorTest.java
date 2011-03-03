@@ -8,28 +8,28 @@ import java.util.List;
 
 public class SAMTExtractorTest
 {
-    @Test(expectedExceptions = { EmptySourceSentenceException.class })
+    @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptySource_ThrowsException() throws MalformedInputException
     {
         SAMTExtractor e = new SAMTExtractor();
         e.extract("||| (S world) ||| 0-0");
     }
 
-    @Test(expectedExceptions = { EmptyTargetSentenceException.class })
+    @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptyTarget_ThrowsException() throws MalformedInputException
     {
         SAMTExtractor e = new SAMTExtractor();
         e.extract("hello ||| ||| 0-0");
     }
 
-    @Test(expectedExceptions = { EmptyTargetSentenceException.class })
+    @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptyParse_ThrowsException() throws MalformedInputException
     {
         SAMTExtractor e = new SAMTExtractor();
         e.extract("hello ||| () ||| 0-0");
     }
 
-    @Test(expectedExceptions = { EmptyTargetSentenceException.class })
+    @Test(expectedExceptions = { EmptySentenceException.class })
     public void doubleEmptyParse_ThrowsException() throws MalformedInputException
     {
         SAMTExtractor e = new SAMTExtractor();

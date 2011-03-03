@@ -16,5 +16,11 @@
         </packages>
     </test>
 
+    <test name="Input Utilities">
+        <packages>
+            <package name="edu.jhu.thrax.util.io"/>
+        </packages>
+    </test>
+
 </suite>
 

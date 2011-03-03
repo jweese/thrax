@@ -5,14 +5,14 @@ import edu.jhu.thrax.util.exceptions.*;
 
 public class HieroRuleExtractorTest
 {
-    @Test(expectedExceptions = { EmptySourceSentenceException.class })
+    @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptySource_ThrowsException() throws MalformedInputException
     {
         HieroRuleExtractor e = new HieroRuleExtractor();
         e.extract("||| world ||| 0-0");
     }
 
-    @Test(expectedExceptions = { EmptyTargetSentenceException.class })
+    @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptyTarget_ThrowsException() throws MalformedInputException
     {
         HieroRuleExtractor e = new HieroRuleExtractor();
