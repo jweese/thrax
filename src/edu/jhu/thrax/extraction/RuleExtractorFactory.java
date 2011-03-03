@@ -1,6 +1,6 @@
 package edu.jhu.thrax.extraction;
 
-import edu.jhu.thrax.util.exceptions.UnknownGrammarTypeException;
+import edu.jhu.thrax.util.exceptions.ConfigurationException;
 
 /**
  * This class provides specific kinds of rule extractors, depending on the type
@@ -13,10 +13,11 @@ public class RuleExtractorFactory {
      *
      * @param grammarType the name of the grammar type
      * @return a <code>RuleExtractor</code> for that type of grammar
-     * @throws UnknownGrammarTypeException if grammarType is not a known
+     * @throws ConfigurationException if the current configuration will not
+     *                                allow an extractor to be created
      * type of grammar
      */
-    public static RuleExtractor create(String grammarType) throws UnknownGrammarTypeException
+    public static RuleExtractor create(String grammarType) throws ConfigurationException
     {
         String gt = grammarType.toLowerCase();
         if (gt.equals(HieroRuleExtractor.name)) {
@@ -28,7 +29,7 @@ public class RuleExtractorFactory {
         // when you create new grammars, add them here.
 
         else {
-            throw new UnknownGrammarTypeException(grammarType);
+            throw new ConfigurationException("unknown grammar type: " + grammarType);
         }
     }
 
