@@ -384,7 +384,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
                     }
                 }
                 catch (EmptyStackException e) {
-                    throw new MalformedParseException();
+                    throw new MalformedParseException(line);
                 }
                 continue;
             }

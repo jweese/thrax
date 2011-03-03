@@ -57,12 +57,8 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             }
             for (int i = 0; i < parts.length; i++) 
                 parts[i] = parts[i].trim();
-            if (parts[0].equals("")) {
-                context.getCounter(MalformedInput.EMPTY_SOURCE_SENTENCE).increment(1);
-                return;
-            }
-            else if (parts[1].equals("")) {
-                context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+            if (parts[0].equals("") || parts[1].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                 return;
             }
             else if (parts[2].equals("")) {
@@ -75,12 +71,12 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 try {
                     target = parseYield(parts[1]);
                     if (target.length == 0) {
-                        context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+                        context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                         return;
                     }
                 }
                 catch (MalformedParseException e) {
-                    context.getCounter(MalformedInput.MALFORMED_TARGET_PARSE).increment(1);
+                    context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
                     return;
                 }
             }
@@ -132,7 +128,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             else if (")".equals(t)) {
                 expectNT = false;
                 if (level == 0)
-                    throw new MalformedParseException();
+                    throw new MalformedParseException(parse);
                 level--;
             }
             else if (expectNT)
@@ -141,7 +137,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 al.add(t.toLowerCase());
         }
         if (level != 0)
-            throw new MalformedParseException();
+            throw new MalformedParseException(parse);
         String [] ret = new String[al.size()];
         for (int j = 0; j < ret.length; j++) {
             ret[j] = al.get(j);
@@ -174,12 +170,8 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             for (int i = 0; i < parts.length; i++) {
                 parts[i] = parts[i].trim();
             }
-            if (parts[0].equals("")) {
-                context.getCounter(MalformedInput.EMPTY_SOURCE_SENTENCE).increment(1);
-                return;
-            }
-            if (parts[1].equals("")) {
-                context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+            if (parts[0].equals("") || parts[1].equals("")) {
+                context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                 return;
             }
             if (parts[2].equals("")) {
@@ -192,12 +184,12 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 try {
                     target = parseYield(parts[1]);
                     if (target.length == 0) {
-                        context.getCounter(MalformedInput.EMPTY_TARGET_SENTENCE).increment(1);
+                        context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                         return;
                     }
                 }
                 catch (MalformedParseException e) {
-                    context.getCounter(MalformedInput.MALFORMED_TARGET_PARSE).increment(1);
+                    context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
                     return;
                 }
             }

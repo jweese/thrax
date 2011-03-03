@@ -40,10 +40,8 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
         for (int j = 0; j < inputs.length; j++)
             inputs[j] = inputs[j].trim();
-        if (inputs[0].equals(""))
-            throw new EmptySourceSentenceException();
-        else if (inputs[1].equals(""))
-            throw new EmptyTargetSentenceException();
+        if (inputs[0].equals("") || inputs[1].equals(""))
+            throw new EmptySentenceException();
         else if (inputs[2].equals(""))
             throw new EmptyAlignmentException();
 
@@ -51,10 +49,10 @@ public class SAMTExtractor extends HieroRuleExtractor {
         String parse = inputs[1];
         int [] target = yield(parse);
         if (target.length == 0)
-            throw new EmptyTargetSentenceException();
+            throw new EmptySentenceException();
         Alignment alignment = new Alignment(inputs[2]);
         if (!alignment.consistent(source.length, target.length)) {
-            throw new InconsistentAlignmentException();
+            throw new InconsistentAlignmentException(inputs[2]);
         }
 
         lattice = new LatticeArray(parse);
@@ -85,7 +83,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
             }
             else if (")".equals(t)) {
                 if (level == 0)
-                    throw new MalformedParseException();
+                    throw new MalformedParseException(parse);
                 level--;
                 expectNT = false;
             }
@@ -96,7 +94,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
                 result.add(Vocabulary.getId(t.toLowerCase()));
         }
         if (level != 0)
-            throw new MalformedParseException();
+            throw new MalformedParseException(parse);
         int [] ret = new int[result.size()];
         for (int j = 0; j < ret.length; j++)
             ret[j] = result.get(j);
