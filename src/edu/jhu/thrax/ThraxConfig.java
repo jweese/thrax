@@ -29,6 +29,19 @@ public class ThraxConfig {
      * Output format. This doesn't do anything. The only format is Joshua.
      */
     public static String OUTPUT_FORMAT = "joshua";
+    /**
+     * Whether or not the source side of the input is parsed.
+     */
+    public static boolean SOURCE_IS_PARSED = false;
+    /**
+     * Whether or not the target side of the input is parsed.
+     */
+    public static boolean TARGET_IS_PARSED = false;
+    /**
+     * Whether to use the target side of the corpus as the SAMT syntax
+     * projection.
+     */
+    public static boolean TARGET_IS_SAMT_SYNTAX = true;
 
     /**
      * Whether or not to allow adjacent NTs in extracted rules.
@@ -254,6 +267,15 @@ public class ThraxConfig {
             }
             else if ("rule-span-limit".equals(key)) {
                 RULE_SPAN_LIMIT = Integer.parseInt(value);
+            }
+            else if ("source-is-parsed".equals(key)) {
+                SOURCE_IS_PARSED = Boolean.parseBoolean(value);
+            }
+            else if ("target-is-parsed".equals(key)) {
+                TARGET_IS_PARSED = Boolean.parseBoolean(value);
+            }
+            else if ("target-is-samt-syntax".equals(key)) {
+                TARGET_IS_SAMT_SYNTAX = Boolean.parseBoolean(value);
             }
         }
     }
