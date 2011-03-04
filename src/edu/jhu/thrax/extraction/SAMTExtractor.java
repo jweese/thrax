@@ -6,8 +6,10 @@ import edu.jhu.thrax.syntax.LatticeArray;
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.io.InputUtilities;
+import edu.jhu.thrax.util.ConfFileParser;
 
 import java.util.List;
+import java.util.Map;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Queue;
@@ -18,6 +20,8 @@ import java.util.Scanner;
 
 import java.io.IOException;
 
+import org.apache.hadoop.conf.Configuration;
+
 public class SAMTExtractor extends HieroRuleExtractor {
 
     public static String name = "samt";
@@ -25,11 +29,16 @@ public class SAMTExtractor extends HieroRuleExtractor {
     private static final String FULL_SENTENCE_SYMBOL = "_S";
     private static final int FULL_SENTENCE_ID = Vocabulary.getId(FULL_SENTENCE_SYMBOL);
 
+    public boolean TARGET_IS_SAMT_SYNTAX = true;
+    public boolean ALLOW_DOUBLE_CONCAT = true;
+
     private LatticeArray lattice;
 
-    public SAMTExtractor()
+    public SAMTExtractor(Configuration conf)
     {
-        super();
+        super(conf);
+        TARGET_IS_SAMT_SYNTAX = conf.getBoolean("thrax.target-is-samt-syntax", true);
+        ALLOW_DOUBLE_CONCAT = conf.getBoolean("thrax.allow-double-plus", true);
     }
 
     @Override
@@ -39,8 +48,8 @@ public class SAMTExtractor extends HieroRuleExtractor {
         if (inputs.length < 3) {
             throw new NotEnoughFieldsException();
         }
-        String [] sourceWords = InputUtilities.getWords(inputs[0], ThraxConfig.SOURCE_IS_PARSED);
-        String [] targetWords = InputUtilities.getWords(inputs[1], ThraxConfig.TARGET_IS_PARSED);
+        String [] sourceWords = InputUtilities.getWords(inputs[0], SOURCE_IS_PARSED);
+        String [] targetWords = InputUtilities.getWords(inputs[1], TARGET_IS_PARSED);
         if (sourceWords.length == 0 || targetWords.length == 0)
             throw new EmptySentenceException();
         int [] source = Vocabulary.getIds(sourceWords);
@@ -52,7 +61,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
             throw new InconsistentAlignmentException(inputs[2]);
         }
 
-        if (ThraxConfig.TARGET_IS_SAMT_SYNTAX)
+        if (TARGET_IS_SAMT_SYNTAX)
             lattice = new LatticeArray(inputs[1].trim());
         else
             lattice = new LatticeArray(inputs[0].trim());
@@ -147,7 +156,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
             c.add(x);
             return c;
         }
-        if (ThraxConfig.ALLOW_DOUBLE_CONCAT) {
+        if (ALLOW_DOUBLE_CONCAT) {
             x = lattice.getOneDoubleConcatenation(from, to);
             if (x >= 0) {
                 c.add(x);
@@ -180,8 +189,11 @@ public class SAMTExtractor extends HieroRuleExtractor {
             System.err.println("usage: SAMTExtractor <conf file>");
             return;
         }
-        ThraxConfig.configure(argv[0]);
-        SAMTExtractor extractor = new SAMTExtractor();
+        Configuration conf = new Configuration();
+        Map<String,String> options = ConfFileParser.parse(argv[0]);
+        for (String opt : options.keySet())
+            conf.set("thrax." + opt, options.get(opt));
+        SAMTExtractor extractor = new SAMTExtractor(conf);
         Scanner scanner = new Scanner(System.in);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();

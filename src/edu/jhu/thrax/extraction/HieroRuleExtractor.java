@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.LinkedList;
@@ -14,8 +15,11 @@ import java.io.IOException;
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.Vocabulary;
+import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.util.io.InputUtilities;
 import edu.jhu.thrax.ThraxConfig;
+
+import org.apache.hadoop.conf.Configuration;
 
 /**
  * This class extracts Hiero-style SCFG rules. The inputs that are needed
@@ -35,32 +39,43 @@ public class HieroRuleExtractor implements RuleExtractor {
     public int LEXICAL_MINIMUM = 1;
     public boolean ALLOW_ADJACENT_NTS = false;
     public boolean ALLOW_LOOSE_BOUNDS = false;
+    public boolean ALLOW_FULL_SENTENCE_RULES = false;
+    public boolean ALLOW_ABSTRACT = false;
+    public boolean ALLOW_X_NONLEX = false;
     public int RULE_SPAN_LIMIT = 12;
     public int LEX_TARGET_LENGTH_LIMIT;
     public int LEX_SOURCE_LENGTH_LIMIT;
 
     public int X_ID;
 
+    public boolean SOURCE_IS_PARSED = false;
+    public boolean TARGET_IS_PARSED = false;
+
 
     /**
      * Default constructor. The grammar parameters are initalized according
      * to how they are set in the thrax config file.
      */
-    public HieroRuleExtractor()
+    public HieroRuleExtractor(Configuration conf)
     {
-        INIT_LENGTH_LIMIT = ThraxConfig.INITIAL_PHRASE_LIMIT;
-        NONLEX_SOURCE_LENGTH_LIMIT = ThraxConfig.NONLEX_SOURCE_LENGTH_LIMIT;
-        NONLEX_SOURCE_WORD_LIMIT = ThraxConfig.NONLEX_SOURCE_WORD_LIMIT;
-        NONLEX_TARGET_LENGTH_LIMIT = ThraxConfig.NONLEX_TARGET_LENGTH_LIMIT;
-        NONLEX_TARGET_WORD_LIMIT = ThraxConfig.NONLEX_TARGET_WORD_LIMIT;
-        NT_LIMIT = ThraxConfig.ARITY;
-        LEXICAL_MINIMUM = ThraxConfig.LEXICALITY;
-        ALLOW_ADJACENT_NTS = ThraxConfig.ADJACENT;
-        ALLOW_LOOSE_BOUNDS = ThraxConfig.LOOSE;
-        RULE_SPAN_LIMIT = ThraxConfig.RULE_SPAN_LIMIT;
-        LEX_TARGET_LENGTH_LIMIT = ThraxConfig.LEX_TARGET_LENGTH_LIMIT;
-        LEX_SOURCE_LENGTH_LIMIT = ThraxConfig.LEX_SOURCE_LENGTH_LIMIT;
-        X_ID = Vocabulary.getId(ThraxConfig.DEFAULT_NT);
+        INIT_LENGTH_LIMIT = conf.getInt("thrax.initial-phrase-length", 10);
+        NONLEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.nonlex-source-length", 5);
+        NONLEX_SOURCE_WORD_LIMIT = conf.getInt("thrax.nonlex-source-words", 5);
+        NONLEX_TARGET_LENGTH_LIMIT = conf.getInt("thrax.nonlex-target-length", 5);
+        NONLEX_TARGET_WORD_LIMIT = conf.getInt("thrax.nonlex-target-words", 5);
+        NT_LIMIT = conf.getInt("thrax.arity", 2);
+        LEXICAL_MINIMUM = conf.getInt("thrax.lexicality", 1);
+        ALLOW_ADJACENT_NTS = conf.getBoolean("thrax.adjacent", false);
+        ALLOW_LOOSE_BOUNDS = conf.getBoolean("thrax.loose", false);
+        ALLOW_FULL_SENTENCE_RULES = conf.getBoolean("thrax.allow-full-sentence-rules", false);
+        ALLOW_ABSTRACT = conf.getBoolean("thrax.allow-abstract-rules", false);
+        ALLOW_X_NONLEX = conf.getBoolean("thrax.allow-nonlexical-x", false);
+        RULE_SPAN_LIMIT = conf.getInt("thrax.rule-span-limit", 12);
+        LEX_TARGET_LENGTH_LIMIT = conf.getInt("thrax.lex-target-words", 5);
+        LEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.lex-source-words", 5);
+        SOURCE_IS_PARSED = conf.getBoolean("thrax.source-is-parsed", false);
+        TARGET_IS_PARSED = conf.getBoolean("thrax.target-is-parsed", false);
+        X_ID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
         if (HIERO_LABELS.isEmpty())
             HIERO_LABELS.add(X_ID);
     }
@@ -71,8 +86,8 @@ public class HieroRuleExtractor implements RuleExtractor {
         if (inputs.length < 3) {
             throw new NotEnoughFieldsException();
         }
-        String [] sourceWords = InputUtilities.getWords(inputs[0], ThraxConfig.SOURCE_IS_PARSED);
-        String [] targetWords = InputUtilities.getWords(inputs[1], ThraxConfig.TARGET_IS_PARSED);
+        String [] sourceWords = InputUtilities.getWords(inputs[0], SOURCE_IS_PARSED);
+        String [] targetWords = InputUtilities.getWords(inputs[1], TARGET_IS_PARSED);
         if (sourceWords.length == 0 || targetWords.length == 0)
             throw new EmptySentenceException();
 
@@ -119,7 +134,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 
 //            if (r.numNTs + r.numTerminals < SOURCE_LENGTH_LIMIT &&
 //                    r.appendPoint - r.rhs.sourceStart < RULE_SPAN_LIMIT) {
-            if ((ThraxConfig.ALLOW_FULL_SENTENCE_RULES &&
+            if ((ALLOW_FULL_SENTENCE_RULES &&
                 r.rhs.sourceStart == 0)
                 ||
                 (r.numNTs == 0 &&
@@ -137,7 +152,7 @@ public class HieroRuleExtractor implements RuleExtractor {
                     || 
                     (r.rhs.targetStart >= 0 &&
                      pp.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT)) {
-                    if (!ThraxConfig.ALLOW_FULL_SENTENCE_RULES ||
+                    if (!ALLOW_FULL_SENTENCE_RULES ||
                         r.rhs.sourceStart != 0)
                         continue;
                 }
@@ -213,13 +228,13 @@ public class HieroRuleExtractor implements RuleExtractor {
 //                }
             }
         }
-        if (!ThraxConfig.ALLOW_ABSTRACT &&
+        if (!ALLOW_ABSTRACT &&
             r.numTerminals == 0 &&
             targetTerminals == 0)
             return false;
         if (r.rhs.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT ||
             r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT) {
-            if (ThraxConfig.ALLOW_FULL_SENTENCE_RULES &&
+            if (ALLOW_FULL_SENTENCE_RULES &&
                 r.rhs.sourceStart == 0 &&
                 r.rhs.sourceEnd == r.source.length &&
                 r.rhs.targetStart == 0 &&
@@ -285,7 +300,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         Collection<Integer> lhsLabels = labelsBySpan.get(new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
         if (lhsLabels == null || lhsLabels.isEmpty()) {
 //            System.err.println("WARNING: no labels for left-hand side of rule. Span is " + new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
-            if (!ThraxConfig.ALLOW_X_NONLEX &&
+            if (!ALLOW_X_NONLEX &&
                 r.numNTs > 0)
                 return result;
             lhsLabels = HIERO_LABELS;
@@ -299,7 +314,7 @@ public class HieroRuleExtractor implements RuleExtractor {
             Collection<Integer> labels = labelsBySpan.get(r.ntSpan(i));
             if (labels == null || labels.isEmpty()) {
 //                System.err.println("WARNING: no labels for target-side span of " + r.ntSpan(i));
-                if (!ThraxConfig.ALLOW_X_NONLEX)
+                if (!ALLOW_X_NONLEX)
                     return result;
                 labels = HIERO_LABELS;
             }
@@ -363,9 +378,12 @@ public class HieroRuleExtractor implements RuleExtractor {
             System.err.println("usage: HieroRuleExtractor <conf file>");
             return;
         }
-        ThraxConfig.configure(argv[0]);
+        Configuration conf = new Configuration();
+        Map<String,String> options = ConfFileParser.parse(argv[0]);
+        for (String opt : options.keySet())
+            conf.set("thrax." + opt, options.get(opt));
         Scanner scanner = new Scanner(System.in);
-        HieroRuleExtractor extractor = new HieroRuleExtractor();
+        HieroRuleExtractor extractor = new HieroRuleExtractor(conf);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             for (Rule r : extractor.extract(line))
