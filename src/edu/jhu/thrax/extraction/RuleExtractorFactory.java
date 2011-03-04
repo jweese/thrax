@@ -3,6 +3,8 @@ package edu.jhu.thrax.extraction;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.exceptions.ConfigurationException;
 
+import org.apache.hadoop.conf.Configuration;
+
 /**
  * This class provides specific kinds of rule extractors, depending on the type
  * of grammar that the caller wants to extract.
@@ -18,21 +20,21 @@ public class RuleExtractorFactory {
      *                                allow an extractor to be created
      * type of grammar
      */
-    public static RuleExtractor create(String grammarType) throws ConfigurationException
+    public static RuleExtractor create(Configuration conf) throws ConfigurationException
     {
-        String gt = grammarType.toLowerCase();
+        String gt = conf.get("thrax.grammar", "NONE");
         if (gt.equals(HieroRuleExtractor.name)) {
-            return new HieroRuleExtractor();
+            return new HieroRuleExtractor(conf);
         }
         else if (gt.equals(SAMTExtractor.name)) {
             if (!(ThraxConfig.SOURCE_IS_PARSED || ThraxConfig.TARGET_IS_PARSED))
                 throw new ConfigurationException("SAMT requires that either the source or target sentences be parsed");
-            return new SAMTExtractor();
+            return new SAMTExtractor(conf);
         }
         // when you create new grammars, add them here.
 
         else {
-            throw new ConfigurationException("unknown grammar type: " + grammarType);
+            throw new ConfigurationException("unknown grammar type: " + gt);
         }
     }
 

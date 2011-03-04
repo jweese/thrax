@@ -46,9 +46,8 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
 //        }
 //            FeatureFactory factory = new FeatureFactory(ThraxConfig.FEATURES);
 //            features = factory.getSimpleFeatures();
-        ThraxConfig.configure(conf);
         try {
-            extractor = RuleExtractorFactory.create(ThraxConfig.GRAMMAR);
+            extractor = RuleExtractorFactory.create(conf);
         }
         catch (ConfigurationException ex) {
             System.err.println(ex.getMessage());
