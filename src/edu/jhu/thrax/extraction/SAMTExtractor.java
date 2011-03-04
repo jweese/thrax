@@ -31,6 +31,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
 
     public boolean TARGET_IS_SAMT_SYNTAX = true;
     public boolean ALLOW_DOUBLE_CONCAT = true;
+    public String UNARY_CATEGORY_HANDLER = "all";
 
     private LatticeArray lattice;
 
@@ -39,6 +40,7 @@ public class SAMTExtractor extends HieroRuleExtractor {
         super(conf);
         TARGET_IS_SAMT_SYNTAX = conf.getBoolean("thrax.target-is-samt-syntax", true);
         ALLOW_DOUBLE_CONCAT = conf.getBoolean("thrax.allow-double-plus", true);
+        UNARY_CATEGORY_HANDLER = conf.get("thrax.unary-category-handler", "all");
     }
 
     @Override
@@ -62,9 +64,9 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
 
         if (TARGET_IS_SAMT_SYNTAX)
-            lattice = new LatticeArray(inputs[1].trim());
+            lattice = new LatticeArray(inputs[1].trim(), UNARY_CATEGORY_HANDLER);
         else
-            lattice = new LatticeArray(inputs[0].trim());
+            lattice = new LatticeArray(inputs[0].trim(), UNARY_CATEGORY_HANDLER);
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
         HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart, target.length);
