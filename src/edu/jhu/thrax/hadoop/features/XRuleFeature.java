@@ -1,7 +1,6 @@
 package edu.jhu.thrax.hadoop.features;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.ThraxConfig;
 
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -14,7 +13,7 @@ public class XRuleFeature implements SimpleFeature
     private static final Text LABEL = new Text("ContainsX");
     private static final IntWritable ZERO = new IntWritable(0);
     private static final IntWritable ONE = new IntWritable(1);
-    private final String PATTERN = String.format("[%s]", ThraxConfig.DEFAULT_NT);
+    private final String PATTERN = "[X]";
 
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
