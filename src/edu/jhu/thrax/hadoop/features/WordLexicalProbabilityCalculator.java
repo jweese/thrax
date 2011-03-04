@@ -5,6 +5,7 @@ import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.MalformedInput;
+import edu.jhu.thrax.util.io.InputUtilities;
 
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -38,12 +39,14 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     public static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
-        private boolean parsed;
+        private boolean sourceParsed;
+        private boolean targetParsed;
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
             Configuration conf = context.getConfiguration();
-            parsed = conf.getBoolean("thrax.target-is-parsed", false);
+            sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
+            targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
         }
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
@@ -55,33 +58,24 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
                 return;
             }
-            for (int i = 0; i < parts.length; i++) 
-                parts[i] = parts[i].trim();
-            if (parts[0].equals("") || parts[1].equals("")) {
+            String [] source;
+            String [] target;
+            try {
+                source = InputUtilities.getWords(parts[0], sourceParsed);
+                target = InputUtilities.getWords(parts[1], targetParsed);
+            }
+            catch (MalformedParseException e) {
+                context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
+                return;
+            }
+            catch (MalformedInputException e) {
+                context.getCounter(MalformedInput.UNKNOWN).increment(1);
+                return;
+            }
+            if (source.length == 0 || target.length == 0) {
                 context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                 return;
             }
-            else if (parts[2].equals("")) {
-                context.getCounter(MalformedInput.EMPTY_ALIGNMENT).increment(1);
-                return;
-            }
-            String [] source = parts[0].split("\\s+");
-            String [] target;
-            if (parsed) {
-                try {
-                    target = parseYield(parts[1]);
-                    if (target.length == 0) {
-                        context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
-                        return;
-                    }
-                }
-                catch (MalformedParseException e) {
-                    context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
-                    return;
-                }
-            }
-            else
-                target = parts[1].split("\\s+");
             Alignment alignment = new Alignment(parts[2]);
             if (!alignment.consistent(source.length, target.length)) {
                 context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
@@ -112,48 +106,17 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         }
     }
 
-
-    static String [] parseYield(String parse) throws MalformedParseException
-    {
-        int level = 0;
-        boolean expectNT = false;
-        ArrayList<String> al = new ArrayList<String>();
-        String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
-        for (int i = 0; i < tokens.length; i++) {
-            String t = tokens[i];
-            if ("(".equals(t)) {
-                expectNT = true;
-                level++;
-            }
-            else if (")".equals(t)) {
-                expectNT = false;
-                if (level == 0)
-                    throw new MalformedParseException(parse);
-                level--;
-            }
-            else if (expectNT)
-                expectNT = false;
-            else
-                al.add(t.toLowerCase());
-        }
-        if (level != 0)
-            throw new MalformedParseException(parse);
-        String [] ret = new String[al.size()];
-        for (int j = 0; j < ret.length; j++) {
-            ret[j] = al.get(j);
-        }
-        return ret;
-    }
-
     public static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
-        private boolean parsed;
+        private boolean sourceParsed;
+        private boolean targetParsed;
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
             Configuration conf = context.getConfiguration();
-            parsed = conf.getBoolean("thrax.target-is-parsed", false);
+            sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
+            targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
         }
 
  
@@ -167,34 +130,24 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
                 return;
             }
-            for (int i = 0; i < parts.length; i++) {
-                parts[i] = parts[i].trim();
+            String [] source;
+            String [] target;
+            try {
+                source = InputUtilities.getWords(parts[0], sourceParsed);
+                target = InputUtilities.getWords(parts[1], targetParsed);
             }
-            if (parts[0].equals("") || parts[1].equals("")) {
+            catch (MalformedParseException e) {
+                context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
+                return;
+            }
+            catch (MalformedInputException e) {
+                context.getCounter(MalformedInput.UNKNOWN).increment(1);
+                return;
+            }
+            if (source.length == 0 || target.length == 0) {
                 context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                 return;
             }
-            if (parts[2].equals("")) {
-                context.getCounter(MalformedInput.EMPTY_ALIGNMENT).increment(1);
-                return;
-            }
-            String [] source = parts[0].split("\\s+");
-            String [] target;
-            if (parsed) {
-                try {
-                    target = parseYield(parts[1]);
-                    if (target.length == 0) {
-                        context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
-                        return;
-                    }
-                }
-                catch (MalformedParseException e) {
-                    context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
-                    return;
-                }
-            }
-            else 
-                target = parts[1].split("\\s+");
             Alignment alignment = new Alignment(parts[2]);
             if (!alignment.consistent(source.length, target.length)) {
                 context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
