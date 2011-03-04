@@ -65,7 +65,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         NONLEX_TARGET_WORD_LIMIT = conf.getInt("thrax.nonlex-target-words", 5);
         NT_LIMIT = conf.getInt("thrax.arity", 2);
         LEXICAL_MINIMUM = conf.getInt("thrax.lexicality", 1);
-        ALLOW_ADJACENT_NTS = conf.getBoolean("thrax.adjacent", false);
+        ALLOW_ADJACENT_NTS = conf.getBoolean("thrax.adjacent-nts", false);
         ALLOW_LOOSE_BOUNDS = conf.getBoolean("thrax.loose", false);
         ALLOW_FULL_SENTENCE_RULES = conf.getBoolean("thrax.allow-full-sentence-rules", true);
         ALLOW_ABSTRACT = conf.getBoolean("thrax.allow-abstract-rules", false);

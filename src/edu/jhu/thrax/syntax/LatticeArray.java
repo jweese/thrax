@@ -13,7 +13,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.EmptyStackException;
 
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.util.ExternalizableToUtf8;
 import edu.jhu.thrax.util.io.LineReader;
@@ -40,6 +39,8 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
     private static final int MAX_CCG_SPAN = 5;
     private static final int MAX_LABELS = 100;
 
+    private String UNARY_CATEGORY_HANDLER = "all";
+
     public LatticeArray() {
         forwardIndex = null;
         forwardLattice = null;
@@ -48,6 +49,13 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
     }
 
     public LatticeArray(String parsed_line) throws MalformedParseException {
+        initialize();
+        appendFromPennFormat(parsed_line);
+    }
+
+    public LatticeArray(String parsed_line, String unaryHandler) throws MalformedParseException
+    {
+        UNARY_CATEGORY_HANDLER = unaryHandler;
         initialize();
         appendFromPennFormat(parsed_line);
     }
@@ -77,7 +85,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         for (int i = forwardIndex.get(from); i < forwardIndex.get(from+1); i+=2) {
             int currentSpan = forwardLattice.get(i+1);
             if (currentSpan == spanLength) {
-                if ("top".equals(ThraxConfig.UNARY_CATEGORY_HANDLER))
+                if ("top".equals(UNARY_CATEGORY_HANDLER))
                     return forwardLattice.get(i);
                 stack.push(forwardLattice.get(i));
             }
@@ -86,7 +94,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
         }
         if (stack.isEmpty())
             return -1;
-        if ("bottom".equals(ThraxConfig.UNARY_CATEGORY_HANDLER))
+        if ("bottom".equals(UNARY_CATEGORY_HANDLER))
             return stack.pop();
         StringBuilder sb = new StringBuilder();
         while (!stack.isEmpty()) {
