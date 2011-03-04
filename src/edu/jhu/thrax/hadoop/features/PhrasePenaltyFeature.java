@@ -1,7 +1,6 @@
 package edu.jhu.thrax.hadoop.features;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.ThraxConfig;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.DoubleWritable;
@@ -12,7 +11,7 @@ import java.util.Map;
 public class PhrasePenaltyFeature implements SimpleFeature
 {
     private static final Text LABEL = new Text("PhrasePenalty");
-    private static final DoubleWritable VALUE = new DoubleWritable(ThraxConfig.PHRASE_PENALTY);
+    private static final DoubleWritable VALUE = new DoubleWritable(2.718);
 
     public void score(RuleWritable r, Map<Text,Writable> map)
     {
