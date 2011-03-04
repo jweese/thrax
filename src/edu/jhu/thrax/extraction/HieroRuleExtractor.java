@@ -39,12 +39,12 @@ public class HieroRuleExtractor implements RuleExtractor {
     public int LEXICAL_MINIMUM = 1;
     public boolean ALLOW_ADJACENT_NTS = false;
     public boolean ALLOW_LOOSE_BOUNDS = false;
-    public boolean ALLOW_FULL_SENTENCE_RULES = false;
+    public boolean ALLOW_FULL_SENTENCE_RULES = true;
     public boolean ALLOW_ABSTRACT = false;
     public boolean ALLOW_X_NONLEX = false;
     public int RULE_SPAN_LIMIT = 12;
-    public int LEX_TARGET_LENGTH_LIMIT;
-    public int LEX_SOURCE_LENGTH_LIMIT;
+    public int LEX_TARGET_LENGTH_LIMIT = 12;
+    public int LEX_SOURCE_LENGTH_LIMIT = 12;
 
     public int X_ID;
 
@@ -67,12 +67,12 @@ public class HieroRuleExtractor implements RuleExtractor {
         LEXICAL_MINIMUM = conf.getInt("thrax.lexicality", 1);
         ALLOW_ADJACENT_NTS = conf.getBoolean("thrax.adjacent", false);
         ALLOW_LOOSE_BOUNDS = conf.getBoolean("thrax.loose", false);
-        ALLOW_FULL_SENTENCE_RULES = conf.getBoolean("thrax.allow-full-sentence-rules", false);
+        ALLOW_FULL_SENTENCE_RULES = conf.getBoolean("thrax.allow-full-sentence-rules", true);
         ALLOW_ABSTRACT = conf.getBoolean("thrax.allow-abstract-rules", false);
         ALLOW_X_NONLEX = conf.getBoolean("thrax.allow-nonlexical-x", false);
         RULE_SPAN_LIMIT = conf.getInt("thrax.rule-span-limit", 12);
-        LEX_TARGET_LENGTH_LIMIT = conf.getInt("thrax.lex-target-words", 5);
-        LEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.lex-source-words", 5);
+        LEX_TARGET_LENGTH_LIMIT = conf.getInt("thrax.lex-target-words", 12);
+        LEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.lex-source-words", 12);
         SOURCE_IS_PARSED = conf.getBoolean("thrax.source-is-parsed", false);
         TARGET_IS_PARSED = conf.getBoolean("thrax.target-is-parsed", false);
         X_ID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
