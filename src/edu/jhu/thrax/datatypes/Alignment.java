@@ -20,6 +20,11 @@ public class Alignment {
 
     private static final int [] UNALIGNED = new int[0];
 
+    public Alignment(String s)
+    {
+        this(s, false);
+    }
+
     /**
      * This constructor takes a String in Berkeley alignment format. That is,
      * the string "0-0 1-2" means that the first word of the source is aligned
@@ -27,8 +32,9 @@ public class Alignment {
      * aligned to the third word of the target.
      *
      * @param s a string in Berkeley alignment format
+     * @param reversed whether or not the alignments should be reversed
      */
-    public Alignment(String s)
+    public Alignment(String s, boolean reversed)
     {
         String trimmed = s.trim();
         if (trimmed.equals("")) {
@@ -44,6 +50,8 @@ public class Alignment {
                 System.err.println("WARNING: malformed alignment ``" + t + "'' (skipping)");
                 continue;
             }
+            if (reversed)
+                ip.reverse();
             ipList.add(ip);
         }
         IntPair [] ips = new IntPair[ipList.size()];
