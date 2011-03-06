@@ -81,4 +81,26 @@ public class PhrasePair implements Cloneable {
         return new PhrasePair(sourceStart, sourceEnd, targetStart, targetEnd);
     }
 
+    public boolean equals(Object o)
+    {
+        if (this == o)
+            return true;
+        if (!(o instanceof PhrasePair))
+            return false;
+        PhrasePair p = (PhrasePair) o;
+        return sourceStart == p.sourceStart
+            && sourceEnd == p.sourceEnd
+            && targetStart == p.targetStart
+            && targetEnd == p.targetEnd;
+    }
+
+    public int hashCode()
+    {
+        int result = 37;
+        result *= 163 + sourceStart;
+        result *= 163 + sourceEnd;
+        result *= 163 + targetStart;
+        result *= 163 + targetEnd;
+        return result;
+    }
 }
