@@ -50,6 +50,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 
     public boolean SOURCE_IS_PARSED = false;
     public boolean TARGET_IS_PARSED = false;
+    public boolean REVERSE = false;
 
 
     /**
@@ -76,6 +77,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         SOURCE_IS_PARSED = conf.getBoolean("thrax.source-is-parsed", false);
         TARGET_IS_PARSED = conf.getBoolean("thrax.target-is-parsed", false);
         X_ID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
+        REVERSE = conf.getBoolean("thrax.reverse", false);
         if (HIERO_LABELS.isEmpty())
             HIERO_LABELS.add(X_ID);
     }
@@ -93,7 +95,13 @@ public class HieroRuleExtractor implements RuleExtractor {
 
         int [] source = Vocabulary.getIds(sourceWords);
         int [] target = Vocabulary.getIds(targetWords);
-        Alignment alignment = new Alignment(inputs[2]);
+        if (REVERSE) {
+            int [] tmp = source;
+            source = target;
+            target = tmp;
+        }
+
+        Alignment alignment = new Alignment(inputs[2], REVERSE);
         if (alignment.isEmpty())
             throw new EmptyAlignmentException();
         if (!alignment.consistent(source.length, target.length)) {
