@@ -56,17 +56,21 @@ public class SAMTExtractor extends HieroRuleExtractor {
             throw new EmptySentenceException();
         int [] source = Vocabulary.getIds(sourceWords);
         int [] target = Vocabulary.getIds(targetWords);
-        Alignment alignment = new Alignment(inputs[2]);
+        if (TARGET_IS_SAMT_SYNTAX)
+            lattice = new LatticeArray(inputs[1].trim(), UNARY_CATEGORY_HANDLER);
+        else
+            lattice = new LatticeArray(inputs[0].trim(), UNARY_CATEGORY_HANDLER);
+        if (REVERSE) {
+            int [] tmp = source;
+            source = target;
+            target = tmp;
+        }
+        Alignment alignment = new Alignment(inputs[2], REVERSE);
         if (alignment.isEmpty())
             throw new EmptyAlignmentException();
         if (!alignment.consistent(source.length, target.length)) {
             throw new InconsistentAlignmentException(inputs[2]);
         }
-
-        if (TARGET_IS_SAMT_SYNTAX)
-            lattice = new LatticeArray(inputs[1].trim(), UNARY_CATEGORY_HANDLER);
-        else
-            lattice = new LatticeArray(inputs[0].trim(), UNARY_CATEGORY_HANDLER);
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
         HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart, target.length);
@@ -77,39 +81,6 @@ public class SAMTExtractor extends HieroRuleExtractor {
 
         List<Rule> result = processQueue(q, phrasesByStart, labelsBySpan);
         return result;
-    }
-
-    static int [] yield(String parse) throws MalformedParseException
-    {
-        String [] tokens = parse.replaceAll("\\(", " ( ").replaceAll("\\)", " ) ").trim().split("\\s+");
-        int level = 0;
-        boolean expectNT = false;
-
-        ArrayList<Integer> result = new ArrayList<Integer>();
-        for (int i = 0; i < tokens.length; i++) {
-            String t = tokens[i];
-            if ("(".equals(t)) {
-                level++;
-                expectNT = true;
-            }
-            else if (")".equals(t)) {
-                if (level == 0)
-                    throw new MalformedParseException(parse);
-                level--;
-                expectNT = false;
-            }
-            else if (expectNT) {
-                expectNT = false;
-            }
-            else 
-                result.add(Vocabulary.getId(t.toLowerCase()));
-        }
-        if (level != 0)
-            throw new MalformedParseException(parse);
-        int [] ret = new int[result.size()];
-        for (int j = 0; j < ret.length; j++)
-            ret[j] = result.get(j);
-        return ret;
     }
 
     protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases, int targetLength)
@@ -132,9 +103,9 @@ public class SAMTExtractor extends HieroRuleExtractor {
 
     private Collection<Integer> spanLabels(PhrasePair pp, int targetLength)
     {
-        int from = pp.targetStart;
-        int to = pp.targetEnd;
-        IntPair span = new IntPair(from, to);
+        IntPair span = getSpanForSyntax(pp);
+        int from = span.fst;
+        int to = span.snd;
         Collection<Integer> c = new HashSet<Integer>();
         if (from == 0 && to == targetLength)
             c.add(FULL_SENTENCE_ID);
@@ -167,6 +138,22 @@ public class SAMTExtractor extends HieroRuleExtractor {
         }
         //                c = HieroRuleExtractor.HIERO_LABELS;
         return c;
+    }
+
+    private IntPair getSpanForSyntax(PhrasePair pp)
+    {
+        int from;
+        int to;
+        if ((REVERSE && TARGET_IS_SAMT_SYNTAX)
+            || (!REVERSE && !TARGET_IS_SAMT_SYNTAX)) {
+            from = pp.sourceStart;
+            to = pp.sourceEnd;
+        }
+        else {
+            from = pp.targetStart;
+            to = pp.targetEnd;
+        }
+        return new IntPair(from, to);
     }
 
     private static <T> void addUpTo(int limit, Collection<T> src,
