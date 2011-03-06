@@ -41,12 +41,14 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
         private boolean sourceParsed;
         private boolean targetParsed;
+        private boolean reverse;
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
             Configuration conf = context.getConfiguration();
             sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
             targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
+            reverse = conf.getBoolean("thrax.reverse", false);
         }
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
@@ -76,7 +78,12 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                 return;
             }
-            Alignment alignment = new Alignment(parts[2]);
+            if (reverse) {
+                String [] tmp = source;
+                source = target;
+                target = tmp;
+            }
+            Alignment alignment = new Alignment(parts[2], reverse);
             if (!alignment.consistent(source.length, target.length)) {
                 context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
                 return;
@@ -111,12 +118,14 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
         private boolean sourceParsed;
         private boolean targetParsed;
+        private boolean reverse;
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
             Configuration conf = context.getConfiguration();
             sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
             targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
+            reverse = conf.getBoolean("thrax.reverse", false);
         }
 
  
@@ -148,7 +157,12 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                 return;
             }
-            Alignment alignment = new Alignment(parts[2]);
+            if (reverse) {
+                String [] tmp = source;
+                source = target;
+                target = tmp;
+            }
+            Alignment alignment = new Alignment(parts[2], reverse);
             if (!alignment.consistent(source.length, target.length)) {
                 context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
                 return;
