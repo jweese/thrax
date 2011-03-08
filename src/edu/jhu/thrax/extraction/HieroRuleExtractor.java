@@ -76,6 +76,9 @@ public class HieroRuleExtractor implements RuleExtractor {
         LEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.lex-source-words", 12);
         SOURCE_IS_PARSED = conf.getBoolean("thrax.source-is-parsed", false);
         TARGET_IS_PARSED = conf.getBoolean("thrax.target-is-parsed", false);
+        // a backwards-compatibility hack for matt
+        if (conf.get("thrax.english-is-parsed") != null)
+            TARGET_IS_PARSED = conf.getBoolean("thrax.english-is-parsed", false);
         X_ID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
         REVERSE = conf.getBoolean("thrax.reverse", false);
         if (HIERO_LABELS.isEmpty())

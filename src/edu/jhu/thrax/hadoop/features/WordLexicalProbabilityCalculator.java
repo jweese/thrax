@@ -48,6 +48,9 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             Configuration conf = context.getConfiguration();
             sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
             targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
+            // backwards compatibility hack
+            if (conf.get("thrax.english-is-parsed") != null)
+                targetParsed = conf.getBoolean("thrax.english-is-parsed", false);
             reverse = conf.getBoolean("thrax.reverse", false);
         }
 
@@ -125,6 +128,9 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             Configuration conf = context.getConfiguration();
             sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
             targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
+            // backwards compatibility hack
+            if (conf.get("thrax.english-is-parsed") != null)
+                targetParsed = conf.getBoolean("thrax.english-is-parsed", false);
             reverse = conf.getBoolean("thrax.reverse", false);
         }
 
