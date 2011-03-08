@@ -78,6 +78,7 @@ elastic-mapreduce -c $cred \
     --create \
     --name "thrax" \
     --log-uri $workdir/logs \
+    --bootstrap-action s3://elasticmapreduce/bootstrap-actions/configurations/latest/memory-intensive \
     --num-instances $instances \
     --instance-type $instance_type \
     --jar $thraxjar \
