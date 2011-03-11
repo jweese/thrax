@@ -74,11 +74,16 @@ thrax_option $conf "input-file"
 input=$THRAX_OPT_RESULT
 choose_upload $input
 
+thrax_option $conf "amazon-bootstrap" "s3://elasticmapreduce/bootstrap-actions/configurations/latest/memory-intensive"
+bootstrap=$THRAX_OPT_RESULT
+choose_upload $bootstrap
+
 elastic-mapreduce -c $cred \
     --create \
     --name "thrax" \
     --log-uri $workdir/logs \
-    --bootstrap-action s3://elasticmapreduce/bootstrap-actions/configurations/latest/memory-intensive \
+    --enable-debugging \
+    --bootstrap-action $bootstrap \
     --num-instances $instances \
     --instance-type $instance_type \
     --jar $thraxjar \
