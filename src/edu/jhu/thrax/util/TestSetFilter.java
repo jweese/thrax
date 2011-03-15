@@ -54,11 +54,17 @@ public class TestSetFilter
     {
         // do some setup
         if (argv.length < 2) {
-            System.err.println("usage: TestSetFilter <phrase length> <test set1> [test set2 ...]");
+            System.err.println("usage: TestSetFilter [-p] <phrase length> <test set1> [test set2 ...]");
             return;
         }
         int phraseLength = Integer.parseInt(argv[0]);
-        for (int i = 1; i < argv.length; i++) {
+		int testStartIndex = 1;
+		if (argv[1].equals("-p"))
+			testStartIndex = 2;
+
+		boolean doFlush = (testStartIndex == 2) ? true : false;
+
+        for (int i = testStartIndex; i < argv.length; i++) {
             getTestPhrases(phraseLength, argv[i]);
         }
 
@@ -70,8 +76,13 @@ public class TestSetFilter
             String rule = scanner.nextLine();
             if (inTestSet(rule)) {
                 System.out.println(rule);
+				if (doFlush)
+					System.out.flush();
                 rulesOut++;
-            }
+            } else if (doFlush) {
+				System.out.println();
+				System.out.flush();
+			}
         }
         System.err.println("[INFO] Total rules read: " + rulesIn);
         System.err.println("[INFO] Rules kept: " + rulesOut);
