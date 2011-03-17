@@ -6,5 +6,5 @@ then
     exit 1
 fi
 
-java -cp $THRAX/bin/thrax.jar edu.jhu.thrax.util.TestSetFilter $*
+java -Dfile.encoding=utf8 -cp $THRAX/bin/thrax.jar edu.jhu.thrax.util.TestSetFilter $*
 
