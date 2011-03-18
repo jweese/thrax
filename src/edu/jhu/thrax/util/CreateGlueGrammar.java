@@ -54,7 +54,13 @@ public class CreateGlueGrammar
         nts = new HashSet<String>();
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
-            String lhs = line.substring(line.indexOf("[") + 1, line.indexOf("]"));
+            int lhsStart = line.indexOf("[") + 1;
+            int lhsEnd = line.indexOf("]");
+            if (lhsStart < 1 || lhsEnd < 0) {
+                System.err.printf("malformed rule: %s\n", line);
+                continue;
+            }
+            String lhs = line.substring(lhsStart, lhsEnd);
             nts.add(lhs);
         }
         for (String nt : nts) {
