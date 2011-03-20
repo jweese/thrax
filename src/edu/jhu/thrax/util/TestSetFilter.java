@@ -39,7 +39,12 @@ public class TestSetFilter
 
     private static boolean inTestSet(String rule)
     {
-        String source = rule.split(ThraxConfig.DELIMITER_REGEX)[1];
+        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        if (parts.length != 4) {
+            System.err.printf("malformed rule: %s\n", rule);
+            return false;
+        }
+        String source = parts[1];
         String [] phrases = source.split(NT_REGEX);
         for (String p : phrases) {
             if ("".equals(p.trim())) continue;
