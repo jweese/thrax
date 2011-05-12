@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if (($# < 2))
+if (($# < 1))
 then
-    echo "usage: filter_rules.sh <phrase length> <test set> [test set ...]"
+    echo "usage: filter_rules.sh <test set> [test set ...]"
     exit 1
 fi
 
