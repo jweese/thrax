@@ -10,30 +10,18 @@ import edu.jhu.thrax.ThraxConfig;
 
 public class TestSetFilter
 {
-    private static HashSet<String> testPhrases;
+    private static HashSet<String> testSentences;
 
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
 
-    private static void getTestPhrases(int phraseLength, String filename) throws IOException
+    private static void getTestSentences(String filename) throws IOException
     {
-        if (testPhrases == null) {
-            testPhrases = new HashSet<String>();
+        if (testSentences == null) {
+            testSentences = new HashSet<String>();
         }
-        Scanner scanner = new Scanner(new File(filename));
-        StringBuilder sb = new StringBuilder();
+        Scanner scanner = new Scanner(new File(filename), "UTF-8");
         while (scanner.hasNextLine()) {
-            String [] words = scanner.nextLine().trim().split("\\s+");
-            for (int len = 1; len <= phraseLength; len++) {
-                for (int start = 0; start <= words.length - len; start++) {
-                    sb.setLength(0);
-                    for (int i = 0; i < len; i++) {
-                        sb.append(words[start + i]);
-                        if (i < len - 1)
-                            sb.append(" ");
-                    }
-                    testPhrases.add(sb.toString());
-                }
-            }
+            testSentences.add(scanner.nextLine());
         }
     }
 
@@ -44,27 +32,26 @@ public class TestSetFilter
             System.err.printf("malformed rule: %s\n", rule);
             return false;
         }
-        String source = parts[1];
-        String [] phrases = source.split(NT_REGEX);
-        for (String p : phrases) {
-            if ("".equals(p.trim())) continue;
-            if (!testPhrases.contains(p.trim())) {
-                return false;
+        String source = parts[1].trim();
+        String pattern = source.replaceAll(NT_REGEX, "\\\\E.+\\\\Q");
+        pattern = ".*\\Q" + pattern + "\\E.*";
+        for (String s : testSentences) {
+            if (s.matches(pattern)) {
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
     public static void main(String [] argv) throws IOException
     {
         // do some setup
-        if (argv.length < 2) {
-            System.err.println("usage: TestSetFilter <phrase length> <test set1> [test set2 ...]");
+        if (argv.length < 1) {
+            System.err.println("usage: TestSetFilter <test set1> [test set2 ...]");
             return;
         }
-        int phraseLength = Integer.parseInt(argv[0]);
-        for (int i = 1; i < argv.length; i++) {
-            getTestPhrases(phraseLength, argv[i]);
+        for (int i = 0; i < argv.length; i++) {
+            getTestSentences(argv[i]);
         }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
