@@ -3,7 +3,7 @@ package edu.jhu.thrax.util;
 import java.util.Scanner;
 import java.util.HashSet;
 
-import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.io.File;
 
 import edu.jhu.thrax.ThraxConfig;
@@ -14,14 +14,16 @@ public class TestSetFilter
 
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
 
-    private static void getTestSentences(String filename) throws IOException
+    private static void getTestSentences(String filename)
     {
-        if (testSentences == null) {
-            testSentences = new HashSet<String>();
+        try {
+            Scanner scanner = new Scanner(new File(filename), "UTF-8");
+            while (scanner.hasNextLine()) {
+                testSentences.add(scanner.nextLine());
+            }
         }
-        Scanner scanner = new Scanner(new File(filename), "UTF-8");
-        while (scanner.hasNextLine()) {
-            testSentences.add(scanner.nextLine());
+        catch (FileNotFoundException e) {
+            System.err.printf("File not found: %s\n", e.getMessage());
         }
     }
 
@@ -53,13 +55,14 @@ public class TestSetFilter
         return false;
     }
 
-    public static void main(String [] argv) throws IOException
+    public static void main(String [] argv)
     {
         // do some setup
         if (argv.length < 1) {
             System.err.println("usage: TestSetFilter <test set1> [test set2 ...]");
             return;
         }
+        testSentences = new HashSet<String>();
         for (int i = 0; i < argv.length; i++) {
             getTestSentences(argv[i]);
         }
