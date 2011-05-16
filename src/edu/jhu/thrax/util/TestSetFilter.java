@@ -25,16 +25,25 @@ public class TestSetFilter
         }
     }
 
-    private static boolean inTestSet(String rule)
+    public static String getPattern(String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4) {
-            System.err.printf("malformed rule: %s\n", rule);
-            return false;
+            return "NOT-A-RULE";
         }
         String source = parts[1].trim();
         String pattern = source.replaceAll(NT_REGEX, "\\\\E.+\\\\Q");
         pattern = "(.+ )?\\Q" + pattern + "\\E( .+)?";
+        return pattern;
+    }
+
+    private static boolean inTestSet(String rule)
+    {
+        String pattern = getPattern(rule);
+        if (pattern.equals("NOT-A-RULE")) {
+            System.err.printf("malformed rule: %s\n", rule);
+            return false;
+        }
 //        System.err.println("pattern is " + pattern);
         for (String s : testSentences) {
             if (s.matches(pattern)) {
