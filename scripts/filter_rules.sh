@@ -1,10 +1,8 @@
 #!/bin/bash
 
-if (($# < 2))
+if (($# < 1))
 then
-    echo "usage: filter_rules.sh [-p] <phrase length> <test set> [test set ...]"
-    echo "  -p will cause blank lines to be output instead of skipping"
-    echo "     non-matching rules, and for output to be flushed."
+    echo "usage: filter_rules.sh <test set> [test set ...]"
     exit 1
 fi
 

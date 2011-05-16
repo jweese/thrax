@@ -30,6 +30,9 @@ public class SAMTExtractor extends HieroRuleExtractor {
     private static final int FULL_SENTENCE_ID = Vocabulary.getId(FULL_SENTENCE_SYMBOL);
 
     public boolean TARGET_IS_SAMT_SYNTAX = true;
+    public boolean ALLOW_CONSTITUENT_LABEL = true;
+    public boolean ALLOW_CCG_LABEL = true;
+    public boolean ALLOW_CONCAT_LABEL = true;
     public boolean ALLOW_DOUBLE_CONCAT = true;
     public String UNARY_CATEGORY_HANDLER = "all";
 
@@ -39,6 +42,9 @@ public class SAMTExtractor extends HieroRuleExtractor {
     {
         super(conf);
         TARGET_IS_SAMT_SYNTAX = conf.getBoolean("thrax.target-is-samt-syntax", true);
+        ALLOW_CONSTITUENT_LABEL = conf.getBoolean("thrax.allow-constituent-label", true);
+        ALLOW_CCG_LABEL = conf.getBoolean("thrax.allow-ccg-label", true);
+        ALLOW_CONCAT_LABEL = conf.getBoolean("thrax.allow-concat-label", true);
         ALLOW_DOUBLE_CONCAT = conf.getBoolean("thrax.allow-double-plus", true);
         UNARY_CATEGORY_HANDLER = conf.get("thrax.unary-category-handler", "all");
     }
@@ -109,25 +115,32 @@ public class SAMTExtractor extends HieroRuleExtractor {
         Collection<Integer> c = new HashSet<Integer>();
         if (from == 0 && to == targetLength)
             c.add(FULL_SENTENCE_ID);
-        int x = lattice.getOneConstituent(from, to);
-        if (x >= 0) {
-            c.add(x);
-            return c;
+        int x;
+        if (ALLOW_CONSTITUENT_LABEL) {
+            x = lattice.getOneConstituent(from, to);
+            if (x >= 0) {
+                c.add(x);
+                return c;
+            }
         }
-        x = lattice.getOneSingleConcatenation(from, to);
-        if (x >= 0) {
-            c.add(x);
-            return c;
+        if (ALLOW_CONCAT_LABEL) {
+            x = lattice.getOneSingleConcatenation(from, to);
+            if (x >= 0) {
+                c.add(x);
+                return c;
+            }
         }
-        x = lattice.getOneRightSideCCG(from, to);
-        if (x >= 0) {
-            c.add(x);
-            return c;
-        }
-        x = lattice.getOneLeftSideCCG(from, to);
-        if (x >= 0) {
-            c.add(x);
-            return c;
+        if (ALLOW_CCG_LABEL) {
+            x = lattice.getOneRightSideCCG(from, to);
+            if (x >= 0) {
+                c.add(x);
+                return c;
+            }
+            x = lattice.getOneLeftSideCCG(from, to);
+            if (x >= 0) {
+                c.add(x);
+                return c;
+            }
         }
         if (ALLOW_DOUBLE_CONCAT) {
             x = lattice.getOneDoubleConcatenation(from, to);
