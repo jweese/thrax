@@ -23,7 +23,7 @@ public class TestSetFilter
             }
         }
         catch (FileNotFoundException e) {
-            System.err.printf("File not found: %s\n", e.getMessage());
+            System.err.printf("Could not open %s\n", e.getMessage());
         }
     }
 
@@ -68,19 +68,19 @@ public class TestSetFilter
         }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
-        int rulesIn = 0;
-        int rulesOut = 0;
+//        int rulesIn = 0;
+//        int rulesOut = 0;
         while (scanner.hasNextLine()) {
-            rulesIn++;
+//            rulesIn++;
             String rule = scanner.nextLine();
             if (inTestSet(rule)) {
                 System.out.println(rule);
-                rulesOut++;
+//                rulesOut++;
             }
         }
-        System.err.println("[INFO] Total rules read: " + rulesIn);
-        System.err.println("[INFO] Rules kept: " + rulesOut);
-        System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
+//        System.err.println("[INFO] Total rules read: " + rulesIn);
+//        System.err.println("[INFO] Rules kept: " + rulesOut);
+//        System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
         return;
     }
 }
