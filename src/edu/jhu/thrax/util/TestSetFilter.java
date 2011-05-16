@@ -34,7 +34,8 @@ public class TestSetFilter
         }
         String source = parts[1].trim();
         String pattern = source.replaceAll(NT_REGEX, "\\\\E.+\\\\Q");
-        pattern = ".*\\Q" + pattern + "\\E.*";
+        pattern = "(.+ )?\\Q" + pattern + "\\E( .+)?";
+//        System.err.println("pattern is " + pattern);
         for (String s : testSentences) {
             if (s.matches(pattern)) {
                 return true;
