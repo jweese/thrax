@@ -2,6 +2,8 @@ package edu.jhu.thrax.util;
 
 import java.util.Scanner;
 import java.util.HashSet;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import java.io.FileNotFoundException;
 import java.io.File;
@@ -27,28 +29,30 @@ public class TestSetFilter
         }
     }
 
-    public static String getPattern(String rule)
+    public static Pattern getPattern(String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4) {
-            return "NOT-A-RULE";
+            return null;
         }
         String source = parts[1].trim();
-        String pattern = source.replaceAll(NT_REGEX, "\\\\E.+\\\\Q");
-        pattern = "(.+ )?\\Q" + pattern + "\\E( .+)?";
-        return pattern;
+        String pattern = Pattern.quote(source);
+        pattern = pattern.replaceAll(NT_REGEX, "\\\\E.+\\\\Q");
+        pattern = pattern.replaceAll("\\\\Q\\\\E", "");
+        pattern = "(?:^|\\s)" + pattern + "(?:$|\\s)";
+        return Pattern.compile(pattern);
     }
 
     private static boolean inTestSet(String rule)
     {
-        String pattern = getPattern(rule);
-        if (pattern.equals("NOT-A-RULE")) {
+        Pattern pattern = getPattern(rule);
+        if (pattern == null) {
             System.err.printf("malformed rule: %s\n", rule);
             return false;
         }
 //        System.err.println("pattern is " + pattern);
         for (String s : testSentences) {
-            if (s.matches(pattern)) {
+            if (pattern.matcher(s).find()) {
                 return true;
             }
         }
