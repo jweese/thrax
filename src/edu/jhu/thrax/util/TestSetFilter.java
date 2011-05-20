@@ -30,7 +30,8 @@ public class TestSetFilter
             System.err.printf("Could not open %s\n", e.getMessage());
         }
 
-		System.err.println("Added " + testSentences.size() + " sentences.\n");
+		if (verbose) 
+			System.err.println("Added " + testSentences.size() + " sentences.\n");
     }
 
     public static Pattern getPattern(String rule)
@@ -84,15 +85,16 @@ public class TestSetFilter
         int rulesOut = 0;
 		System.err.println("Processing rules...");
         while (scanner.hasNextLine()) {
-			if ((rulesIn+1) % 2000 == 0) {
-				System.err.print(".");
-				System.err.flush();
+			if (verbose) {
+				if ((rulesIn+1) % 2000 == 0) {
+					System.err.print(".");
+					System.err.flush();
+				}
+				if ((rulesIn+1) % 100000 == 0) {
+					System.err.println(" [" + rulesIn + "]");
+					System.err.flush();
+				}
 			}
-			if ((rulesIn+1) % 100000 == 0) {
-				System.err.println(" [" + rulesIn + "]");
-				System.err.flush();
-			}
-				
             rulesIn++;
             String rule = scanner.nextLine();
             if (inTestSet(rule)) {
@@ -100,9 +102,12 @@ public class TestSetFilter
                 rulesOut++;
 			}
         }
-		System.err.println("[INFO] Total rules read: " + rulesIn);
-		System.err.println("[INFO] Rules kept: " + rulesOut);
-		System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
+		if (verbose) {
+			System.err.println("[INFO] Total rules read: " + rulesIn);
+			System.err.println("[INFO] Rules kept: " + rulesOut);
+			System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
+		}
+
         return;
     }
 }
