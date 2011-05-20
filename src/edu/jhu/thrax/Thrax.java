@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 
 import java.util.Map;
 import java.util.Date;
+import java.lang.Long;
 
 import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.jobs.*;
@@ -30,7 +31,8 @@ public class Thrax extends Configured implements Tool
         Map<String,String> options = ConfFileParser.parse(argv[0]);
         for (String opt : options.keySet())
             conf.set("thrax." + opt, options.get(opt));
-        String date = (new Date()).toString().replaceAll("\\s+", "_").replaceAll(":", "_");
+        // String date = (new Date()).toString().replaceAll("\\s+", "_").replaceAll(":", "_");
+		Long date = new Long(System.currentTimeMillis()).toString();
         String workDir = "thrax_run_" + date + Path.SEPARATOR;
         conf.set("thrax.work-dir", workDir);
 
