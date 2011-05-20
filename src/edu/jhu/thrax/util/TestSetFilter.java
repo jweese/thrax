@@ -16,6 +16,8 @@ public class TestSetFilter
 
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
 
+	private static boolean verbose = false;
+
     private static void getTestSentences(String filename)
     {
         try {
@@ -27,6 +29,9 @@ public class TestSetFilter
         catch (FileNotFoundException e) {
             System.err.printf("Could not open %s\n", e.getMessage());
         }
+
+		if (verbose) 
+			System.err.println("Added " + testSentences.size() + " sentences.\n");
     }
 
     public static Pattern getPattern(String rule)
@@ -63,28 +68,46 @@ public class TestSetFilter
     {
         // do some setup
         if (argv.length < 1) {
-            System.err.println("usage: TestSetFilter <test set1> [test set2 ...]");
+            System.err.println("usage: TestSetFilter [-v] <test set1> [test set2 ...]");
             return;
         }
         testSentences = new HashSet<String>();
         for (int i = 0; i < argv.length; i++) {
+			if (argv[i].equals("-v")) {
+				verbose = true;
+				continue;
+			}
             getTestSentences(argv[i]);
         }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
-//        int rulesIn = 0;
-//        int rulesOut = 0;
+        int rulesIn = 0;
+        int rulesOut = 0;
+		System.err.println("Processing rules...");
         while (scanner.hasNextLine()) {
-//            rulesIn++;
+			if (verbose) {
+				if ((rulesIn+1) % 2000 == 0) {
+					System.err.print(".");
+					System.err.flush();
+				}
+				if ((rulesIn+1) % 100000 == 0) {
+					System.err.println(" [" + rulesIn + "]");
+					System.err.flush();
+				}
+			}
+            rulesIn++;
             String rule = scanner.nextLine();
             if (inTestSet(rule)) {
                 System.out.println(rule);
-//                rulesOut++;
-            }
+                rulesOut++;
+			}
         }
-//        System.err.println("[INFO] Total rules read: " + rulesIn);
-//        System.err.println("[INFO] Rules kept: " + rulesOut);
-//        System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
+		if (verbose) {
+			System.err.println("[INFO] Total rules read: " + rulesIn);
+			System.err.println("[INFO] Rules kept: " + rulesOut);
+			System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
+		}
+
         return;
     }
 }
