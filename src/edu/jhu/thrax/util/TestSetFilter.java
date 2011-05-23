@@ -143,7 +143,7 @@ public class TestSetFilter
 					System.err.flush();
 				}
 				if ((rulesIn+1) % 100000 == 0) {
-					System.err.println(" [" + rulesIn + "]");
+					System.err.println(" [" + (rulesIn+1) + "]");
 					System.err.flush();
 				}
 			}
