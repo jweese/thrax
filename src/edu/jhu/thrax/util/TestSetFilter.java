@@ -1,7 +1,13 @@
 package edu.jhu.thrax.util;
 
 import java.util.Scanner;
+import java.util.Collections;
+import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
@@ -12,7 +18,8 @@ import edu.jhu.thrax.ThraxConfig;
 
 public class TestSetFilter
 {
-    private static HashSet<String> testSentences;
+    private static List<String> testSentences;
+    private static Map<String,Set<Integer>> sentencesByWord;
 
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
 
@@ -23,7 +30,9 @@ public class TestSetFilter
         try {
             Scanner scanner = new Scanner(new File(filename), "UTF-8");
             while (scanner.hasNextLine()) {
-                testSentences.add(scanner.nextLine());
+                String line = scanner.nextLine();
+                addSentenceToWordHash(sentencesByWord, line, testSentences.size());
+                testSentences.add(line);
             }
         }
         catch (FileNotFoundException e) {
@@ -51,17 +60,59 @@ public class TestSetFilter
     private static boolean inTestSet(String rule)
     {
         Pattern pattern = getPattern(rule);
-        if (pattern == null) {
-            System.err.printf("malformed rule: %s\n", rule);
-            return false;
-        }
-//        System.err.println("pattern is " + pattern);
-        for (String s : testSentences) {
-            if (pattern.matcher(s).find()) {
+        for (int i : getSentencesForRule(sentencesByWord, rule)) {
+            if (pattern.matcher(testSentences.get(i)).find()) {
                 return true;
             }
         }
         return false;
+    }
+
+    private static void addSentenceToWordHash(Map<String,Set<Integer>> sentencesByWord, String sentence, int index)
+    {
+        String [] tokens = sentence.split("\\s+");
+        for (String t : tokens) {
+            if (sentencesByWord.containsKey(t))
+                sentencesByWord.get(t).add(index);
+            else {
+                Set<Integer> set = new HashSet<Integer>();
+                set.add(index);
+                sentencesByWord.put(t, set);
+            }
+        }
+    }
+
+    private static Set<Integer> getSentencesForRule(Map<String,Set<Integer>> sentencesByWord, String rule)
+    {
+        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        if (parts.length != 4)
+            return Collections.emptySet();
+        String source = parts[1].trim();
+        List<Set<Integer>> list = new ArrayList<Set<Integer>>();
+        for (String t : source.split("\\s+")) {
+            if (t.matches(NT_REGEX))
+                continue;
+            if (sentencesByWord.containsKey(t))
+                list.add(sentencesByWord.get(t));
+            else
+                return Collections.emptySet();
+        }
+        return intersect(list);
+    }
+
+    private static <T> Set<T> intersect(List<Set<T>> list)
+    {
+        if (list.isEmpty())
+            return Collections.emptySet();
+        Set<T> result = new HashSet<T>(list.get(0));
+        for (int i = 1; i < list.size(); i++) {
+            result.retainAll(list.get(i));
+            if (result.isEmpty())
+                return Collections.emptySet();
+        }
+        if (result.isEmpty())
+            return Collections.emptySet();
+        return result;
     }
 
     public static void main(String [] argv)
@@ -71,7 +122,8 @@ public class TestSetFilter
             System.err.println("usage: TestSetFilter [-v] <test set1> [test set2 ...]");
             return;
         }
-        testSentences = new HashSet<String>();
+        testSentences = new ArrayList<String>();
+        sentencesByWord = new HashMap<String,Set<Integer>>();
         for (int i = 0; i < argv.length; i++) {
 			if (argv[i].equals("-v")) {
 				verbose = true;
@@ -92,7 +144,7 @@ public class TestSetFilter
 					System.err.flush();
 				}
 				if ((rulesIn+1) % 100000 == 0) {
-					System.err.println(" [" + rulesIn + "]");
+					System.err.println(" [" + (rulesIn+1) + "]");
 					System.err.flush();
 				}
 			}
