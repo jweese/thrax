@@ -83,7 +83,8 @@ public class TestSetFilter
         Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;
         int rulesOut = 0;
-		System.err.println("Processing rules...");
+		if (verbose)
+			System.err.println("Processing rules...");
         while (scanner.hasNextLine()) {
 			if (verbose) {
 				if ((rulesIn+1) % 2000 == 0) {
