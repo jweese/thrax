@@ -65,7 +65,7 @@ public class TestSetFilter
                 return true;
             }
         }
-        return false;
+        return hasAbstractSource(rule);
     }
 
     private static void addSentenceToWordHash(Map<String,Set<Integer>> sentencesByWord, String sentence, int index)
@@ -98,6 +98,19 @@ public class TestSetFilter
                 return Collections.emptySet();
         }
         return intersect(list);
+    }
+
+    private static boolean hasAbstractSource(String rule)
+    {
+        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        if (parts.length != 4)
+            return false;
+        String source = parts[1].trim();
+        for (String t : source.split("\\s+")) {
+            if (!t.matches(NT_REGEX))
+                return false;
+        }
+        return true;
     }
 
     private static <T> Set<T> intersect(List<Set<T>> list)
