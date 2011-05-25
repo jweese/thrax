@@ -10,8 +10,13 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.zip.GZIPOutputStream;
+import java.util.zip.GZIPInputStream;
 
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.File;
 
 import edu.jhu.thrax.ThraxConfig;
@@ -42,6 +47,87 @@ public class TestSetFilter
 		if (verbose) 
 			System.err.println("Added " + testSentences.size() + " sentences.\n");
     }
+
+	/** setSentence()
+	 *
+	 * Sets a single sentence against which the grammar is filtered.
+	 * Used in filtering the grammar on the fly at runtime.
+	 */
+	public static void setSentence(String sentence) {
+		if (testSentences == null)
+			testSentences = new ArrayList<String>();
+
+		if (sentencesByWord == null)
+			sentencesByWord = new HashMap<String,Set<Integer>>();
+
+		// reset the list of sentences and the hash mapping words to
+		// sets of sentences they appear in
+		testSentences.clear();
+		sentencesByWord.clear();
+		// fill in the hash with the current sentence
+		addSentenceToWordHash(sentencesByWord, sentence, 0);
+		// and add the sentence
+		testSentences.add(sentence);
+	}
+
+	/** filterGrammarToFile
+	 *
+	 * Filters a large grammar against a single sentence, and writes
+	 * the resulting grammar to a file.  The input grammar is assumed
+	 * to be compressed, and the output file is also compressed.
+	 */
+	public static void filterGrammarToFile(String fullGrammarFile,
+										   String sentence,
+										   String filteredGrammarFile) {
+		
+		setSentence(sentence);
+
+		try {
+			Scanner scanner = new Scanner(new GZIPInputStream(new FileInputStream(fullGrammarFile)), "UTF-8");
+			int rulesIn = 0;
+			int rulesOut = 0;
+			boolean verbose = false;
+			if (verbose)
+				System.err.println("Processing rules...");
+
+			GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(filteredGrammarFile));
+			byte newline[] = "\n".getBytes("UTF-8");
+
+			while (scanner.hasNextLine()) {
+				if (verbose) {
+					if ((rulesIn+1) % 2000 == 0) {
+						System.err.print(".");
+						System.err.flush();
+					}
+					if ((rulesIn+1) % 100000 == 0) {
+						System.err.println(" [" + (rulesIn+1) + "]");
+						System.err.flush();
+					}
+				}
+				rulesIn++;
+				String rule = scanner.nextLine();
+				if (inTestSet(rule)) {
+					byte[] bytes = rule.getBytes("UTF-8");
+					int len = bytes.length;
+					out.write(bytes, 0, len);
+					out.write(newline, 0, 1);
+					rulesOut++;
+				}
+			}
+
+			out.close();
+
+			if (verbose) {
+				System.err.println("[INFO] Total rules read: " + rulesIn);
+				System.err.println("[INFO] Rules kept: " + rulesOut);
+				System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
+			}
+		} catch (FileNotFoundException e) {
+            System.err.printf("* FATAL: could not open %s\n", e.getMessage());
+		} catch (IOException e) {
+            System.err.printf("* FATAL: could not write to %s\n", e.getMessage());
+        }
+	}
 
     public static Pattern getPattern(String rule)
     {
