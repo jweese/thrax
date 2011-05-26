@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.zip.GZIPOutputStream;
 import java.util.zip.GZIPInputStream;
 
+import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -90,7 +91,7 @@ public class TestSetFilter
 			if (verbose)
 				System.err.println("Processing rules...");
 
-			GZIPOutputStream out = new GZIPOutputStream(new FileOutputStream(filteredGrammarFile));
+			PrintWriter out = new PrintWriter(new GZIPOutputStream(new FileOutputStream(filteredGrammarFile)));
 			byte newline[] = "\n".getBytes("UTF-8");
 
 			while (scanner.hasNextLine()) {
@@ -107,10 +108,7 @@ public class TestSetFilter
 				rulesIn++;
 				String rule = scanner.nextLine();
 				if (inTestSet(rule)) {
-					byte[] bytes = rule.getBytes("UTF-8");
-					int len = bytes.length;
-					out.write(bytes, 0, len);
-					out.write(newline, 0, 1);
+					out.println(rule);
 					rulesOut++;
 				}
 			}
