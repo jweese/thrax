@@ -30,6 +30,7 @@ public class TestSetFilter
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
 
 	private static boolean verbose = false;
+        private static boolean parallel = false;
 
     private static void getTestSentences(String filename)
     {
@@ -226,6 +227,10 @@ public class TestSetFilter
 				verbose = true;
 				continue;
 			}
+                        else if (argv[i].equals("-p")) {
+                            parallel = true;
+                            continue;
+                        }
             getTestSentences(argv[i]);
         }
 
@@ -249,8 +254,14 @@ public class TestSetFilter
             String rule = scanner.nextLine();
             if (inTestSet(rule)) {
                 System.out.println(rule);
+                if (parallel)
+                    System.out.flush();
                 rulesOut++;
 			}
+            else if (parallel) {
+                System.out.println("");
+                System.out.flush();
+            }
         }
 		if (verbose) {
 			System.err.println("[INFO] Total rules read: " + rulesIn);
