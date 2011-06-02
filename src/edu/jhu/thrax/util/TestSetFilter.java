@@ -28,9 +28,11 @@ public class TestSetFilter
     private static Map<String,Set<Integer>> sentencesByWord;
 
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
+    private static final int RULE_LENGTH = 12;
 
 	private static boolean verbose = false;
         private static boolean parallel = false;
+        private static boolean fast = false;
 
     private static void getTestSentences(String filename)
     {
@@ -213,15 +215,68 @@ public class TestSetFilter
         return result;
     }
 
+    private static Set<String> getTestNGrams(List<String> sentences)
+    {
+        if (sentences.isEmpty())
+            return Collections.emptySet();
+        Set<String> result = new HashSet<String>();
+        for (String s : sentences)
+            result.addAll(getNGramsUpToLength(RULE_LENGTH, s));
+        return result;
+    }
+
+    private static Set<String> getNGramsUpToLength(int length, String sentence)
+    {
+        if (length < 1)
+            return Collections.emptySet();
+        String [] tokens = sentence.trim().split("\\s+");
+        int maxOrder = length < tokens.length ? length : tokens.length;
+        Set<String> result = new HashSet<String>();
+        for (int order = 1; order <= maxOrder; order++) {
+            for (int start = 0; start < tokens.length - order + 1; start++)
+                result.add(createNGram(tokens, start, order));
+        }
+        return result;
+    }
+
+    private static String createNGram(String [] tokens, int start, int order)
+    {
+        if (order < 1 || start + order > tokens.length) {
+            return "";
+        }
+        String result = tokens[start];
+        for (int i = 1; i < order; i++)
+            result += " " + tokens[start + i];
+        return result;
+    }
+
+    private static boolean inTestSetFastVersion(Set<String> ngrams, String rule)
+    {
+        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        if (parts.length != 4)
+            return false;
+        String source = parts[1];
+        for (String chunk : source.split(NT_REGEX)) {
+            chunk = chunk.trim();
+            if (!ngrams.contains(chunk))
+                return false;
+        }
+        return true;
+    }
+
     public static void main(String [] argv)
     {
         // do some setup
         if (argv.length < 1) {
-            System.err.println("usage: TestSetFilter [-v] <test set1> [test set2 ...]");
+            System.err.println("usage: TestSetFilter [-v|-p|-f] <test set1> [test set2 ...]");
+            System.err.println("    -v    verbose output");
+            System.err.println("    -p    parallel compatibility");
+            System.err.println("    -f    fast mode");
             return;
         }
         testSentences = new ArrayList<String>();
         sentencesByWord = new HashMap<String,Set<Integer>>();
+        Set<String> testNGrams;
         for (int i = 0; i < argv.length; i++) {
 			if (argv[i].equals("-v")) {
 				verbose = true;
@@ -231,8 +286,13 @@ public class TestSetFilter
                             parallel = true;
                             continue;
                         }
+                        else if (argv[i].equals("-f")) {
+                            fast = true;
+                            continue;
+                        }
             getTestSentences(argv[i]);
         }
+        testNGrams = getTestNGrams(testSentences);
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;
@@ -252,7 +312,13 @@ public class TestSetFilter
 			}
             rulesIn++;
             String rule = scanner.nextLine();
-            if (inTestSet(rule)) {
+            boolean keep;
+            if (fast)
+                keep = inTestSetFastVersion(testNGrams, rule);
+            else
+                keep = inTestSet(rule);
+
+            if (keep) {
                 System.out.println(rule);
                 if (parallel)
                     System.out.flush();
