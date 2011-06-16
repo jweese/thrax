@@ -2,6 +2,7 @@ package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
@@ -43,7 +44,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
 
     public Class<? extends WritableComparator> sortComparatorClass()
     {
-        return RuleWritable.YieldComparator.class;
+        return RuleWritable.YieldAndAlignmentComparator.class;
     }
 
     public Class<? extends Partitioner<RuleWritable, IntWritable>> partitionerClass()
@@ -51,16 +52,15 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         return RuleWritable.YieldPartitioner.class;
     }
 
-    public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, IntWritable>> reducerClass()
+    public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>> reducerClass()
     {
         return Reduce.class;
     }
 
-    private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, IntWritable>
+    private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>
     {
         private HashMap<TextPair,Double> f2e;
         private HashMap<TextPair,Double> e2f;
-        private HashMap<RuleWritable,IntWritable> ruleCounts;
 
         private RuleWritable current;
         private double maxf2e;
@@ -73,8 +73,6 @@ public class LexicalProbabilityFeature extends MapReduceFeature
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
-            current = new RuleWritable();
-            ruleCounts = new HashMap<RuleWritable,IntWritable>();
             Configuration conf = context.getConfiguration();
 //            Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
 //            if (localFiles != null) {
@@ -107,55 +105,38 @@ public class LexicalProbabilityFeature extends MapReduceFeature
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
-            if (current == null || !key.sameYield(current)) {
-                current.set(key);
-                DoubleWritable tgsWritable = new DoubleWritable(-maxf2e);
-                DoubleWritable sgtWritable = new DoubleWritable(-maxe2f);
-                for (RuleWritable r : ruleCounts.keySet()) {
-                    IntWritable cnt = ruleCounts.get(r);
-                    r.featureLabel.set(TGS_LABEL);
-                    r.featureScore.set(-maxf2e);
-                    context.write(r, cnt);
-                    RuleWritable r2 = new RuleWritable(r);
-                    r2.featureLabel.set(SGT_LABEL);
-                    r2.featureScore.set(-maxe2f);
-                    context.write(r2, cnt);
-                }
-                ruleCounts.clear();
+            if (current == null) {
+                current = new RuleWritable(key);
                 maxe2f = sourceGivenTarget(key);
                 maxf2e = targetGivenSource(key);
-                int count = 0;
-                for (IntWritable x : values)
-                    count += x.get();
-                ruleCounts.put(new RuleWritable(key), new IntWritable(count));
                 return;
             }
+            if (!key.sameYield(current)) {
+                current.featureLabel.set(TGS_LABEL);
+                current.featureScore.set(-maxf2e);
+                context.write(current, NullWritable.get());
+                current.featureLabel.set(SGT_LABEL);
+                current.featureScore.set(-maxe2f);
+                context.write(current, NullWritable.get());
+                current.set(key);
+            }
+
             double sgt = sourceGivenTarget(key);
             double tgs = targetGivenSource(key);
             if (sgt > maxe2f)
                 maxe2f = sgt;
             if (tgs > maxf2e)
                 maxf2e = tgs;
-            int count = 0;
-            for (IntWritable x : values)
-                count += x.get();
-            ruleCounts.put(new RuleWritable(key), new IntWritable(count));
         }
 
         protected void cleanup(Context context) throws IOException, InterruptedException
         {
-            DoubleWritable tgsWritable = new DoubleWritable(-maxf2e);
-            DoubleWritable sgtWritable = new DoubleWritable(-maxe2f);
-            for (RuleWritable r : ruleCounts.keySet()) {
-                IntWritable cnt = ruleCounts.get(r);
-                r.featureLabel.set(TGS_LABEL);
-                r.featureScore.set(-maxf2e);
-                context.write(r, cnt);
-                RuleWritable r2 = new RuleWritable(r);
-                r2.featureLabel.set(SGT_LABEL);
-                r2.featureScore.set(-maxe2f);
-                context.write(r2, cnt);
-            }
+            current.featureLabel.set(TGS_LABEL);
+            current.featureScore.set(-maxf2e);
+            context.write(current, NullWritable.get());
+            current.featureLabel.set(SGT_LABEL);
+            current.featureScore.set(-maxe2f);
+            context.write(current, NullWritable.get());
         }
 
         private double sourceGivenTarget(RuleWritable r)
