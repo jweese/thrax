@@ -6,6 +6,7 @@ import java.util.HashSet;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -30,8 +31,8 @@ public class OutputJob extends ThraxJob
     {
         Job job = new Job(conf, "collect");
         String workDir = conf.get("thrax.work-dir");
-        job.setJarByClass(OutputMapper.class);
-        job.setMapperClass(OutputMapper.class);
+        job.setJarByClass(OutputReducer.class);
+        job.setMapperClass(Mapper.class);
         job.setReducerClass(OutputReducer.class);
 
         job.setInputFormatClass(SequenceFileInputFormat.class);
