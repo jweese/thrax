@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.DoubleWritable;
@@ -54,68 +55,30 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
         }
     }
 
-    private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, IntWritable>
+    private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>
     {
-        private Text currentTarget = new Text();
-        private Text currentSource = new Text();
-        private HashMap<RuleWritable,IntWritable> rules = new HashMap<RuleWritable,IntWritable>();
         private int marginal;
-        private int count;
         private static final Text NAME = new Text("TargetPhraseGivenSource");
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
             if (key.target.equals(WordLexicalProbabilityCalculator.MARGINAL)) {
-                DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
-                for (RuleWritable r : rules.keySet()) {
-                    IntWritable cnt = rules.get(r);
-                    r.featureLabel.set(NAME);
-                    r.featureScore.set(-Math.log(count / (double) marginal));
-                    context.write(r, cnt);
-                }
-                currentTarget.set(WordLexicalProbabilityCalculator.MARGINAL);
-                if (!key.source.equals(currentSource)) {
-                    marginal = 0;
-                    count = 0;
-                    currentSource.set(key.source);
-                    rules.clear();
-                }
+                marginal = 0;
                 for (IntWritable x : values)
                     marginal += x.get();
                 return;
             }
             
             // control only gets here if we are using the same marginal
-            if (!key.target.equals(currentTarget)) {
-                DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
-                for (RuleWritable r : rules.keySet()) {
-                    IntWritable cnt = rules.get(r);
-                    r.featureLabel.set(NAME);
-                    r.featureScore.set(-Math.log(count / (double) marginal));
-                    context.write(r, cnt);
-                }
-                rules.clear();
-                count = 0;
-                currentTarget.set(key.target);
-            }
-            int myCount = 0;
+            int count = 0;
             for (IntWritable x : values) {
-                myCount += x.get();
                 count += x.get();
             }
-            rules.put(new RuleWritable(key), new IntWritable(myCount));
+            key.featureLabel.set(NAME);
+            key.featureScore.set(-Math.log(count / (double) marginal));
+            context.write(key, NullWritable.get());
         }
 
-        protected void cleanup(Context context) throws IOException, InterruptedException
-        {
-            DoubleWritable result = new DoubleWritable(-Math.log(count / (double) marginal));
-            for (RuleWritable r : rules.keySet()) {
-                IntWritable cnt = rules.get(r);
-                r.featureLabel.set(NAME);
-                r.featureScore.set(-Math.log(count / (double) marginal));
-                context.write(r, cnt);
-            }
-        }
     }
 
     private static final DoubleWritable ZERO = new DoubleWritable(0.0);

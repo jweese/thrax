@@ -347,27 +347,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                 if (cmp != 0)
                     return cmp;
                 cmp = TEXT_COMPARATOR.compare(b1, s1, start1 - s1, b2, s2, start2 - s2);
-                if (cmp != 0)
-                    return cmp;
-                start1 = end1;
-                start2 = end2;
-                int len1 = AA_COMPARATOR.encodedLength(b1, start1);
-                int len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                if (cmp != 0)
-                    return cmp;
-                start1 += len1;
-                start2 += len2;
-                len1 = AA_COMPARATOR.encodedLength(b1, start1);
-                len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                if (cmp != 0)
-                    return cmp;
-                start1 += len1;
-                start2 += len2;
-                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                return TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                return cmp;
             }
             catch (IOException ex)
             {
@@ -410,27 +390,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                 if (cmp != 0)
                     return cmp;
                 cmp = TEXT_COMPARATOR.compare(b1, s1, start1 - s2, b2, s2, start2 - s2);
-                if (cmp != 0)
-                    return cmp;
-                start1 = end1;
-                start2 = end2;
-                int len1 = AA_COMPARATOR.encodedLength(b1, start1);
-                int len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                if (cmp != 0)
-                    return cmp;
-                start1 += len1;
-                start2 += len2;
-                len1 = AA_COMPARATOR.encodedLength(b1, start1);
-                len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                if (cmp != 0)
-                    return cmp;
-                start1 += len1;
-                start2 += len2;
-                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                return TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                return cmp;
             }
             catch (IOException ex)
             {
