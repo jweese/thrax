@@ -119,6 +119,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 current.featureScore.set(-maxe2f);
                 context.write(current, NullWritable.get());
                 current.set(key);
+                maxe2f = sourceGivenTarget(key);
+                maxf2e = targetGivenSource(key);
             }
 
             double sgt = sourceGivenTarget(key);
