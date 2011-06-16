@@ -230,12 +230,12 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         return featureScore.compareTo(that.featureScore);
     }
 
-    public static class YieldComparator extends WritableComparator
+    public static class YieldAndAlignmentComparator extends WritableComparator
     {
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
         private static final AlignmentArray.Comparator AA_COMPARATOR = new AlignmentArray.Comparator();
 
-        public YieldComparator()
+        public YieldAndAlignmentComparator()
         {
             super(RuleWritable.class);
         }
@@ -318,8 +318,51 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     }
 
     static {
-        WritableComparator.define(RuleWritable.class, new YieldComparator());
+        WritableComparator.define(RuleWritable.class, new YieldAndAlignmentComparator());
     }
+
+    public static class YieldComparator extends WritableComparator
+    {
+        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        private static final AlignmentArray.Comparator AA_COMPARATOR = new AlignmentArray.Comparator();
+
+        public YieldComparator()
+        {
+            super(RuleWritable.class);
+        }
+
+        public int compare(byte [] b1, int s1, int l1,
+                           byte [] b2, int s2, int l2)
+        {
+            try {
+                int cmp;
+                int len1 = WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
+                int len2 = WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
+                cmp = TEXT_COMPARATOR.compare(b1, s1, len1, b2, s2, len2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                int start1 = s1 + len1;
+                int start2 = s2 + len2;
+                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
+                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
+                cmp = TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                start1 += len1;
+                start2 += len2;
+                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
+                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
+                cmp = TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                return cmp;
+            }
+            catch (IOException e) {
+                throw new IllegalArgumentException(e);
+            }
+        }
+    }
+
 
     public static class SourceMarginalComparator extends WritableComparator
     {

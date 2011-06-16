@@ -2,6 +2,7 @@ package edu.jhu.thrax.hadoop.features.mapred;
 
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
@@ -43,63 +44,23 @@ public class RarityPenaltyFeature extends MapReduceFeature
         return RuleWritable.YieldPartitioner.class;
     }
 
-    public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, IntWritable>> reducerClass()
+    public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>> reducerClass()
     {
         return Reduce.class;
     }
 
-    private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, IntWritable>
+    private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>
     {
-        private HashMap<RuleWritable,IntWritable> ruleCounts;
-        private int totalCount;
-
-        private RuleWritable current;
-
         private static final Text LABEL = new Text("RarityPenalty");
-
-        protected void setup(Context context) throws IOException, InterruptedException
-        {
-            current = new RuleWritable();
-            ruleCounts = new HashMap<RuleWritable,IntWritable>();
-            totalCount = 0;
-        }
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
-            if (current == null || !key.sameYield(current)) {
-                current.set(key);
-                DoubleWritable score = new DoubleWritable(Math.exp(1 - totalCount));
-                for (RuleWritable r : ruleCounts.keySet()) {
-                    IntWritable cnt = ruleCounts.get(r);
-                    r.featureLabel.set(LABEL);
-                    r.featureScore.set(Math.exp(1 - totalCount));
-                    context.write(r, cnt);
-                }
-                ruleCounts.clear();
-                int count = 0;
-                for (IntWritable x : values)
-                    count += x.get();
-                ruleCounts.put(new RuleWritable(key), new IntWritable(count));
-                totalCount = count;
-                return;
-            }
             int count = 0;
             for (IntWritable x : values)
                 count += x.get();
-            ruleCounts.put(new RuleWritable(key), new IntWritable(count));
-            totalCount += count;
-            return;
-        }
-
-        protected void cleanup(Context context) throws IOException, InterruptedException
-        {
-            DoubleWritable score = new DoubleWritable(Math.exp(1 - totalCount));
-            for (RuleWritable r : ruleCounts.keySet()) {
-                IntWritable cnt = ruleCounts.get(r);
-                r.featureLabel.set(LABEL);
-                r.featureScore.set(Math.exp(1 - totalCount));
-                context.write(r, cnt);
-            }
+            key.featureLabel.set(LABEL);
+            key.featureScore.set(Math.exp(1 - count));
+            context.write(key, NullWritable.get());
         }
 
     }
