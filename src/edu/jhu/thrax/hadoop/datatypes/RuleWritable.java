@@ -324,7 +324,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     public static class YieldComparator extends WritableComparator
     {
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
-        private static final AlignmentArray.Comparator AA_COMPARATOR = new AlignmentArray.Comparator();
 
         public YieldComparator()
         {
@@ -368,7 +367,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     {
         private static final TextPair.FstMarginalComparator TEXTPAIR_COMPARATOR = new TextPair.FstMarginalComparator();
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
-        private static final AlignmentArray.Comparator AA_COMPARATOR = new AlignmentArray.Comparator();
 
         public SourceMarginalComparator()
         {
@@ -411,7 +409,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     {
         private static final TextPair.SndMarginalComparator TEXTPAIR_COMPARATOR = new TextPair.SndMarginalComparator();
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
-        private static final AlignmentArray.Comparator AA_COMPARATOR = new AlignmentArray.Comparator();
 
         public TargetMarginalComparator()
         {
