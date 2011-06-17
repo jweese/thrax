@@ -3,7 +3,7 @@
 if [[ -z "$2" ]]
 then
     cat <<END_USAGE
-usage: run_on_amazon.sh <conf file> <credentials>
+usage: run_on_amazon.sh <conf file> <credentials> [job name]
 END_USAGE
     exit 1
 fi
@@ -55,6 +55,13 @@ choose_upload() {
 
 conf=$1
 cred=$2
+if [[ -z "$3" ]]
+then
+    name="thrax"
+else
+    name=$3
+fi
+
 thrax_option $conf "amazon-work"
 workdir=$THRAX_OPT_RESULT
 
@@ -80,7 +87,7 @@ choose_upload $bootstrap
 
 elastic-mapreduce -c $cred \
     --create \
-    --name "thrax" \
+    --name $name \
     --log-uri $workdir/logs \
     --enable-debugging \
     --bootstrap-action $bootstrap \
