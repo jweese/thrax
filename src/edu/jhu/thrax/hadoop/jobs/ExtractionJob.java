@@ -14,6 +14,7 @@ import org.apache.hadoop.io.IntWritable;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.extraction.ExtractionMapper;
+import edu.jhu.thrax.hadoop.extraction.MinRuleCountReducer;
 
 import java.io.IOException;
 
@@ -25,7 +26,7 @@ public class ExtractionJob extends ThraxJob
         job.setJarByClass(ExtractionMapper.class);
         job.setMapperClass(ExtractionMapper.class);
         job.setCombinerClass(IntSumReducer.class);
-        job.setReducerClass(IntSumReducer.class);
+        job.setReducerClass(MinRuleCountReducer.class);
         job.setMapOutputKeyClass(RuleWritable.class);
         job.setMapOutputValueClass(IntWritable.class);
         job.setOutputKeyClass(RuleWritable.class);
