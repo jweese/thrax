@@ -133,6 +133,11 @@ public class LexicalProbabilityFeature extends MapReduceFeature
 
         protected void cleanup(Context context) throws IOException, InterruptedException
         {
+            if (current == null) {
+                System.err.println("Lexical probability cleanup(): current was null");
+                System.err.println("Lexical probability cleanup(): there may be no output from this reducer");
+                return;
+            }
             current.featureLabel.set(TGS_LABEL);
             current.featureScore.set(-maxf2e);
             context.write(current, NullWritable.get());
