@@ -46,10 +46,13 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
 
     private static class Map extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>
     {
+        private static final String MARGINAL_LHS = "[MARGINAL]";
+
         protected void map(RuleWritable key, IntWritable value, Context context) throws IOException, InterruptedException
         {
             RuleWritable marginal = new RuleWritable(key);
             marginal.target.set(WordLexicalProbabilityCalculator.MARGINAL);
+            marginal.lhs.set(MARGINAL_LHS);
             context.write(key, value);
             context.write(marginal, value);
         }
