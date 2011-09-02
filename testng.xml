@@ -2,12 +2,12 @@
 
 <!-- test suite for thrax -->
 
-<suite name="Thrax" verbose="1">
+<suite name="Thrax" verbose="2">
 
     <test name="Datatypes">
         <packages>
-	    <package name="edu.jhu.thrax.datatypes"/>
-	</packages>
+            <package name="edu.jhu.thrax.datatypes"/>
+        </packages>
     </test>
 
     <test name="Extractors">

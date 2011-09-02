@@ -1,25 +1,32 @@
 package edu.jhu.thrax.extraction;
 
-import org.testng.annotations.Test;
 import org.testng.Assert;
-import edu.jhu.thrax.util.exceptions.*;
-import edu.jhu.thrax.datatypes.Rule;
+import org.testng.annotations.Test;
+
+import org.apache.hadoop.conf.Configuration;
+
 import edu.jhu.thrax.ThraxConfig;
-import java.util.List;
+import edu.jhu.thrax.util.exceptions.*;
 
 public class SAMTExtractorTest
 {
+	private Configuration dummy_conf;
+	
+	public SAMTExtractorTest() {
+		dummy_conf = new Configuration();
+	}
+	
     @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptySource_ThrowsException() throws MalformedInputException
     {
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("||| (S world) ||| 0-0");
     }
 
     @Test(expectedExceptions = { EmptySentenceException.class })
     public void emptyTarget_ThrowsException() throws MalformedInputException
     {
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("hello ||| ||| 0-0");
     }
 
@@ -27,7 +34,7 @@ public class SAMTExtractorTest
     public void emptyParse_ThrowsException() throws MalformedInputException
     {
         ThraxConfig.TARGET_IS_PARSED = true;
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("hello ||| () ||| 0-0");
     }
 
@@ -35,35 +42,35 @@ public class SAMTExtractorTest
     public void doubleEmptyParse_ThrowsException() throws MalformedInputException
     {
         ThraxConfig.TARGET_IS_PARSED = true;
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("hello ||| (()) ||| 0-0");
     }
 
     @Test(expectedExceptions = { EmptyAlignmentException.class })
     public void emptyAlignment_ThrowsException() throws MalformedInputException
     {
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("hello ||| (S world) ||| ");
     }
 
     @Test(expectedExceptions = { InconsistentAlignmentException.class })
     public void inconsistentAlignment_ThrowsException() throws MalformedInputException
     {
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("hello ||| (S world) ||| 2-3");
     }
 
     @Test(expectedExceptions = { NotEnoughFieldsException.class })
     public void emptyInput_ThrowsException() throws MalformedInputException
     {
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("");
     }
 
     @Test(expectedExceptions = { NotEnoughFieldsException.class })
     public void whitespaceInput_ThrowsException() throws MalformedInputException
     {
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("          ");
     }
 
@@ -71,21 +78,22 @@ public class SAMTExtractorTest
     public void unfinishedParse_ThrowsException() throws MalformedInputException
     {
         ThraxConfig.TARGET_IS_PARSED = true;
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("hello ||| (S world ||| 0-0");
     }
 
     @Test(expectedExceptions = { MalformedParseException.class })
     public void extraRRBParse_ThrowsException() throws MalformedInputException
     {
-        SAMTExtractor e = new SAMTExtractor();
+        SAMTExtractor e = new SAMTExtractor(dummy_conf);
         e.extract("hello ||| (S world)) ||| 0-0");
     }
 
     @Test
-    public void emptyParse_YieldHasLengthZero() throws MalformedParseException
+    public void emptyParse_YieldHasLengthZero() throws MalformedInputException
     {
-        Assert.assertEquals(SAMTExtractor.yield("()").length, 0);
+    	SAMTExtractor e = new SAMTExtractor(dummy_conf);
+        Assert.assertEquals(e.extract("()").size(), 0);
     }
 
 }
