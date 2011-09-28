@@ -31,15 +31,17 @@ public class Thrax extends Configured implements Tool
         for (String opt : options.keySet())
             conf.set("thrax." + opt, options.get(opt));
         String date = (new Date()).toString().replaceAll("\\s+", "_").replaceAll(":", "_");
+
         String workDir = "thrax_run_" + date + Path.SEPARATOR;
-        conf.set("thrax.work-dir", workDir);
 
         if (argv.length > 1) {
-            if (!argv[1].endsWith(Path.SEPARATOR))
-                argv[1] += Path.SEPARATOR;
-            conf.set("thrax.outputPath", argv[1] + "final");
-        } else
-            conf.set("thrax.outputPath", workDir + "final");
+			workDir = argv[1];
+            if (!workDir.endsWith(Path.SEPARATOR))
+                workDir += Path.SEPARATOR;
+		}
+
+        conf.set("thrax.work-dir", workDir);
+		conf.set("thrax.outputPath", workDir + "final");
 
         scheduler = new Scheduler();
         // schedule all the jobs
