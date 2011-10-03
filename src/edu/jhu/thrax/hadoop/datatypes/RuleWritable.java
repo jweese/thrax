@@ -348,6 +348,15 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         }
     }
 
+    public static class LHSPartitioner extends Partitioner<RuleWritable, IntWritable>
+    {
+        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        {
+            return (key.lhs.hashCode() & Integer.MAX_VALUE) % numPartitions;
+        }
+    }
+
+
     public static class SourcePartitioner extends Partitioner<RuleWritable, IntWritable>
     {
         public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
