@@ -28,6 +28,7 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
     private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
     private static final Text EMPTY = new Text("");
     private boolean label;
+    private boolean sparse;
 
     private RuleWritable currentRule;
     private TreeMap<Text,Writable> features;
@@ -48,6 +49,7 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
 //            ThraxConfig.configure(localWorkDir + sep + "thrax.config");
 //        }
         label = conf.getBoolean("thrax.label-feature-scores", true);
+        sparse = conf.getBoolean("thrax.sparse-feature-vectors", false);
         allFeatureNames = conf.get("thrax.features", "").split("\\s+");
         currentRule = null;
         features = new TreeMap<Text,Writable>(); //new FeatureOrder(ThraxConfig.FEATURES.split("\\s+")));
@@ -60,7 +62,7 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
             if (currentRule == null)
                 currentRule = new RuleWritable();
             else
-                context.write(ruleToText(currentRule, features), NullWritable.get());
+                context.write(ruleToText(currentRule, features, sparse), NullWritable.get());
             currentRule.set(key);
             features.clear();
         }
@@ -73,10 +75,10 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
     protected void cleanup(Context context) throws IOException, InterruptedException
     {
         if (currentRule != null)
-            context.write(ruleToText(currentRule, features), NullWritable.get());
+            context.write(ruleToText(currentRule, features, sparse), NullWritable.get());
     }
 
-    private Text ruleToText(RuleWritable r, Map<Text,Writable> fs)
+    private Text ruleToText(RuleWritable r, Map<Text,Writable> fs, boolean sparse)
     {
         if (r == null)
             throw new IllegalArgumentException("cannot convert a null rule to Text");
@@ -94,6 +96,11 @@ public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, Nul
         sb.append(r.target);
         sb.append(DELIM);
         for (Text t : fs.keySet()) {
+            if (sparse) {
+                DoubleWritable score = (DoubleWritable) fs.get(t);
+                if (score.get() == 0)
+                    continue;
+            }
             if (label)
                 sb.append(String.format("%s=%s ", t, fs.get(t)));
             else
