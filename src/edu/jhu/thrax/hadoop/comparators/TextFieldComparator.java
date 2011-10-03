@@ -27,8 +27,8 @@ public class TextFieldComparator
         int length1 = getTextLength(b1, start1);
         int length2 = getTextLength(b2, start2);
 
-        return comparator.compare(b1, start1, l1 - start1 - length1,
-                                  b2, start2, l2 - start2 - length2);
+        return comparator.compare(b1, start1, length1,
+                                  b2, start2, length2);
     }
 
     private int getTextStart(int field, byte [] bytes, int start) throws IOException
@@ -49,6 +49,13 @@ public class TextFieldComparator
         int textLength = comparator.readVInt(bytes, start);
         int fieldLength = vIntSize + textLength;
         return fieldLength;
+    }
+
+    public int fieldEndIndex(byte [] bytes, int start) throws IOException
+    {
+        int fieldStart = getTextStart(fieldNumber, bytes, start);
+        int fieldLength = getTextLength(bytes, fieldStart);
+        return fieldStart + fieldLength;
     }
 }
 

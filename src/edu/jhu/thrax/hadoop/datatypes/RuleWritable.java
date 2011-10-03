@@ -20,6 +20,8 @@ import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.datatypes.Rule;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
+import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
+import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 
 public class RuleWritable implements WritableComparable<RuleWritable>
 {
@@ -234,6 +236,9 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     {
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
         private static final AlignmentArray.Comparator AA_COMPARATOR = new AlignmentArray.Comparator();
+        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
+        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
+        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, TEXT_COMPARATOR);
 
         public YieldAndAlignmentComparator()
         {
@@ -244,32 +249,22 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                            byte [] b2, int s2, int l2)
         {
             try {
-                int cmp;
-                int len1 = WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
-                int len2 = WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
-                cmp = TEXT_COMPARATOR.compare(b1, s1, len1, b2, s2, len2);
+                int cmp = LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
                 if (cmp != 0) {
                     return cmp;
                 }
-                int start1 = s1 + len1;
-                int start2 = s2 + len2;
-                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                cmp = TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
                 if (cmp != 0) {
                     return cmp;
                 }
-                start1 += len1;
-                start2 += len2;
-                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                cmp = TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                if (cmp != 0)
+                cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                if (cmp != 0) {
                     return cmp;
-                start1 += len1;
-                start2 += len2;
-                len1 = AA_COMPARATOR.encodedLength(b1, start1);
-                len2 = AA_COMPARATOR.encodedLength(b2, start2);
+                }
+                int start1 = TARGET_COMPARATOR.fieldEndIndex(b1, s1);
+                int start2 = TARGET_COMPARATOR.fieldEndIndex(b2, s2);
+                int len1 = AA_COMPARATOR.encodedLength(b1, start1);
+                int len2 = AA_COMPARATOR.encodedLength(b2, start2);
                 cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
                 if (cmp != 0)
                     return cmp;
@@ -324,6 +319,9 @@ public class RuleWritable implements WritableComparable<RuleWritable>
     public static class YieldComparator extends WritableComparator
     {
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
+        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
+        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, TEXT_COMPARATOR);
 
         public YieldComparator()
         {
@@ -334,27 +332,15 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                            byte [] b2, int s2, int l2)
         {
             try {
-                int cmp;
-                int len1 = WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
-                int len2 = WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
-                cmp = TEXT_COMPARATOR.compare(b1, s1, len1, b2, s2, len2);
+                int cmp = LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
                 if (cmp != 0) {
                     return cmp;
                 }
-                int start1 = s1 + len1;
-                int start2 = s2 + len2;
-                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                cmp = TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
+                cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
                 if (cmp != 0) {
                     return cmp;
                 }
-                start1 += len1;
-                start2 += len2;
-                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                cmp = TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                return cmp;
+                return TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
             }
             catch (IOException e) {
                 throw new IllegalArgumentException(e);
@@ -365,8 +351,11 @@ public class RuleWritable implements WritableComparable<RuleWritable>
 
     public static class SourceMarginalComparator extends WritableComparator
     {
-        private static final TextPair.FstMarginalComparator TEXTPAIR_COMPARATOR = new TextPair.FstMarginalComparator();
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
+        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
+        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, MARGINAL_COMPARATOR);
+        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, TEXT_COMPARATOR);
 
         public SourceMarginalComparator()
         {
@@ -377,18 +366,15 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                            byte [] b2, int s2, int l2)
         {
             try {
-                int start1 = s1 + WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
-                int start2 = s2 + WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
-                int target1 = start1 + WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                int target2 = start2 + WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                int end1 = target1 + WritableUtils.decodeVIntSize(b1[target1]) + readVInt(b1, target1);
-                int end2 = target2 + WritableUtils.decodeVIntSize(b2[target2]) + readVInt(b2, target2);
-                int cmp = TEXTPAIR_COMPARATOR.compare(b1, start1, end1 - start1,
-                                                      b2, start2, end2 - start2);
-                if (cmp != 0)
+                int cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                if (cmp != 0) {
                     return cmp;
-                cmp = TEXT_COMPARATOR.compare(b1, s1, start1 - s1, b2, s2, start2 - s2);
-                return cmp;
+                }
+                cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                return LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
             }
             catch (IOException ex)
             {
@@ -407,8 +393,11 @@ public class RuleWritable implements WritableComparable<RuleWritable>
 
     public static class TargetMarginalComparator extends WritableComparator
     {
-        private static final TextPair.SndMarginalComparator TEXTPAIR_COMPARATOR = new TextPair.SndMarginalComparator();
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
+        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
+        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
+        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, MARGINAL_COMPARATOR);
 
         public TargetMarginalComparator()
         {
@@ -419,18 +408,19 @@ public class RuleWritable implements WritableComparable<RuleWritable>
                            byte [] b2, int s2, int l2)
         {
             try {
-                int start1 = s1 + WritableUtils.decodeVIntSize(b1[s1]) + readVInt(b1, s1);
-                int start2 = s2 + WritableUtils.decodeVIntSize(b2[s2]) + readVInt(b2, s2);
-                int target1 = start1 + WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                int target2 = start2 + WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                int end1 = target1 + WritableUtils.decodeVIntSize(b1[target1]) + readVInt(b1, target1);
-                int end2 = target2 + WritableUtils.decodeVIntSize(b2[target2]) + readVInt(b2, target2);
-                int cmp = TEXTPAIR_COMPARATOR.compare(b1, start1, end1 - start1,
-                                                      b2, start2, end2 - start2);
-                if (cmp != 0)
+                // first sort according to the source text
+                int cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                if (cmp != 0) {
                     return cmp;
-                cmp = TEXT_COMPARATOR.compare(b1, s1, start1 - s1, b2, s2, start2 - s2);
-                return cmp;
+                }
+                // if they're the same, sort according to target text, except
+                // with /MARGINAL/ first
+                cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                // if they're still the same, compare LHS
+                return LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
             }
             catch (IOException ex)
             {
