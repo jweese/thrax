@@ -18,11 +18,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SourcePhraseGivenLHSFeature extends MapReduceFeature
+public class TargetPhraseGivenLHSFeature extends MapReduceFeature
 {
     public String getName()
     {
-        return "f_given_lhs";
+        return "e_given_lhs";
     }
 
     public Class<? extends WritableComparator> sortComparatorClass()
@@ -53,7 +53,7 @@ public class SourcePhraseGivenLHSFeature extends MapReduceFeature
             RuleWritable marginal = new RuleWritable(key);
             lhsMarginal.source.set(TextMarginalComparator.MARGINAL);
             lhsMarginal.target.set(TextMarginalComparator.MARGINAL);
-            marginal.target.set(TextMarginalComparator.MARGINAL);
+            marginal.source.set(TextMarginalComparator.MARGINAL);
             context.write(key, value);
             context.write(marginal, value);
             context.write(lhsMarginal, value);
@@ -64,11 +64,11 @@ public class SourcePhraseGivenLHSFeature extends MapReduceFeature
     {
         private int marginal;
         private double prob;
-        private static final Text NAME = new Text("SourcePhraseGivenLHS");
+        private static final Text NAME = new Text("TargetPhraseGivenLHS");
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
-            if (key.source.equals(TextMarginalComparator.MARGINAL)) {
+            if (key.target.equals(TextMarginalComparator.MARGINAL)) {
                 // we only get here if it is the very first time we saw the LHS
                 marginal = 0;
                 for (IntWritable x : values)
@@ -77,7 +77,7 @@ public class SourcePhraseGivenLHSFeature extends MapReduceFeature
             }
             
             // control only gets here if we are using the same marginal
-            if (key.target.equals(TextMarginalComparator.MARGINAL)) {
+            if (key.source.equals(TextMarginalComparator.MARGINAL)) {
                 // we only get in here if it's a new source side
                 int count = 0;
                 for (IntWritable x : values) {
@@ -114,11 +114,11 @@ public class SourcePhraseGivenLHSFeature extends MapReduceFeature
                 if (cmp != 0) {
                     return cmp;
                 }
-                cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
                 if (cmp != 0) {
                     return cmp;
                 }
-                return TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                return SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
             }
             catch (IOException ex)
             {
