@@ -20,6 +20,8 @@ public class FeatureJobFactory
             return new SourcePhraseGivenTargetandLHSFeature();
         else if (name.equals("e_given_lhs"))
             return new TargetPhraseGivenLHSFeature();
+        else if (name.equals("e_given_f_and_lhs"))
+            return new TargetPhraseGivenSourceandLHSFeature();
 
         return null;
     }
