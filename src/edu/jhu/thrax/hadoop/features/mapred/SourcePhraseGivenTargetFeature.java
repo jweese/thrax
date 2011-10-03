@@ -11,7 +11,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
+import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -51,7 +51,7 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
         {
             RuleWritable marginal = new RuleWritable(key);
             marginal.lhs.set(MARGINAL_LHS);
-            marginal.source.set(WordLexicalProbabilityCalculator.MARGINAL);
+            marginal.source.set(TextMarginalComparator.MARGINAL);
             context.write(key, value);
             context.write(marginal, value);
         }
@@ -64,7 +64,7 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
-            if (key.source.equals(WordLexicalProbabilityCalculator.MARGINAL)) {
+            if (key.source.equals(TextMarginalComparator.MARGINAL)) {
                 marginal = 0;
                 for (IntWritable x : values)
                     marginal += x.get();

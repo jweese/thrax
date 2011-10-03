@@ -3,6 +3,7 @@ package edu.jhu.thrax.hadoop.features;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
+import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.MalformedInput;
 import edu.jhu.thrax.util.io.InputUtilities;
@@ -32,9 +33,6 @@ import java.util.ArrayList;
 public class WordLexicalProbabilityCalculator extends Configured implements Tool
 {
     public static final Text UNALIGNED = new Text("/UNALIGNED/");
-    public static final Text MARGINAL = new Text("/MARGINAL/");
-    public static final byte [] MARGINAL_BYTES = MARGINAL.getBytes();
-    public static final int MARGINAL_LENGTH = MARGINAL.getLength();
 
     public static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
@@ -94,7 +92,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 
             for (int i = 0; i < source.length; i++) {
                 Text src = new Text(source[i]);
-                TextPair marginal = new TextPair(src, MARGINAL);
+                TextPair marginal = new TextPair(src, TextMarginalComparator.MARGINAL);
                 if (alignment.sourceIsAligned(i)) {
                     for (int x : alignment.f2e[i]) {
                         Text tgt = new Text(target[x]);
@@ -182,13 +180,13 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                         TextPair tp = new TextPair(tgt, src);
                         counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
                     }
-                    TextPair m = new TextPair(tgt, MARGINAL);
+                    TextPair m = new TextPair(tgt, TextMarginalComparator.MARGINAL);
                     counts.put(m, counts.containsKey(m) ? counts.get(m) + alignment.e2f[i].length : alignment.e2f[i].length);
                 }
                 else {
                     TextPair u = new TextPair(tgt, UNALIGNED);
                     counts.put(u, counts.containsKey(u) ? counts.get(u) + 1 : 1);
-                    TextPair m = new TextPair(tgt, MARGINAL);
+                    TextPair m = new TextPair(tgt, TextMarginalComparator.MARGINAL);
                     counts.put(m, counts.containsKey(m) ? counts.get(m) + 1 : 1);
                 }
             }
@@ -207,7 +205,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         protected void reduce(TextPair key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
             if (!key.fst.equals(current)) {
-                if (!key.snd.equals(MARGINAL))
+                if (!key.snd.equals(TextMarginalComparator.MARGINAL))
                     return;
                 current.set(key.fst);
                 marginalCount = 0;
