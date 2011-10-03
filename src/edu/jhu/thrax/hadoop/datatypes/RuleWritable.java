@@ -348,84 +348,11 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         }
     }
 
-
-    public static class SourceMarginalComparator extends WritableComparator
-    {
-        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
-        private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
-        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
-        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, MARGINAL_COMPARATOR);
-        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, TEXT_COMPARATOR);
-
-        public SourceMarginalComparator()
-        {
-            super(RuleWritable.class);
-        }
-
-        public int compare(byte [] b1, int s1, int l1,
-                           byte [] b2, int s2, int l2)
-        {
-            try {
-                int cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                return LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-            }
-            catch (IOException ex)
-            {
-                throw new IllegalArgumentException(ex);
-            }
-        }
-    }
-
     public static class SourcePartitioner extends Partitioner<RuleWritable, IntWritable>
     {
         public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
         {
             return (key.source.hashCode() & Integer.MAX_VALUE) % numPartitions;
-        }
-    }
-
-    public static class TargetMarginalComparator extends WritableComparator
-    {
-        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
-        private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
-        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
-        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
-        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, MARGINAL_COMPARATOR);
-
-        public TargetMarginalComparator()
-        {
-            super(RuleWritable.class);
-        }
-
-        public int compare(byte [] b1, int s1, int l1,
-                           byte [] b2, int s2, int l2)
-        {
-            try {
-                // first sort according to the source text
-                int cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                // if they're the same, sort according to target text, except
-                // with /MARGINAL/ first
-                cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                // if they're still the same, compare LHS
-                return LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-            }
-            catch (IOException ex)
-            {
-                throw new IllegalArgumentException(ex);
-            }
         }
     }
 
