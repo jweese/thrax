@@ -64,7 +64,7 @@ public class SourcePhraseGivenLHSFeature extends MapReduceFeature
     {
         private int marginal;
         private double prob;
-        private static final Text NAME = new Text("SourcePhraseGivenLHS");
+        private static final Text NAME = new Text("p(f|LHS)");
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {

@@ -68,8 +68,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
 
         private static final double DEFAULT_PROB = 10e-7;
 
-        private static final Text SGT_LABEL = new Text("LexprobSourceGivenTarget");
-        private static final Text TGS_LABEL = new Text("LexprobTargetGivenSource");
+        private static final Text SGT_LABEL = new Text("Lex(f|e)");
+        private static final Text TGS_LABEL = new Text("Lex(e|f)");
 
         protected void setup(Context context) throws IOException, InterruptedException
         {

@@ -62,7 +62,7 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
     private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>
     {
         private int marginal;
-        private static final Text NAME = new Text("TargetPhraseGivenSource");
+        private static final Text NAME = new Text("p(e|f)");
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
