@@ -43,6 +43,11 @@ public class OutputJob extends ThraxJob
 
         job.setPartitionerClass(RuleWritable.NullYieldPartitioner.class);
 
+        // output is always running alone, so give it as many
+        // reduce tasks as possible
+        int numReducers = conf.getInt("thrax.reducers", 4);
+        job.setNumReduceTasks(numReducers);
+
         for (String feature : conf.get("thrax.features", "").split("\\s+")) {
             if (FeatureJobFactory.get(feature) instanceof MapReduceFeature) {
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
