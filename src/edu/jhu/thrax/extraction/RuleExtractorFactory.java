@@ -24,19 +24,21 @@ public class RuleExtractorFactory {
         String gt = conf.get("thrax.grammar", "NONE");
         boolean SOURCE_IS_PARSED = conf.getBoolean("thrax.source-is-parsed", false);
         boolean TARGET_IS_PARSED = conf.getBoolean("thrax.target-is-parsed", false);
-        if (gt.equals(HieroRuleExtractor.name)) {
-            return new HieroRuleExtractor(conf);
+        SpanLabeler labeler;
+        if (gt.equals("hiero")) {
+            labeler = new HieroLabeler();
         }
-        else if (gt.equals(SAMTExtractor.name)) {
+        else if (gt.equals("samt")) {
             if (!(SOURCE_IS_PARSED || TARGET_IS_PARSED))
                 throw new ConfigurationException("SAMT requires that either the source or target sentences be parsed");
-            return new SAMTExtractor(conf);
+            labeler = new SAMTLabeler(conf);
         }
-        // when you create new grammars, add them here.
-
         else {
             throw new ConfigurationException("unknown grammar type: " + gt);
         }
+        return new HierarchicalRuleExtractor(conf, labeler);
+        // when you create new grammars, add them here.
+
     }
 
 }
