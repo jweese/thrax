@@ -26,7 +26,7 @@ public class RuleExtractorFactory {
         boolean TARGET_IS_PARSED = conf.getBoolean("thrax.target-is-parsed", false);
         SpanLabeler labeler;
         if (gt.equals("hiero")) {
-            labeler = new HieroLabeler();
+            labeler = new HieroLabeler(conf);
         }
         else if (gt.equals("samt")) {
             if (!(SOURCE_IS_PARSED || TARGET_IS_PARSED))
