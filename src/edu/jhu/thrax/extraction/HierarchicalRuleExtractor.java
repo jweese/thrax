@@ -259,6 +259,8 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
                  !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
                  !r.alignment.targetIsAligned(r.rhs.targetStart)))
             return false;
+        if (!r.rhs.consistentWith(r.alignment))
+            return false;
         return (r.alignedWords >= LEXICAL_MINIMUM);
     }
 
