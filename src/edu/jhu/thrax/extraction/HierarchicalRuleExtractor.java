@@ -243,7 +243,9 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
             targetTerminals == 0)
             return false;
         if (r.rhs.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT ||
-            r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT) {
+            r.rhs.targetEnd - r.rhs.targetStart > INIT_LENGTH_LIMIT ||
+            r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT ||
+            r.rhs.sourceEnd - r.rhs.sourceStart > INIT_LENGTH_LIMIT) {
             if (ALLOW_FULL_SENTENCE_RULES &&
                 r.rhs.sourceStart == 0 &&
                 r.rhs.sourceEnd == r.source.length &&
