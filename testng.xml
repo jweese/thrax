@@ -10,12 +10,6 @@
 	</packages>
     </test>
 
-    <test name="Extractors">
-        <packages>
-            <package name="edu.jhu.thrax.extraction"/>
-        </packages>
-    </test>
-
     <test name="Input Utilities">
         <packages>
             <package name="edu.jhu.thrax.util.io"/>
