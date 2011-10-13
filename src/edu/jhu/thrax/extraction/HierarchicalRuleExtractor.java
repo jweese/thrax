@@ -371,7 +371,7 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
         return result;
     }
 
-    public static void main(String [] argv) throws IOException,MalformedInputException
+    public static void main(String [] argv) throws IOException,MalformedInputException,ConfigurationException
     {
         if (argv.length < 1) {
             System.err.println("usage: HierarchicalRuleExtractor <conf file>");
@@ -382,7 +382,7 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
         for (String opt : options.keySet())
             conf.set("thrax." + opt, options.get(opt));
         Scanner scanner = new Scanner(System.in);
-        HieroRuleExtractor extractor = new HieroRuleExtractor(conf);
+        RuleExtractor extractor = RuleExtractorFactory.create(conf);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             for (Rule r : extractor.extract(line))
