@@ -1,18 +1,28 @@
 package edu.jhu.thrax;
 
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
-import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.fs.Path;
 
-import java.util.Map;
-import java.util.Date;
-
-import edu.jhu.thrax.util.ConfFileParser;
-import edu.jhu.thrax.hadoop.jobs.*;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
+import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
+import edu.jhu.thrax.hadoop.jobs.JobState;
+import edu.jhu.thrax.hadoop.jobs.OutputJob;
+import edu.jhu.thrax.hadoop.jobs.ParaphraseAggregationJob;
+import edu.jhu.thrax.hadoop.jobs.ParaphrasePivotingJob;
+import edu.jhu.thrax.hadoop.jobs.Scheduler;
+import edu.jhu.thrax.hadoop.jobs.SchedulerException;
+import edu.jhu.thrax.hadoop.jobs.ThraxJob;
+import edu.jhu.thrax.util.ConfFileParser;
 
 public class Thrax extends Configured implements Tool
 {
@@ -38,21 +48,12 @@ public class Thrax extends Configured implements Tool
             if (!argv[1].endsWith(Path.SEPARATOR))
                 argv[1] += Path.SEPARATOR;
             conf.set("thrax.outputPath", argv[1] + "final");
-        } else
+        } else {
             conf.set("thrax.outputPath", workDir + "final");
-
-        scheduler = new Scheduler();
-        // schedule all the jobs
-        scheduler.schedule(ExtractionJob.class);
-        for (String feature : conf.get("thrax.features", "").split("\\s+")) {
-            MapReduceFeature f = FeatureJobFactory.get(feature);
-            if (f instanceof MapReduceFeature) {
-                scheduler.schedule(f.getClass());
-                OutputJob.addPrerequisite(f.getClass());
-            }
         }
-        scheduler.schedule(OutputJob.class);
 
+    	scheduleJobs();
+        
         do {
             for (Class<? extends ThraxJob> c : scheduler.getClassesByState(JobState.READY)) {
                 scheduler.setState(c, JobState.RUNNING);
@@ -69,6 +70,42 @@ public class Thrax extends Configured implements Tool
         return 0;
     }
 
+    private synchronized void scheduleJobs() throws SchedulerException {
+    	scheduler = new Scheduler();
+    	// schedule all the jobs
+        scheduler.schedule(ExtractionJob.class);
+    	
+        if ("translation".equals(conf.get("thrax.type"))) {
+	        for (String feature : conf.get("thrax.features", "").split("\\s+")) {
+	            MapReduceFeature f = FeatureJobFactory.get(feature);
+	            if (f != null) {
+	                scheduler.schedule(f.getClass());
+	                OutputJob.addPrerequisite(f.getClass());
+	            }
+	        }
+		} else {
+			// Process paraphrasing features and schedule required 
+			// translation grammar features.
+			Set<MapReduceFeature> translation_features = new HashSet<MapReduceFeature>();
+			for (String feature : conf.get("thrax.features", "").split("\\s+")) {
+				translation_features.addAll(FeatureJobFactory.getPrerequisiteFeatures(feature));
+	        }
+			for (MapReduceFeature f : translation_features) {
+				if (f != null) {
+	            	scheduler.schedule(f.getClass());
+	            	ParaphrasePivotingJob.addPrerequisite(f.getClass());
+	            }
+			}
+			scheduler.schedule(ParaphrasePivotingJob.class);
+			ParaphraseAggregationJob.addPrerequisite(ParaphrasePivotingJob.class);
+			
+			scheduler.schedule(ParaphrasePivotingJob.class);
+			
+			OutputJob.addPrerequisite(f.getClass());
+		}
+    	scheduler.schedule(OutputJob.class);
+    }
+    
     public static void main(String [] argv) throws Exception
     {
         ToolRunner.run(null, new Thrax(), argv);
@@ -115,6 +152,4 @@ public class Thrax extends Configured implements Tool
             return;
         }
     }
-
 }
-
