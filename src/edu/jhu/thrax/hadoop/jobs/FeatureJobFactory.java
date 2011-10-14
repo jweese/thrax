@@ -21,6 +21,15 @@ public class FeatureJobFactory
             return new RarityPenaltyFeature();
         else if (name.equals("lexprob"))
             return new LexicalProbabilityFeature();
+        else if (name.equals("f_given_lhs"))
+            return new SourcePhraseGivenLHSFeature();
+        else if (name.equals("f_given_e_and_lhs"))
+            return new SourcePhraseGivenTargetandLHSFeature();
+        else if (name.equals("e_given_lhs"))
+            return new TargetPhraseGivenLHSFeature();
+        else if (name.equals("e_given_f_and_lhs"))
+            return new TargetPhraseGivenSourceandLHSFeature();
+        
         return null;
     }
     

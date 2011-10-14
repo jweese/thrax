@@ -18,11 +18,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SourcePhraseGivenTargetFeature extends MapReduceFeature
+public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature
 {
     public String getName()
     {
-        return "e2fphrase";
+        return "e_given_f_and_lhs";
     }
 
     public Class<? extends WritableComparator> sortComparatorClass()
@@ -32,7 +32,7 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
 
     public Class<? extends Partitioner> partitionerClass()
     {
-        return RuleWritable.TargetPartitioner.class;
+        return SourceandLHSPartitioner.class;
     }
 
     public Class<? extends Mapper> mapperClass()
@@ -47,12 +47,10 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
 
     private static class Map extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>
     {
-        private static final String MARGINAL_LHS = "[MARGINAL]";
         protected void map(RuleWritable key, IntWritable value, Context context) throws IOException, InterruptedException
         {
             RuleWritable marginal = new RuleWritable(key);
-            marginal.lhs.set(MARGINAL_LHS);
-            marginal.source.set(TextMarginalComparator.MARGINAL);
+            marginal.target.set(TextMarginalComparator.MARGINAL);
             context.write(key, value);
             context.write(marginal, value);
         }
@@ -61,11 +59,13 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
     private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>
     {
         private int marginal;
-        private static final Text NAME = new Text("p(f|e)");
+        private static final Text NAME = new Text("p(e|f,LHS)");
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
-            if (key.source.equals(TextMarginalComparator.MARGINAL)) {
+            if (key.target.equals(TextMarginalComparator.MARGINAL)) {
+                // we only get here if it is the very first time we saw the LHS
+                // and source combination
                 marginal = 0;
                 for (IntWritable x : values)
                     marginal += x.get();
@@ -77,8 +77,9 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
             for (IntWritable x : values) {
                 count += x.get();
             }
+            double prob = -Math.log(count / (double) marginal);
             key.featureLabel.set(NAME);
-            key.featureScore.set(-Math.log(count / (double) marginal));
+            key.featureScore.set(prob);
             context.write(key, NullWritable.get());
         }
 
@@ -89,8 +90,8 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
         private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
         private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
-        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, MARGINAL_COMPARATOR);
-        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, TEXT_COMPARATOR);
+        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
+        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, MARGINAL_COMPARATOR);
 
         public Comparator()
         {
@@ -101,7 +102,7 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
                            byte [] b2, int s2, int l2)
         {
             try {
-                int cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                int cmp = LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
                 if (cmp != 0) {
                     return cmp;
                 }
@@ -109,7 +110,7 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
                 if (cmp != 0) {
                     return cmp;
                 }
-                return LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                return TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
             }
             catch (IOException ex)
             {
@@ -118,6 +119,16 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature
         }
     }
 
+    public static class SourceandLHSPartitioner extends Partitioner<RuleWritable, IntWritable>
+    {
+        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        {
+            int hash = 163;
+            hash = 37 * hash + key.lhs.hashCode();
+            hash = 37 * hash + key.source.hashCode();
+            return (hash & Integer.MAX_VALUE) % numPartitions;
+        }
+    }
 
     private static final DoubleWritable ZERO = new DoubleWritable(0.0);
     public void unaryGlueRuleScore(Text nt, java.util.Map<Text,Writable> map)

@@ -11,7 +11,8 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
+import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
+import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
 
     public Class<? extends WritableComparator> sortComparatorClass()
     {
-        return RuleWritable.TargetMarginalComparator.class;
+        return Comparator.class;
     }
 
     public Class<? extends Partitioner> partitionerClass()
@@ -51,7 +52,7 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
         protected void map(RuleWritable key, IntWritable value, Context context) throws IOException, InterruptedException
         {
             RuleWritable marginal = new RuleWritable(key);
-            marginal.target.set(WordLexicalProbabilityCalculator.MARGINAL);
+            marginal.target.set(TextMarginalComparator.MARGINAL);
             marginal.lhs.set(MARGINAL_LHS);
             context.write(key, value);
             context.write(marginal, value);
@@ -61,11 +62,11 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
     private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>
     {
         private int marginal;
-        private static final Text NAME = new Text("TargetPhraseGivenSource");
+        private static final Text NAME = new Text("p(e|f)");
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
         {
-            if (key.target.equals(WordLexicalProbabilityCalculator.MARGINAL)) {
+            if (key.target.equals(TextMarginalComparator.MARGINAL)) {
                 marginal = 0;
                 for (IntWritable x : values)
                     marginal += x.get();
@@ -83,6 +84,45 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature
         }
 
     }
+
+    public static class Comparator extends WritableComparator
+    {
+        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
+        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
+        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
+        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, MARGINAL_COMPARATOR);
+
+        public Comparator()
+        {
+            super(RuleWritable.class);
+        }
+
+        public int compare(byte [] b1, int s1, int l1,
+                           byte [] b2, int s2, int l2)
+        {
+            try {
+                // first sort according to the source text
+                int cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                // if they're the same, sort according to target text, except
+                // with /MARGINAL/ first
+                cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+                // if they're still the same, compare LHS
+                return LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
+            }
+            catch (IOException ex)
+            {
+                throw new IllegalArgumentException(ex);
+            }
+        }
+    }
+
 
     private static final DoubleWritable ZERO = new DoubleWritable(0.0);
     public void unaryGlueRuleScore(Text nt, java.util.Map<Text,Writable> map)

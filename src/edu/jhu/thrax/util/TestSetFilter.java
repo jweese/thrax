@@ -82,8 +82,11 @@ public class TestSetFilter
 	 */
 	public static void filterGrammarToFile(String fullGrammarFile,
 										   String sentence,
-										   String filteredGrammarFile) {
+										   String filteredGrammarFile,
+										   boolean fast) {
 		
+		TestSetFilter.fast = fast;
+
 		setSentence(sentence);
 
 		try {
@@ -110,7 +113,7 @@ public class TestSetFilter
 				}
 				rulesIn++;
 				String rule = scanner.nextLine();
-				if (inTestSet(rule)) {
+				if ( (fast && inTestSetFastVersion(getTestNGrams(testSentences),rule)) || (! fast && inTestSet(rule)) ) {
 					out.println(rule);
 					rulesOut++;
 				}
@@ -152,7 +155,7 @@ public class TestSetFilter
                 return true;
             }
         }
-        return hasAbstractSource(rule);
+        return hasAbstractSource(rule) > 1;
     }
 
     private static void addSentenceToWordHash(Map<String,Set<Integer>> sentencesByWord, String sentence, int index)
@@ -187,17 +190,26 @@ public class TestSetFilter
         return intersect(list);
     }
 
-    private static boolean hasAbstractSource(String rule)
+	/**
+	 * Determines whether a rule is an abstract rule.  An abstract
+	 * rule is one that has no terminals on its source side.
+	 *
+	 * If the rule is abstract, the rule's arity is returned.
+	 * Otherwise, 0 is returned.
+	 */
+    private static int hasAbstractSource(String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4)
-            return false;
+            return 0;
         String source = parts[1].trim();
+		int nonterminalCount = 0;
         for (String t : source.split("\\s+")) {
             if (!t.matches(NT_REGEX))
-                return false;
+                return 0;
+			nonterminalCount++;
         }
-        return true;
+        return nonterminalCount;
     }
 
     private static <T> Set<T> intersect(List<Set<T>> list)
@@ -282,17 +294,16 @@ public class TestSetFilter
 				verbose = true;
 				continue;
 			}
-                        else if (argv[i].equals("-p")) {
-                            parallel = true;
-                            continue;
-                        }
-                        else if (argv[i].equals("-f")) {
-                            fast = true;
-                            continue;
-                        }
+			else if (argv[i].equals("-p")) {
+				parallel = true;
+				continue;
+			}
+			else if (argv[i].equals("-f")) {
+				fast = true;
+				continue;
+			}
             getTestSentences(argv[i]);
         }
-        testNGrams = getTestNGrams(testSentences);
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;
@@ -314,7 +325,7 @@ public class TestSetFilter
             String rule = scanner.nextLine();
             boolean keep;
             if (fast)
-                keep = inTestSetFastVersion(testNGrams, rule);
+                keep = inTestSetFastVersion(getTestNGrams(testSentences), rule);
             else
                 keep = inTestSet(rule);
 

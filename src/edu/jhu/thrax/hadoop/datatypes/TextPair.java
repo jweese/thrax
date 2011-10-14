@@ -9,7 +9,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
+import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 
 public class TextPair implements WritableComparable<TextPair>
 {
@@ -110,6 +110,7 @@ public class TextPair implements WritableComparable<TextPair>
     public static class FstMarginalComparator extends WritableComparator
     {
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
 
         public FstMarginalComparator()
         {
@@ -133,17 +134,7 @@ public class TextPair implements WritableComparable<TextPair>
                 if (cmp != 0) {
                     return cmp;
                 }
-                cmp = TEXT_COMPARATOR.compare(b1, s1, length1, b2, s2, length2);
-                if (cmp == 0) {
-                    return 0;
-                }
-                if (compareBytes(b1, s1 + vis1, vi1, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
-                    return -1;
-                }
-                else if (compareBytes(b2, s2 + vis2, vi2, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
-                    return 1;
-                }
-                return cmp;
+                return MARGINAL_COMPARATOR.compare(b1, s1, length1, b2, s2, length2);
             }
             catch (IOException e) {
                 throw new IllegalArgumentException(e);
@@ -154,6 +145,7 @@ public class TextPair implements WritableComparable<TextPair>
     public static class SndMarginalComparator extends WritableComparator
     {
         private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
+        private static final TextMarginalComparator MARGINAL_COMPARATOR = new TextMarginalComparator();
 
         public SndMarginalComparator()
         {
@@ -170,20 +162,8 @@ public class TextPair implements WritableComparable<TextPair>
                 if (cmp != 0) {
                     return cmp;
                 }
-                cmp = TEXT_COMPARATOR.compare(b1, s1 + length1, l1 - length1,
+                return MARGINAL_COMPARATOR.compare(b1, s1 + length1, l1 - length1,
                                               b2, s2 + length2, l2 - length2);
-                if (cmp == 0) {
-                    return 0;
-                }
-                int vintsize1 = WritableUtils.decodeVIntSize(b1[s1 + length1]);
-                int vintsize2 = WritableUtils.decodeVIntSize(b2[s2 + length2]);
-                if (compareBytes(b1, s1 + length1 + vintsize1, l1 - length1 - vintsize1, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
-                    return -1;
-                }
-                else if (compareBytes(b2, s2 + length2 + vintsize2, l2 - length2 - vintsize2, WordLexicalProbabilityCalculator.MARGINAL_BYTES, 0, WordLexicalProbabilityCalculator.MARGINAL_LENGTH) == 0) {
-                    return 1;
-                }
-                return cmp;
             }
             catch (IOException ex) {
                 throw new IllegalArgumentException(ex);

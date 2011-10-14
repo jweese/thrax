@@ -33,6 +33,11 @@ public class ExtractionJob extends ThraxJob
         job.setOutputValueClass(IntWritable.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
+        // extraction is usually running alone, so give it as many
+        // reduce tasks as possible
+        int numReducers = conf.getInt("thrax.reducers", 4);
+        job.setNumReduceTasks(numReducers);
+
         FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));
         int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
         if (maxSplitSize != 0) {
