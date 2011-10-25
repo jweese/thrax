@@ -1,13 +1,6 @@
 package edu.jhu.thrax.hadoop.jobs;
 
-import java.util.HashSet;
-import java.util.Set;
 
-import edu.jhu.thrax.hadoop.features.mapred.LexicalProbabilityFeature;
-import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
-import edu.jhu.thrax.hadoop.features.mapred.RarityPenaltyFeature;
-import edu.jhu.thrax.hadoop.features.mapred.SourcePhraseGivenTargetFeature;
-import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenSourceFeature;
 
 public class FeatureJobFactory
 {

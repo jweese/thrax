@@ -1,13 +1,10 @@
 package edu.jhu.thrax.hadoop.output;
 
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.conf.Configuration;
 
 import java.io.IOException;

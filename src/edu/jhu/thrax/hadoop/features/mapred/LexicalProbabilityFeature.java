@@ -9,26 +9,16 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.conf.Configuration;
 
-import org.apache.hadoop.io.SequenceFile;
-
-import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.jobs.TargetWordGivenSourceWordProbabilityJob;
 import edu.jhu.thrax.hadoop.jobs.SourceWordGivenTargetWordProbabilityJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 import edu.jhu.thrax.lexprob.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.io.File;
 import java.io.IOException;
 
 public class LexicalProbabilityFeature extends MapReduceFeature

@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Collection;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 import java.io.IOException;

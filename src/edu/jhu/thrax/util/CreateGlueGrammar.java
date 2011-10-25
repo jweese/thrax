@@ -10,7 +10,6 @@ import java.util.TreeMap;
 
 import java.io.IOException;
 
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
 import edu.jhu.thrax.hadoop.features.SimpleFeature;
 import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;

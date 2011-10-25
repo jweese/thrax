@@ -6,11 +6,8 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.filecache.DistributedCache;
 
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.datatypes.Rule;
-import edu.jhu.thrax.datatypes.IntPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.extraction.RuleExtractor;
 import edu.jhu.thrax.extraction.RuleExtractorFactory;
@@ -18,8 +15,6 @@ import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.MalformedInput;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
 
 public class ExtractionMapper extends Mapper<LongWritable, Text,
                                              RuleWritable, IntWritable>
