@@ -76,7 +76,7 @@ public class OutputTool extends Configured implements Tool
 
     public static void main(String [] argv) throws Exception
     {
-        int exitCode = ToolRunner.run(null, new OutputTool(), argv);
-        return;
+        int exit_code = ToolRunner.run(null, new OutputTool(), argv);
+        System.exit(exit_code);
     }
 }

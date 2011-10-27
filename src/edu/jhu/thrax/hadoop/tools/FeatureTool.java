@@ -79,7 +79,7 @@ public class FeatureTool extends Configured implements Tool
 
     public static void main(String [] argv) throws Exception
     {
-        int exitCode = ToolRunner.run(null, new FeatureTool(), argv);
-        return;
+        int exit_code = ToolRunner.run(null, new FeatureTool(), argv);
+        System.exit(exit_code);
     }
 }

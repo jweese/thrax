@@ -75,7 +75,7 @@ public class TargetWordGivenSourceWordProbabilityTool extends Configured impleme
 
     public static void main(String [] argv) throws Exception
     {
-        int exitCode = ToolRunner.run(null, new TargetWordGivenSourceWordProbabilityTool(), argv);
-        return;
+        int exit_code = ToolRunner.run(null, new TargetWordGivenSourceWordProbabilityTool(), argv);
+        System.exit(exit_code);
     }
 }

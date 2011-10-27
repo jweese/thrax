@@ -97,7 +97,6 @@ public class TestSetFilter
 				System.err.println("Processing rules...");
 
 			PrintWriter out = new PrintWriter(new GZIPOutputStream(new FileOutputStream(filteredGrammarFile)));
-			byte newline[] = "\n".getBytes("UTF-8");
 
 			while (scanner.hasNextLine()) {
 				if (verbose) {
@@ -287,7 +286,6 @@ public class TestSetFilter
         }
         testSentences = new ArrayList<String>();
         sentencesByWord = new HashMap<String,Set<Integer>>();
-        Set<String> testNGrams;
         for (int i = 0; i < argv.length; i++) {
 			if (argv[i].equals("-v")) {
 				verbose = true;

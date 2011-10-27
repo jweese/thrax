@@ -19,7 +19,6 @@ public class CreateGlueGrammar
 {
     private static HashSet<String> nts;
 
-    private static String phrasePenalty;
     private static TreeMap<Text,Writable> unaryFeatures;
     private static TreeMap<Text,Writable> binaryFeatures;
 
