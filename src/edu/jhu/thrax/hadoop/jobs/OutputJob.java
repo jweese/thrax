@@ -40,10 +40,10 @@ public class OutputJob extends ThraxJob
         job.setOutputKeyClass(RuleWritable.class);
         job.setOutputValueClass(NullWritable.class);
 
-        job.setPartitionerClass(RuleWritable.NullYieldPartitioner.class);
+        job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
 
-        // output is always running alone, so give it as many
-        // reduce tasks as possible
+        // Output is always running alone, so give it as many
+        // reduce tasks as possible.
         int numReducers = conf.getInt("thrax.reducers", 4);
         job.setNumReduceTasks(numReducers);
 
@@ -61,6 +61,10 @@ public class OutputJob extends ThraxJob
         return job;
     }
 
+    public String getOutputSuffix() {
+    	return null;
+    }
+    
     public Set<Class<? extends ThraxJob>> getPrerequisites()
     {
         prereqs.add(ExtractionJob.class);

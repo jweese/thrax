@@ -2,6 +2,7 @@ package edu.jhu.thrax;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +14,10 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
+import edu.jhu.thrax.hadoop.jobs.FeatureCollectionJob;
 import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
 import edu.jhu.thrax.hadoop.jobs.JobState;
 import edu.jhu.thrax.hadoop.jobs.OutputJob;
@@ -71,40 +75,52 @@ public class Thrax extends Configured implements Tool
         return 0;
     }
 
+    // Schedule all the jobs required for grammar extraction. We 
+    // currently distinguish two grammar types: translation and 
+    // paraphrasing.
     private synchronized void scheduleJobs() throws SchedulerException {
     	scheduler = new Scheduler();
-    	// schedule all the jobs
-        scheduler.schedule(ExtractionJob.class);
     	
-        if ("translation".equals(conf.get("thrax.type"))) {
-	        for (String feature : conf.get("thrax.features", "").split("\\s+")) {
-	            MapReduceFeature f = FeatureJobFactory.get(feature);
-	            if (f != null) {
-	                scheduler.schedule(f.getClass());
-	                OutputJob.addPrerequisite(f.getClass());
-	            }
-	        }
-		} else {
-			// Process paraphrasing features and schedule required 
-			// translation grammar features.
-			Set<MapReduceFeature> translation_features = new HashSet<MapReduceFeature>();
-			for (String feature : conf.get("thrax.features", "").split("\\s+")) {
-				translation_features.addAll(FeatureJobFactory.getPrerequisiteFeatures(feature));
-	        }
-			for (MapReduceFeature f : translation_features) {
-				if (f != null) {
-	            	scheduler.schedule(f.getClass());
-	            	ParaphrasePivotingJob.addPrerequisite(f.getClass());
-	            }
-			}
-			scheduler.schedule(ParaphrasePivotingJob.class);
-			ParaphraseAggregationJob.addPrerequisite(ParaphrasePivotingJob.class);
-			
-			scheduler.schedule(ParaphrasePivotingJob.class);
-			
-			OutputJob.addPrerequisite(f.getClass());
-		}
-    	scheduler.schedule(OutputJob.class);
+    	// Schedule rule extraction job.
+    	scheduler.schedule(ExtractionJob.class);
+
+    	if ("translation".equals(conf.get("thrax.type", "translation"))) {
+      	// Extracting a translation grammar.
+    		for (String feature : conf.get("thrax.features", "").split("\\s+")) {
+    			MapReduceFeature f = FeatureJobFactory.get(feature);
+    			if (f != null) {
+    				scheduler.schedule(f.getClass());
+    				OutputJob.addPrerequisite(f.getClass());
+    			}
+    		}
+    		scheduler.schedule(OutputJob.class);
+    	} else if ("paraphrasing".equals(conf.get("thrax.type", "translation"))) {
+    		// Collect the translation grammar features required to compute 
+    		// the requested paraphrasing features.
+    		Set<String> prereq_features = new HashSet<String>();
+    		List<PivotedFeature> pivoted_features = 
+    				PivotedFeatureFactory.getAll(
+    						conf.get("thrax.features", ""));
+    		for (PivotedFeature pf : pivoted_features) {
+    			prereq_features.addAll(pf.getPrerequisites());
+    		}
+    		// Next, schedule translation features and register with feature 
+    		// collection job.
+    		for (String f_name : prereq_features) {
+    			MapReduceFeature f = FeatureJobFactory.get(f_name);
+    			if (f != null) {
+	    			scheduler.schedule(f.getClass());
+	    			FeatureCollectionJob.addPrerequisite(f.getClass());
+    			}
+    		}
+    		scheduler.schedule(FeatureCollectionJob.class);
+    		// Schedule pivoting and pivoted feature computation job.
+    		scheduler.schedule(ParaphrasePivotingJob.class);    		
+    		// Schedule aggregation and output job.
+    		scheduler.schedule(ParaphraseAggregationJob.class);
+    	} else {
+    		System.err.println("Unknown grammar type. No jobs scheduled.");
+    	}
     }
     
     public static void main(String [] argv) throws Exception
@@ -127,14 +143,12 @@ public class Thrax extends Configured implements Tool
 
     public class ThraxJobWorker implements Runnable
     {
-        private Configuration configuration;
         private Thrax thrax;
         private Class<? extends ThraxJob> theClass;
 
         public ThraxJobWorker(Thrax t, Class<? extends ThraxJob> c, Configuration conf)
         {
             thrax = t;
-            configuration = conf;
             theClass = c;
         }
 

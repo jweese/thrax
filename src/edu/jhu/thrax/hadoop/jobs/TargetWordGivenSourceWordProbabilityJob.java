@@ -46,5 +46,9 @@ public class TargetWordGivenSourceWordProbabilityJob extends ThraxJob
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "lexprobsf2e"));
         return job;
     }
+    
+    public String getOutputSuffix() {
+    	return "lexprobsf2e";
+    }
 }
 

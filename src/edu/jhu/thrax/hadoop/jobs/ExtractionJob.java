@@ -47,5 +47,9 @@ public class ExtractionJob extends ThraxJob
 
         return job;
     }
+    
+    public String getOutputSuffix() {
+    	return "rules";
+    }
 }
 

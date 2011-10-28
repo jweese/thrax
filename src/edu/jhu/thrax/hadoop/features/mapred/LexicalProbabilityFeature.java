@@ -38,7 +38,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         return RuleWritable.YieldAndAlignmentComparator.class;
     }
 
-    public Class<? extends Partitioner<RuleWritable, IntWritable>> partitionerClass()
+    public Class<? extends Partitioner<RuleWritable, Writable>> partitionerClass()
     {
         return RuleWritable.YieldPartitioner.class;
     }
@@ -119,6 +119,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         private double sourceGivenTarget(RuleWritable r)
         {
             double result = 0;
+            if (r.e2f.get() == null)
+            	return result;
             for (Text [] pairs : r.e2f.get()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
@@ -143,6 +145,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         private double targetGivenSource(RuleWritable r)
         {
             double result = 0;
+            if (r.f2e.get() == null)
+            	return result;
             for (Text [] pairs : r.f2e.get()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;

@@ -32,7 +32,7 @@ public class RarityPenaltyFeature extends MapReduceFeature
         return RuleWritable.YieldComparator.class;
     }
 
-    public Class<? extends Partitioner<RuleWritable, IntWritable>> partitionerClass()
+    public Class<? extends Partitioner<RuleWritable, Writable>> partitionerClass()
     {
         return RuleWritable.YieldPartitioner.class;
     }

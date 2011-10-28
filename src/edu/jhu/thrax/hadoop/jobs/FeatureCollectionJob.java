@@ -13,55 +13,71 @@ import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.hadoop.paraphrasing.AggregationReducer;
+import edu.jhu.thrax.hadoop.paraphrasing.FeatureCollectionReducer;
 
-public class ParaphraseAggregationJob extends ThraxJob {
+public class FeatureCollectionJob extends ThraxJob {
 
 	private static HashSet<Class<? extends ThraxJob>> prereqs = new HashSet<Class<? extends ThraxJob>>();
 
+	private static HashSet<String> prereq_names = new HashSet<String>();
+
 	public static void addPrerequisite(Class<? extends ThraxJob> c) {
 		prereqs.add(c);
+		
+		try {
+			ThraxJob prereq;
+			prereq = c.newInstance();
+			prereq_names.add(prereq.getOutputSuffix());
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
-	
+
 	public Set<Class<? extends ThraxJob>> getPrerequisites() {
 		prereqs.add(ExtractionJob.class);
-		prereqs.add(ParaphrasePivotingJob.class);
 		return prereqs;
 	}
 
 	public Job getJob(Configuration conf) throws IOException {
-		Job job = new Job(conf, "aggregate");
-
-		job.setJarByClass(AggregationReducer.class);
-
+		Job job = new Job(conf, "collect");
+		
+		String workDir = conf.get("thrax.work-dir");
+		
+		job.setJarByClass(FeatureCollectionReducer.class);
+		
 		job.setMapperClass(Mapper.class);
-		job.setReducerClass(AggregationReducer.class);
+		job.setReducerClass(FeatureCollectionReducer.class);
 
 		job.setInputFormatClass(SequenceFileInputFormat.class);
 		job.setMapOutputKeyClass(RuleWritable.class);
-		job.setMapOutputValueClass(MapWritable.class);
+		job.setMapOutputValueClass(NullWritable.class);
 		job.setOutputKeyClass(RuleWritable.class);
-		job.setOutputValueClass(NullWritable.class);
+		job.setOutputValueClass(MapWritable.class);
+		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
 		job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
 
-		FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir")
-				+ "pivoted"));
-
-		// Aggregation and output is always running alone, so give it as many
+		// Collapsing job is always running alone, so give it as many
 		// reduce tasks as possible.
 		int numReducers = conf.getInt("thrax.reducers", 4);
 		job.setNumReduceTasks(numReducers);
 
-		String outputPath = conf.get("thrax.outputPath", "");
+		for (String prereq_name : prereq_names)
+			FileInputFormat.addInputPath(job, new Path(workDir + prereq_name));
+
+		if (FileInputFormat.getInputPaths(job).length == 0)
+			FileInputFormat.addInputPath(job, new Path(workDir + "rules"));
+
+		String outputPath = workDir + "collected";
 		FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
 		return job;
 	}
 
 	public String getOutputSuffix() {
-		return null;
+		return "collected";
 	}
 }
