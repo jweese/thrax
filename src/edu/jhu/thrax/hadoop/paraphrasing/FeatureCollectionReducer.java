@@ -37,11 +37,6 @@ public class FeatureCollectionReducer extends
 				currentRule.featureLabel = EMPTY;
 				currentRule.featureScore = ZERO;
 				context.write(currentRule, features);
-				
-				System.err.println(FormatUtils.ruleToText(currentRule, new TreeMap<Text, Writable>(), false, true));
-				for (Writable k : features.keySet()) {
-					System.err.println("Collected: " + k + " => " + features.get(k));
-				}
 			}
 			currentRule.set(key);
 			features.clear();

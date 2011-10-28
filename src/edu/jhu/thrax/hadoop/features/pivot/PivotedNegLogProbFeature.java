@@ -21,12 +21,7 @@ public abstract class PivotedNegLogProbFeature implements PivotedFeature {
 
 	public void aggregate(MapWritable features) {
 		DoubleWritable val = (DoubleWritable) features.get(getFeatureLabel());
-		
-		System.err.print(getName() + " adding " + val + " to " + aggregated + " = ");
-			
 		aggregated = NegLogMath.logAdd(aggregated, val.get());
-			
-		System.err.println(aggregated);
 	}
 	
 	public DoubleWritable finalizeAggregation() {

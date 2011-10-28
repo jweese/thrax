@@ -34,11 +34,8 @@ public class PivotedFeatureFactory {
 		
 		for (String feature_name : feature_names) {
 			PivotedFeature feature = get(feature_name);
-			if (feature != null) {
+			if (feature != null)
 				features.add(feature);
-				System.err.println("Adding feature for " + feature_name 
-						+ " : " + feature.getClass().getName());
-			}
 		}
 		return features;
 	}

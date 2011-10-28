@@ -101,16 +101,9 @@ public class PivotingReducer extends
 		pivoted_rule.featureScore = ZERO;
 
 		// Compute the features.
-		for (PivotedFeature f : features) {
+		for (PivotedFeature f : features)
 			pivoted_features.put(f.getFeatureLabel(),
 					f.pivot(src.features, tgt.features));
-
-			System.err.println("Setting " + f.getFeatureLabel() + " = "
-					+ f.pivot(src.features, tgt.features));
-		}
-
-		System.err.println(FormatUtils.ruleToText(pivoted_rule,
-				new TreeMap<Text, Writable>(), false, true));
 
 		context.write(pivoted_rule, pivoted_features);
 	}
