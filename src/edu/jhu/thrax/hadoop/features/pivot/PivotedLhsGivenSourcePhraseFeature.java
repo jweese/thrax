@@ -7,30 +7,26 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 
-public class PivotedTargetPhraseGivenSourceFeature extends
+public class PivotedLhsGivenSourcePhraseFeature extends
 		PivotedNegLogProbFeature {
 
-	private static final Text LABEL = new Text("p(e|f)");
-
+	private static final Text LABEL = new Text("p(LHS|f)");
+	
 	public String getName() {
-		return "e_given_f";
+		return "lhs_given_f";
 	}
-
+	
 	public Text getFeatureLabel() {
 		return LABEL;
 	}
 
 	public Set<String> getPrerequisites() {
 		Set<String> prereqs = new HashSet<String>();
-		prereqs.add("e2fphrase");
-		prereqs.add("f2ephrase");
+		prereqs.add("lhs_given_e");
 		return prereqs;
 	}
 
 	public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
-		double tgt_f = ((DoubleWritable) tgt.get(new Text("p(e|f)"))).get();
-		double f_src = ((DoubleWritable) src.get(new Text("p(f|e)"))).get();
-
-		return new DoubleWritable(tgt_f + f_src);
+		return new DoubleWritable(((DoubleWritable) src.get(new Text("p(LHS|e)"))).get());
 	}
 }

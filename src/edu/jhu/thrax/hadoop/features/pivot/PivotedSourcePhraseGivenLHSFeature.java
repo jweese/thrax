@@ -7,7 +7,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 
-public class PivotedSourcePhraseGivenLHSFeature extends
+public class PivotedSourcePhraseGivenLhsFeature extends
 		PivotedNegLogProbFeature {
 
 	private static final Text LABEL = new Text("p(f|LHS)");
