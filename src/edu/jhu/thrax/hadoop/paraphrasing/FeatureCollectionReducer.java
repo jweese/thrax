@@ -1,17 +1,14 @@
 package edu.jhu.thrax.hadoop.paraphrasing;
 
 import java.io.IOException;
-import java.util.TreeMap;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.util.FormatUtils;
 
 public class FeatureCollectionReducer extends
 		Reducer<RuleWritable, NullWritable, RuleWritable, MapWritable> {
