@@ -26,7 +26,7 @@
 
     <target name="compile" depends="init,init-hadoop,init-amazon">
         <javac srcdir="${src}" destdir="${build}"
-            classpath="${env.HADOOP}/hadoop-0.20.2-core.jar:${env.AWS_SDK}/lib/aws-java-sdk-1.1.3.jar"
+            classpath="${env.HADOOP}/hadoop-core-${env.HADOOP_VERSION}.jar:${env.AWS_SDK}/aws-java-sdk-1.1.3.jar"
             debug="on" includeantruntime="false">
             <compilerarg value="-Xlint"/>
         </javac>
