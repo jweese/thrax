@@ -17,17 +17,17 @@ public class PivotedFeatureFactory {
 		else if (name.equals("lexprob_tgs"))
 			return new PivotedLexicalTargetGivenSourceFeature();
 		else if (name.equals("f_given_lhs"))
-			return new PivotedSourcePhraseGivenLhsFeature();
+			return new PivotedSourcePhraseGivenLHSFeature();
 		else if (name.equals("lhs_given_f"))
 			return new PivotedLhsGivenSourcePhraseFeature();
 		else if (name.equals("f_given_e_and_lhs"))
-			return new PivotedSourcePhraseGivenTargetAndLhsFeature();
+			return new PivotedSourcePhraseGivenTargetAndLHSFeature();
 		else if (name.equals("e_given_lhs"))
-			return new PivotedTargetPhraseGivenLhsFeature();
+			return new PivotedTargetPhraseGivenLHSFeature();
 		else if (name.equals("lhs_given_e"))
 			return new PivotedLhsGivenTargetPhraseFeature();
 		else if (name.equals("e_given_f_and_lhs"))
-			return new PivotedTargetPhraseGivenSourceAndLhsFeature();
+			return new PivotedTargetPhraseGivenSourceAndLHSFeature();
 
 		return null;
 	}
