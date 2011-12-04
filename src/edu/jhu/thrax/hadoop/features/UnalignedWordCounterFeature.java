@@ -18,15 +18,18 @@ public class UnalignedWordCounterFeature implements SimpleFeature
     {
         int srcCount = 0;
         int tgtCount = 0;
-        for (Text [] ts : r.f2e.get()) {
-            if (ts[1].equals(WordLexicalProbabilityCalculator.UNALIGNED))
-                srcCount++;
+        if (r.f2e != null) {
+	        for (Text [] ts : r.f2e.get()) {
+	            if (ts[1].equals(WordLexicalProbabilityCalculator.UNALIGNED))
+	                srcCount++;
+	        }
         }
-        for (Text [] ts : r.e2f.get()) {
-            if (ts[1].equals(WordLexicalProbabilityCalculator.UNALIGNED))
-                tgtCount++;
+        if (r.e2f != null) {
+	        for (Text [] ts : r.e2f.get()) {
+	            if (ts[1].equals(WordLexicalProbabilityCalculator.UNALIGNED))
+	                tgtCount++;
+	        }  
         }
-
         map.put(SRC_LABEL, new IntWritable(srcCount));
         map.put(TGT_LABEL, new IntWritable(tgtCount));
         return;
