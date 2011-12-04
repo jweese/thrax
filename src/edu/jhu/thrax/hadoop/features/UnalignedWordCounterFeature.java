@@ -18,13 +18,13 @@ public class UnalignedWordCounterFeature implements SimpleFeature
     {
         int srcCount = 0;
         int tgtCount = 0;
-        if (r.f2e != null) {
+        if (!r.f2e.isEmpty()) {
 	        for (Text [] ts : r.f2e.get()) {
 	            if (ts[1].equals(WordLexicalProbabilityCalculator.UNALIGNED))
 	                srcCount++;
 	        }
         }
-        if (r.e2f != null) {
+        if (!r.e2f.isEmpty()) {
 	        for (Text [] ts : r.e2f.get()) {
 	            if (ts[1].equals(WordLexicalProbabilityCalculator.UNALIGNED))
 	                tgtCount++;

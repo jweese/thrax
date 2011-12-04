@@ -28,6 +28,10 @@ public class AlignmentArray implements WritableComparable<AlignmentArray> {
 	public Text[][] get() {
 		return array;
 	}
+	
+	public boolean isEmpty() {
+		return (array == null || array.length == 0); 
+	}
 
 	public void readFields(DataInput in) throws IOException {
 		int length = in.readInt();
