@@ -6,7 +6,7 @@ public class NegLogMath {
 	private static final int LOG_ADD_TABLE_SIZE = 640000;
 	// Smallest value for nlog_a - nlog_b.
 	private static final double LOG_ADD_MIN = -64;
-	private static final double AS_GOOD_AS_ZERO = 1e-15; 
+	private static final double AS_GOOD_AS_ZERO = 1e-10; 
 	private static final double logAddInc = -LOG_ADD_MIN / LOG_ADD_TABLE_SIZE;
 	private static final double invLogAddInc = LOG_ADD_TABLE_SIZE / -LOG_ADD_MIN;
 	private static final double[] logAddTable = new double[LOG_ADD_TABLE_SIZE + 1];
@@ -24,7 +24,7 @@ public class NegLogMath {
 			nlog_b = temp;
 		}
 		double neg_diff = (nlog_a - nlog_b) - LOG_ADD_MIN;
-		if (Math.abs(neg_diff) < AS_GOOD_AS_ZERO) {
+		if (neg_diff < AS_GOOD_AS_ZERO) {
 			return nlog_a;
 		}
 		return nlog_a + logAddTable[(int) (neg_diff * invLogAddInc)];
