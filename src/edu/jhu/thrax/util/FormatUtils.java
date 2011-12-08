@@ -52,15 +52,16 @@ public class FormatUtils {
 		sb.append(r.target);
 		sb.append(DELIM);
 		for (Text t : fs.keySet()) {
-			if (sparse) {
-				DoubleWritable score = (DoubleWritable) fs.get(t);
-				if (score.get() == 0)
+			double score = ((DoubleWritable) fs.get(t)).get();
+			if (score == 0.0) {
+				if (sparse)
 					continue;
+				score = 0;
 			}
 			if (label)
-				sb.append(String.format("%s=%s ", t, fs.get(t)));
+				sb.append(String.format("%s=%s ", t, score));
 			else
-				sb.append(String.format("%s ", fs.get(t)));
+				sb.append(String.format("%s ", score));
 		}
 		return new Text(sb.substring(0, sb.length() - 1));
 	}

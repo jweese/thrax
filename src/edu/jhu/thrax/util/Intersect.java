@@ -50,6 +50,8 @@ public class Intersect
                 rules.get(r).clear();
             }
         }
+        firstGrammar.close();
+        secondGrammar.close();
         return;
     }
 

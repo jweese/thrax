@@ -2,7 +2,10 @@ package edu.jhu.thrax.hadoop.paraphrasing;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
@@ -18,6 +21,9 @@ import edu.jhu.thrax.util.FormatUtils;
 public class PivotingReducer extends
 		Reducer<RuleWritable, MapWritable, RuleWritable, MapWritable> {
 
+	private static final Logger logger =
+			Logger.getLogger(PivotingReducer.class.getName());
+	
 	private static final Text EMPTY = new Text("");
 	private static final DoubleWritable ZERO = new DoubleWritable(0.0);
 
@@ -28,8 +34,9 @@ public class PivotingReducer extends
 	private String lhs;
 
 	private List<ParaphrasePattern> targets;
-
 	private List<PivotedFeature> features;
+	
+	private Map<Text, PruningRule> pruningRules;
 
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
@@ -43,6 +50,7 @@ public class PivotingReducer extends
 
 		Configuration conf = context.getConfiguration();
 		features = PivotedFeatureFactory.getAll(conf.get("thrax.features", ""));
+		pruningRules = parsePruningRules(conf.get("thrax.pruning", ""));
 	}
 
 	protected void reduce(RuleWritable key, Iterable<MapWritable> values,
@@ -102,10 +110,41 @@ public class PivotingReducer extends
 		for (PivotedFeature f : features)
 			pivoted_features.put(f.getFeatureLabel(),
 					f.pivot(src.features, tgt.features));
-
-		context.write(pivoted_rule, pivoted_features);
+		
+		if (!prune(pivoted_features))
+			context.write(pivoted_rule, pivoted_features);
 	}
 
+	protected Map<Text, PruningRule> parsePruningRules(String conf_string) {
+		Map<Text, PruningRule> rules = new HashMap<Text, PruningRule>();
+		String[] rule_strings = conf_string.split("\\s*,\\s*");
+		for (String rule_string : rule_strings) {
+			String[] f;
+			boolean smaller;
+			if (rule_string.contains("<")) {
+				f = rule_string.split("<");
+				smaller = true;
+			} else if (rule_string.contains(">")) {
+				f = rule_string.split(">");
+				smaller = false;
+			} else {
+				continue;
+			}
+			Text label = PivotedFeatureFactory.get(f[0]).getFeatureLabel();
+			rules.put(label, new PruningRule(smaller, Double.parseDouble(f[1])));
+		}
+		return rules;
+	}
+	
+	protected boolean prune(MapWritable features) {
+		for (Map.Entry<Text, PruningRule> e : pruningRules.entrySet()) {
+			if (features.containsKey(e.getKey()) 
+					&& e.getValue().applies((DoubleWritable) features.get(e.getKey())))
+				return true;
+		}
+		return false;
+	}
+	
 	protected ArrayList<String> extractNonterminals(String source) {
 		ArrayList<String> nts = new ArrayList<String>();
 		String[] tokens = source.split("[\\s]+");
@@ -183,6 +222,20 @@ public class PivotingReducer extends
 					return reordered;
 			}
 			return monotone;
+		}
+	}
+
+	class PruningRule {
+		private boolean smaller;
+		private double threshold;
+		
+		PruningRule(boolean smaller, double threshold) {
+			this.smaller = smaller;
+			this.threshold = threshold;
+		}
+		
+		protected boolean applies(DoubleWritable value) {
+			return (smaller ? value.get() < threshold : value.get() > threshold);
 		}
 	}
 }
