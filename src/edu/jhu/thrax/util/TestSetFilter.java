@@ -261,7 +261,7 @@ public class TestSetFilter {
 		String source = parts[1];
 		for (String chunk : source.split(NT_REGEX)) {
 			chunk = chunk.trim();
-			if (!ngrams.contains(chunk))
+			if (!chunk.isEmpty() && !ngrams.contains(chunk))
 				return false;
 		}
 		return true;
