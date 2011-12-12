@@ -50,8 +50,6 @@ public class ParaphraseAggregationJob extends ThraxJob {
 		FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir")
 				+ "pivoted"));
 
-		// Aggregation and output is always running alone, so give it as many
-		// reduce tasks as possible.
 		int numReducers = conf.getInt("thrax.reducers", 4);
 		job.setNumReduceTasks(numReducers);
 

@@ -60,7 +60,7 @@ public class FeatureCollectionJob extends ThraxJob {
 
 		job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
 
-		// Collapsing job is always running alone, so give it as many
+		// Collecting job is always running alone, so give it as many
 		// reduce tasks as possible.
 		int numReducers = conf.getInt("thrax.reducers", 4);
 		job.setNumReduceTasks(numReducers);
