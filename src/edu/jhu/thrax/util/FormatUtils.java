@@ -3,6 +3,7 @@ package edu.jhu.thrax.util;
 import java.util.Map;
 
 import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -52,7 +53,15 @@ public class FormatUtils {
 		sb.append(r.target);
 		sb.append(DELIM);
 		for (Text t : fs.keySet()) {
-			double score = ((DoubleWritable) fs.get(t)).get();
+			double score;
+			if (fs.get(t) instanceof DoubleWritable) {
+				score = ((DoubleWritable) fs.get(t)).get();
+			} else if (fs.get(t) instanceof IntWritable) {
+				score = ((IntWritable) fs.get(t)).get();
+			} else {
+				throw new RuntimeException("Expecting either double or integer " +
+						"feature values.");
+			}
 			if (score == 0.0) {
 				if (sparse)
 					continue;
