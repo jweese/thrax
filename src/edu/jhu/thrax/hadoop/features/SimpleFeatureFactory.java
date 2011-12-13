@@ -18,6 +18,8 @@ public class SimpleFeatureFactory {
 			return new MonotonicFeature();
 		else if (name.equals("phrase-penalty"))
 			return new PhrasePenaltyFeature();
+		else if (name.equals("source-word-count"))
+			return new SourceWordCounterFeature();
 		else if (name.equals("target-word-count"))
 			return new TargetWordCounterFeature();
 		else if (name.equals("unaligned-count"))
@@ -26,6 +28,12 @@ public class SimpleFeatureFactory {
 			return new ConsumeSourceTerminalsFeature();
 		else if (name.equals("target-terminals-without-source"))
 			return new ProduceTargetTerminalsFeature();
+		else if (name.equals("identity"))
+			return new IdentityFeature();
+		else if (name.equals("word-count-difference"))
+			return new WordCountDifferenceFeature();
+		else if (name.equals("word-length-difference"))
+			return new WordLengthDifferenceFeature();
 		else if (name.equals("glue-rule"))
 			return new GlueRuleFeature();
 
