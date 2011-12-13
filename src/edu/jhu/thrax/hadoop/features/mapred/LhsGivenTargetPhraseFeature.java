@@ -27,7 +27,7 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
 	}
 
 	public Class<? extends Partitioner<RuleWritable, Writable>> partitionerClass() {
-		return RuleWritable.LHSPartitioner.class;
+		return RuleWritable.TargetPartitioner.class;
 	}
 
 	public Class<? extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>> mapperClass() {
@@ -47,7 +47,7 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
 			target_marginal.source.set(TextMarginalComparator.MARGINAL);
 			target_marginal.lhs.set(TextMarginalComparator.MARGINAL);
 			lhs_target_marginal.source.set(TextMarginalComparator.MARGINAL);
-			
+
 			context.write(key, value);
 			context.write(lhs_target_marginal, value);
 			context.write(target_marginal, value);

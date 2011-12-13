@@ -27,7 +27,7 @@ public class LhsGivenSourcePhraseFeature extends MapReduceFeature {
 	}
 
 	public Class<? extends Partitioner<RuleWritable, Writable>> partitionerClass() {
-		return RuleWritable.LHSPartitioner.class;
+		return RuleWritable.SourcePartitioner.class;
 	}
 
 	public Class<? extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable>> mapperClass() {
