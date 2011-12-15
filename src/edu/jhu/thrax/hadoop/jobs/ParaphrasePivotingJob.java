@@ -59,6 +59,7 @@ public class ParaphrasePivotingJob extends ThraxJob {
 		
 		FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir")
 				+ "pivoted"));
+		FileOutputFormat.setCompressOutput(job, true);
 
 		return job;
 	}

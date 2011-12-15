@@ -73,7 +73,8 @@ public class FeatureCollectionJob extends ThraxJob {
 
 		String outputPath = workDir + "collected";
 		FileOutputFormat.setOutputPath(job, new Path(outputPath));
-
+		FileOutputFormat.setCompressOutput(job, true);
+		
 		return job;
 	}
 
