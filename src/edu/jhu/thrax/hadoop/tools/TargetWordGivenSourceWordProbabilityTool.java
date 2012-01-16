@@ -8,7 +8,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
-import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
@@ -16,9 +15,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.DoubleWritable;
 
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.ConfFileParser;
-import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
@@ -78,7 +75,7 @@ public class TargetWordGivenSourceWordProbabilityTool extends Configured impleme
 
     public static void main(String [] argv) throws Exception
     {
-        int exitCode = ToolRunner.run(null, new TargetWordGivenSourceWordProbabilityTool(), argv);
-        return;
+        int exit_code = ToolRunner.run(null, new TargetWordGivenSourceWordProbabilityTool(), argv);
+        System.exit(exit_code);
     }
 }

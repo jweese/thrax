@@ -19,5 +19,7 @@ public abstract class ThraxJob
     {
         return new HashSet<Class<? extends ThraxJob>>();
     }
+    
+    public abstract String getOutputSuffix();
 }
 

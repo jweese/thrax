@@ -9,17 +9,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.conf.Configuration;
 
-import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Scanner;
-import java.io.File;
 import java.io.IOException;
 
 public class RarityPenaltyFeature extends MapReduceFeature
@@ -39,7 +32,7 @@ public class RarityPenaltyFeature extends MapReduceFeature
         return RuleWritable.YieldComparator.class;
     }
 
-    public Class<? extends Partitioner<RuleWritable, IntWritable>> partitionerClass()
+    public Class<? extends Partitioner<RuleWritable, Writable>> partitionerClass()
     {
         return RuleWritable.YieldPartitioner.class;
     }

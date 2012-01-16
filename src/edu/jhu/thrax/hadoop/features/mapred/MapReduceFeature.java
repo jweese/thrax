@@ -31,6 +31,10 @@ import java.util.Map;
 public abstract class MapReduceFeature extends ThraxJob
 {
     public abstract String getName();
+    
+    public String getOutputSuffix() {
+    	return getName();
+    }
 
     public Class<? extends Reducer> combinerClass()
     {

@@ -15,8 +15,6 @@ import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TargetPhraseGivenLHSFeature extends MapReduceFeature
 {

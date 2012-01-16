@@ -9,26 +9,16 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.FileStatus;
-import org.apache.hadoop.filecache.DistributedCache;
 import org.apache.hadoop.conf.Configuration;
 
-import org.apache.hadoop.io.SequenceFile;
-
-import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.jobs.TargetWordGivenSourceWordProbabilityJob;
 import edu.jhu.thrax.hadoop.jobs.SourceWordGivenTargetWordProbabilityJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 import edu.jhu.thrax.lexprob.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.io.File;
 import java.io.IOException;
 
 public class LexicalProbabilityFeature extends MapReduceFeature
@@ -48,7 +38,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         return RuleWritable.YieldAndAlignmentComparator.class;
     }
 
-    public Class<? extends Partitioner<RuleWritable, IntWritable>> partitionerClass()
+    public Class<? extends Partitioner<RuleWritable, Writable>> partitionerClass()
     {
         return RuleWritable.YieldPartitioner.class;
     }
@@ -129,6 +119,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         private double sourceGivenTarget(RuleWritable r)
         {
             double result = 0;
+            if (r.e2f.get() == null)
+            	return result;
             for (Text [] pairs : r.e2f.get()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;
@@ -153,6 +145,8 @@ public class LexicalProbabilityFeature extends MapReduceFeature
         private double targetGivenSource(RuleWritable r)
         {
             double result = 0;
+            if (r.f2e.get() == null)
+            	return result;
             for (Text [] pairs : r.f2e.get()) {
                 double len = Math.log(pairs.length - 1);
                 result -= len;

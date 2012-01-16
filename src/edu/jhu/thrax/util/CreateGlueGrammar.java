@@ -10,7 +10,6 @@ import java.util.TreeMap;
 
 import java.io.IOException;
 
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
 import edu.jhu.thrax.hadoop.features.SimpleFeature;
 import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
@@ -20,7 +19,6 @@ public class CreateGlueGrammar
 {
     private static HashSet<String> nts;
 
-    private static String phrasePenalty;
     private static TreeMap<Text,Writable> unaryFeatures;
     private static TreeMap<Text,Writable> binaryFeatures;
 
