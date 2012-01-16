@@ -57,10 +57,12 @@ public class Thrax extends Configured implements Tool
         conf.set("thrax.work-dir", workDir);
 		conf.set("thrax.outputPath", workDir + "final");
 
+		if (options.containsKey("timeout")) {
 			conf.setInt("mapreduce.task.timeout", 
 					Integer.parseInt(options.get("timeout")));
 			conf.setInt("mapred.task.timeout",
 					Integer.parseInt(options.get("timeout")));
+		}
 		
     	scheduleJobs();
         
