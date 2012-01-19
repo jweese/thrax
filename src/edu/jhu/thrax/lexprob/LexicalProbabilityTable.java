@@ -11,21 +11,23 @@ import org.apache.hadoop.io.Text;
 public interface LexicalProbabilityTable
 {
     /**
-     * Determine whether a word pair is present in the table.
+     * Return the lexical probability of a source language word given a
+	 * target language word.
      *
-     * @param car word A
-     * @param cdr word B
-     * @return true if p(B|A) is in the table, false otherwise
+     * @param source the source language word
+     * @param target the target language word
+     * @return the probability -logp(source|target) if present, -1 otherwise
      */
-    public boolean contains(Text car, Text cdr);
+    public double logpSourceGivenTarget(Text source, Text target);
 
-    /**
-     * Return the lexical probability of a word pair.
-     *
-     * @param car word A
-     * @param cdr word B
-     * @return the probability -logp(B|A) if present, -1 otherwise
-     */
-    public double get(Text car, Text cdr);
+	/**
+	 * Return the lexical probability of a target language word given a
+	 * source language word.
+	 *
+	 * @param source the source language word
+	 * @param target the target language word
+	 * @return the probability -logp(target|source) is present, -1 otherwise
+	 */
+	public double logpTargetGivenSource(Text source, Text target);
 }
 

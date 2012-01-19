@@ -50,8 +50,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
 
     private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, NullWritable>
     {
-        private LexicalProbabilityTable f2e;
-        private LexicalProbabilityTable e2f;
+        private LexicalProbabilityTable table;
 
         private RuleWritable current;
         private double maxf2e;
@@ -69,8 +68,9 @@ public class LexicalProbabilityFeature extends MapReduceFeature
             String e2fpath = workDir + "lexprobse2f/part-*";
             String f2epath = workDir + "lexprobsf2e/part-*";
 
-            e2f = new HashMapLexprobTable(conf, e2fpath);
-            f2e = new HashMapLexprobTable(conf, f2epath);
+            HashMapLexprobTable e2f = new HashMapLexprobTable(conf, e2fpath);
+            HashMapLexprobTable f2e = new HashMapLexprobTable(conf, f2epath);
+			table = new DoubleHashMapTable(e2f, f2e);
         }
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
@@ -127,9 +127,9 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 double prob = 0;
                 Text tgt = pairs[0];
                 for (int j = 1; j < pairs.length; j++) {
-                    double currP = e2f.get(tgt, pairs[j]);
+                    double currP = table.logpSourceGivenTarget(pairs[j], tgt);
                     if (currP < 0) {
-                        System.err.printf("WARNING: could not read word-level lexprob for pair ``(%s,%s)''\n", tgt, pairs[j]);
+                        System.err.printf("WARNING: could not read word-level lexprob logp(%s|%s)\n", pairs[j], tgt);
                         System.err.println(String.format("Assuming prob is %f", DEFAULT_PROB));
                         prob += DEFAULT_PROB;
                     }
@@ -153,9 +153,9 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 double prob = 0;
                 Text src = pairs[0];
                 for (int j = 1; j < pairs.length; j++) {
-                    double currP = f2e.get(src, pairs[j]);
+                    double currP = table.logpTargetGivenSource(src, pairs[j]);
                     if (currP < 0) {
-                        System.err.printf("WARNING: could not read word-level lexprob for pair ``(%s,%s)''\n", src, pairs[j]);
+                        System.err.printf("WARNING: could not read word-level lexprob logp(%s|%s)\n", pairs[j], src);
                         System.err.println(String.format("Assuming prob is %f", DEFAULT_PROB));
                         prob += DEFAULT_PROB;
                     }

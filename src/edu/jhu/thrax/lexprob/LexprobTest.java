@@ -15,7 +15,7 @@ public class LexprobTest extends Configured implements Tool
         }
 
         Configuration conf = getConf();
-        LexicalProbabilityTable t = new HashMapLexprobTable(conf, argv[0]);
+        HashMapLexprobTable t = new HashMapLexprobTable(conf, argv[0]);
         return 0;
     }
 

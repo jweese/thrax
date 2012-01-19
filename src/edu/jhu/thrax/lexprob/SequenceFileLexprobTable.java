@@ -22,7 +22,7 @@ import edu.jhu.thrax.hadoop.datatypes.TextPair;
  * The constructor calls initialize with an Iterable that will range over all
  * the (TextPair,Double) pairs in a file glob.
  */
-public abstract class SequenceFileLexprobTable implements LexicalProbabilityTable
+public abstract class SequenceFileLexprobTable 
 {
     public SequenceFileLexprobTable(Configuration conf, String fileGlob) throws IOException
     {
