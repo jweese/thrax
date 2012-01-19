@@ -2,6 +2,7 @@ package edu.jhu.thrax.lexprob;
 
 import java.util.Iterator;
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile;
@@ -26,7 +27,9 @@ public abstract class SequenceFileLexprobTable
 {
     public SequenceFileLexprobTable(Configuration conf, String fileGlob) throws IOException
     {
-        FileStatus [] files = FileSystem.get(conf).globStatus(new Path(fileGlob));
+		URI uri = URI.create(fileGlob);
+		FileSystem fs = FileSystem.get(uri, conf);
+        FileStatus [] files = fs.globStatus(new Path(fileGlob));
         if (files.length == 0)
             throw new IOException("no files found in lexprob glob:" + fileGlob);
 
