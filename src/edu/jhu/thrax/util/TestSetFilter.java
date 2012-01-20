@@ -31,11 +31,11 @@ public class TestSetFilter
 	private static int cached = 0;
 
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
-    private static final int RULE_LENGTH = 12;
+    private static int RULE_LENGTH = 12;
 
 	private static boolean verbose = false;
-        private static boolean parallel = false;
-        private static boolean fast = false;
+	private static boolean parallel = false;
+	private static boolean fast = false;
 
     private static void getTestSentences(String filename)
     {
@@ -311,10 +311,11 @@ public class TestSetFilter
     {
         // do some setup
         if (argv.length < 1) {
-            System.err.println("usage: TestSetFilter [-v|-p|-f] <test set1> [test set2 ...]");
+            System.err.println("usage: TestSetFilter [-v|-p|-f|-n N] <test set1> [test set2 ...]");
             System.err.println("    -v    verbose output");
             System.err.println("    -p    parallel compatibility");
             System.err.println("    -f    fast mode");
+            System.err.println("    -n    max n-gram to compare to (default 12)");
             return;
         }
         testSentences = new ArrayList<String>();
@@ -334,14 +335,23 @@ public class TestSetFilter
 				fast = true;
 				continue;
 			}
+			else if (argv[i].equals("-n")) {
+				RULE_LENGTH = Integer.parseInt(argv[i+1]);
+				i++;
+				continue;
+			}
             getTestSentences(argv[i]);
         }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;
         int rulesOut = 0;
-		if (verbose)
+		if (verbose) {
 			System.err.println("Processing rules...");
+			if (fast)
+				System.err.println("Using fast version...");
+			System.err.println("Using at max " + RULE_LENGTH + " n-grams...");
+		}
         while (scanner.hasNextLine()) {
 			if (verbose) {
 				if ((rulesIn+1) % 2000 == 0) {
