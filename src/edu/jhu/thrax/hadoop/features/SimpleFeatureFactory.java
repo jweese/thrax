@@ -41,7 +41,7 @@ public class SimpleFeatureFactory {
 	}
 
 	public static List<SimpleFeature> getAll(String names) {
-		String[] feature_names = names.split("\\s+");
+		String[] feature_names = names.split("\\s+|,");
 		List<SimpleFeature> features = new ArrayList<SimpleFeature>();
 
 		for (String feature_name : feature_names) {
