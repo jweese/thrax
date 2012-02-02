@@ -33,7 +33,7 @@ public abstract class SequenceFileLexprobTable
         if (files.length == 0)
             throw new IOException("no files found in lexprob glob:" + fileGlob);
 
-        Iterable<TableEntry> entries = getSequenceFileIterator(conf, files);
+        Iterable<TableEntry> entries = getSequenceFileIterator(fs, conf, files);
         initialize(entries);
     }
 
@@ -47,16 +47,18 @@ public abstract class SequenceFileLexprobTable
      * Return an Iterable that will range over all the entries in a series of
      * globbed files.
      *
+	 * @param fs the FileSystem
      * @param conf a Hadoop configuration file (to describe the filesystem)
      * @param files an array of FileStatus from getGlobStatus
      * @return an Iterable over all entries in all files in the files glob
      */
-    private static Iterable<TableEntry> getSequenceFileIterator(Configuration conf, FileStatus [] files)
+    private static Iterable<TableEntry> getSequenceFileIterator(FileSystem theFS, Configuration conf, FileStatus [] files)
     {
         final TextPair tp = new TextPair();
         final DoubleWritable d = new DoubleWritable(0.0);
         final FileStatus [] theFiles = files;
         final Configuration theConf = conf;
+		final FileSystem fs = theFS;
 
         final Iterator<TableEntry> iterator = new Iterator<TableEntry>() {
             int fileIndex = 0;
@@ -72,7 +74,7 @@ public abstract class SequenceFileLexprobTable
                     // if the reader is null, we haven't looked at a single
                     // file yet, so set the reader to read the first file
                     if (reader == null)
-                        reader = new SequenceFile.Reader(FileSystem.get(theConf), theFiles[0].getPath(), theConf);
+                        reader = new SequenceFile.Reader(fs, theFiles[0].getPath(), theConf);
                     // reader is not null here, so try to read an entry
                     boolean gotNew = reader.next(tp, d);
                     if (gotNew) {
@@ -85,7 +87,7 @@ public abstract class SequenceFileLexprobTable
                     // but if there are no more, return false
                     if (fileIndex >= theFiles.length)
                         return false;
-                    reader = new SequenceFile.Reader(FileSystem.get(theConf), theFiles[fileIndex].getPath(), theConf);
+                    reader = new SequenceFile.Reader(fs, theFiles[fileIndex].getPath(), theConf);
                     // new file, so try again
                     gotNew = reader.next(tp, d);
                     if (gotNew) {
