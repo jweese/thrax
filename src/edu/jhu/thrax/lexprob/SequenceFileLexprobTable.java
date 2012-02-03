@@ -25,19 +25,23 @@ import edu.jhu.thrax.hadoop.datatypes.TextPair;
  */
 public abstract class SequenceFileLexprobTable 
 {
+	protected FileSystem fs;
+	protected URI uri;
+	protected FileStatus [] files;
+
     public SequenceFileLexprobTable(Configuration conf, String fileGlob) throws IOException
     {
-		URI uri = URI.create(fileGlob);
-		FileSystem fs = FileSystem.get(uri, conf);
-        FileStatus [] files = fs.globStatus(new Path(fileGlob));
+		uri = URI.create(fileGlob);
+		fs = FileSystem.get(uri, conf);
+        files = fs.globStatus(new Path(fileGlob));
         if (files.length == 0)
             throw new IOException("no files found in lexprob glob:" + fileGlob);
 
-        Iterable<TableEntry> entries = getSequenceFileIterator(fs, conf, files);
-        initialize(entries);
+        // Iterable<TableEntry> entries = getSequenceFileIterator(fs, conf, files);
+        // initialize(entries);
     }
 
-    public abstract void initialize(Iterable<TableEntry> entries);
+    protected abstract void initialize(Iterable<TableEntry> entries);
 
     public abstract double get(Text car, Text cdr);
 
@@ -52,7 +56,7 @@ public abstract class SequenceFileLexprobTable
      * @param files an array of FileStatus from getGlobStatus
      * @return an Iterable over all entries in all files in the files glob
      */
-    private static Iterable<TableEntry> getSequenceFileIterator(FileSystem theFS, Configuration conf, FileStatus [] files)
+    protected static Iterable<TableEntry> getSequenceFileIterator(FileSystem theFS, Configuration conf, FileStatus [] files)
     {
         final TextPair tp = new TextPair();
         final DoubleWritable d = new DoubleWritable(0.0);
@@ -87,6 +91,7 @@ public abstract class SequenceFileLexprobTable
                     // but if there are no more, return false
                     if (fileIndex >= theFiles.length)
                         return false;
+					reader.close();
                     reader = new SequenceFile.Reader(fs, theFiles[fileIndex].getPath(), theConf);
                     // new file, so try again
                     gotNew = reader.next(tp, d);
@@ -97,7 +102,7 @@ public abstract class SequenceFileLexprobTable
                     return false;
                 }
                 catch (IOException e) {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException(e);
                 }
             }
 

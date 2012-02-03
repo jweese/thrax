@@ -16,6 +16,9 @@ public class LexprobTest extends Configured implements Tool
 
         Configuration conf = getConf();
         HashMapLexprobTable t = new HashMapLexprobTable(conf, argv[0]);
+		System.err.println("HashMap populated.");
+		TrieLexprobTable trie = new TrieLexprobTable(conf, argv[0]);
+		System.err.println("Trie populated.");
         return 0;
     }
 

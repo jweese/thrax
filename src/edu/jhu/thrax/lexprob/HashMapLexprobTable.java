@@ -15,6 +15,8 @@ public class HashMapLexprobTable extends SequenceFileLexprobTable
     public HashMapLexprobTable(Configuration conf, String fileGlob) throws IOException
     {
         super(conf, fileGlob);
+        Iterable<TableEntry> entries = getSequenceFileIterator(fs, conf, files);
+		initialize(entries);
     }
 
     public void initialize(Iterable<TableEntry> entries)
@@ -22,6 +24,8 @@ public class HashMapLexprobTable extends SequenceFileLexprobTable
         table = new HashMap<TextPair,Double>();
         for (TableEntry te : entries) {
             table.put(new TextPair(te.car, te.cdr), te.probability);
+			if (table.size() % 1000 == 0)
+				System.err.printf("[%d]\n", table.size());
         }
     }
 
