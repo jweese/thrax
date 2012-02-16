@@ -1,130 +1,76 @@
 package edu.jhu.thrax.hadoop.output;
 
-import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.io.IntWritable;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.filecache.DistributedCache;
-import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Reducer;
 
-import java.io.IOException;
-
-import java.util.Arrays;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.Comparator;
-
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-
 import edu.jhu.thrax.hadoop.features.SimpleFeature;
 import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
+import edu.jhu.thrax.util.FormatUtils;
 
-public class OutputReducer extends Reducer<RuleWritable, NullWritable, Text, NullWritable>
-{
-    private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
-    private static final Text EMPTY = new Text("");
-    private boolean label;
-    private boolean sparse;
+public class OutputReducer extends
+		Reducer<RuleWritable, NullWritable, Text, NullWritable> {
 
-    private RuleWritable currentRule;
-    private TreeMap<Text,Writable> features;
-    private String [] allFeatureNames;
+	private static final Text EMPTY = new Text("");
+	private boolean label;
+	private boolean sparse;
 
-    protected void setup(Context context) throws IOException, InterruptedException
-    {
-        Configuration conf = context.getConfiguration();
-//        Path [] localFiles = DistributedCache.getLocalCacheFiles(conf);
-//        if (localFiles != null) {
-            // we are in distributed mode
-//            ThraxConfig.configure("thrax.config");
-//        }
-//        else {
-            // distributed cache will not work in local mode
-//            String localWorkDir = conf.getRaw("thrax_work");
-//            String sep = localWorkDir.endsWith(Path.SEPARATOR) ? "" : Path.SEPARATOR;
-//            ThraxConfig.configure(localWorkDir + sep + "thrax.config");
-//        }
-        label = conf.getBoolean("thrax.label-feature-scores", true);
-        sparse = conf.getBoolean("thrax.sparse-feature-vectors", false);
-        allFeatureNames = conf.get("thrax.features", "").split("\\s+");
-        currentRule = null;
-        features = new TreeMap<Text,Writable>(); //new FeatureOrder(ThraxConfig.FEATURES.split("\\s+")));
-    }
+	private RuleWritable currentRule;
+	private TreeMap<Text, Writable> features;
+	private List<SimpleFeature> simpleFeatures;
 
-    protected void reduce(RuleWritable key, Iterable<NullWritable> values,
-                          Context context) throws IOException, InterruptedException
-    {
-        if (currentRule == null || !key.sameYield(currentRule)) {
-            if (currentRule == null)
-                currentRule = new RuleWritable();
-            else
-                context.write(ruleToText(currentRule, features, sparse), NullWritable.get());
-            currentRule.set(key);
-            features.clear();
-        }
-        Text currLabel = new Text(key.featureLabel);
-        DoubleWritable currScore = new DoubleWritable(key.featureScore.get());
-        if (!currLabel.equals(EMPTY))
-            features.put(currLabel, currScore);
-    }
+	protected void setup(Context context) throws IOException,
+			InterruptedException {
+		Configuration conf = context.getConfiguration();
+		label = conf.getBoolean("thrax.label-feature-scores", true);
+		sparse = conf.getBoolean("thrax.sparse-feature-vectors", false);
+		simpleFeatures = SimpleFeatureFactory.getAll(
+				conf.get("thrax.features", ""));
+		currentRule = null;
+		features = new TreeMap<Text, Writable>();
+	}
 
-    protected void cleanup(Context context) throws IOException, InterruptedException
-    {
-        if (currentRule != null)
-            context.write(ruleToText(currentRule, features, sparse), NullWritable.get());
-    }
+	protected void reduce(RuleWritable key, Iterable<NullWritable> values,
+			Context context) throws IOException, InterruptedException {
+		if (currentRule == null || !key.sameYield(currentRule)) {
+			if (currentRule == null)
+				currentRule = new RuleWritable();
+			else {
+				scoreSimpleFeatures(currentRule, features);
+				context.write(
+						FormatUtils.ruleToText(currentRule, features, label, sparse),
+						NullWritable.get());
+			}
+			currentRule.set(key);
+			features.clear();
+		}
+		Text currLabel = new Text(key.featureLabel);
+		DoubleWritable currScore = new DoubleWritable(key.featureScore.get());
+		if (!currLabel.equals(EMPTY))
+			features.put(currLabel, currScore);
+	}
 
-    private Text ruleToText(RuleWritable r, Map<Text,Writable> fs, boolean sparse)
-    {
-        if (r == null)
-            throw new IllegalArgumentException("cannot convert a null rule to Text");
-        for (String featureName : allFeatureNames) {
-            SimpleFeature feature = SimpleFeatureFactory.get(featureName);
-            if (feature != null) {
-                feature.score(r, fs);
-            }
-        }
-        StringBuilder sb = new StringBuilder();
-        sb.append(r.lhs);
-        sb.append(DELIM);
-        sb.append(r.source);
-        sb.append(DELIM);
-        sb.append(r.target);
-        sb.append(DELIM);
-        for (Text t : fs.keySet()) {
-            if (sparse) {
-                DoubleWritable score = (DoubleWritable) fs.get(t);
-                if (score.get() == 0)
-                    continue;
-            }
-            if (label)
-                sb.append(String.format("%s=%s ", t, fs.get(t)));
-            else
-                sb.append(String.format("%s ", fs.get(t)));
-        }
-        return new Text(sb.toString());
-    }
+	protected void cleanup(Context context) throws IOException,
+			InterruptedException {
+		if (currentRule != null) {
+			scoreSimpleFeatures(currentRule, features);
+			context.write(
+					FormatUtils.ruleToText(currentRule, features, label, sparse),
+					NullWritable.get());
+		}
+	}
 
-    private class FeatureOrder implements Comparator<Text>
-    {
-        private String [] features;
-
-        public FeatureOrder(String [] fs)
-        {
-            features = fs;
-        }
-
-        public int compare(Text a, Text b)
-        {
-            int aIndex = Arrays.binarySearch(features, a.toString());
-            int bIndex = Arrays.binarySearch(features, b.toString());
-
-            return aIndex - bIndex;
-        }
-    }
+	private void scoreSimpleFeatures(RuleWritable r, Map<Text, Writable> fs) {
+		for (SimpleFeature feature : simpleFeatures)
+			feature.score(r, fs);
+	}
 }
-

@@ -25,6 +25,12 @@ public class ThraxConfig {
      * Grammar type for extraction.
      */
     public static String GRAMMAR = "hiero";
+    
+    /**
+     * Kind of grammar to extract.
+     */
+    public static String TYPE = "translation";
+    
     /**
      * Output format. This doesn't do anything. The only format is Joshua.
      */

@@ -4,7 +4,6 @@ import java.util.Scanner;
 import java.util.zip.GZIPInputStream;
 import java.util.HashMap;
 import java.util.ArrayList;
-import java.util.List;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileInputStream;
@@ -51,6 +50,8 @@ public class Intersect
                 rules.get(r).clear();
             }
         }
+        firstGrammar.close();
+        secondGrammar.close();
         return;
     }
 

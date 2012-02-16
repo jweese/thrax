@@ -26,9 +26,7 @@ import org.apache.hadoop.conf.Configuration;
  * are "source" "target" and "alignment", which are the source and target
  * sides of a parallel corpus, and an alignment between each of the sentences.
  */
-public class HieroRuleExtractor implements RuleExtractor {
-
-    public static String name = "hiero";
+public class HierarchicalRuleExtractor implements RuleExtractor {
 
     public int INIT_LENGTH_LIMIT = 10;
     public int NONLEX_SOURCE_LENGTH_LIMIT = 5;
@@ -46,19 +44,20 @@ public class HieroRuleExtractor implements RuleExtractor {
     public int LEX_TARGET_LENGTH_LIMIT = 12;
     public int LEX_SOURCE_LENGTH_LIMIT = 12;
 
-    public int X_ID;
-
     public boolean SOURCE_IS_PARSED = false;
     public boolean TARGET_IS_PARSED = false;
     public boolean REVERSE = false;
 
+    private SpanLabeler labeler;
+    private Collection<Integer> defaultLabel;
 
     /**
      * Default constructor. The grammar parameters are initalized according
      * to how they are set in the thrax config file.
      */
-    public HieroRuleExtractor(Configuration conf)
+    public HierarchicalRuleExtractor(Configuration conf, SpanLabeler labeler)
     {
+        this.labeler = labeler;
         INIT_LENGTH_LIMIT = conf.getInt("thrax.initial-phrase-length", 10);
         NONLEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.nonlex-source-length", 5);
         NONLEX_SOURCE_WORD_LIMIT = conf.getInt("thrax.nonlex-source-words", 5);
@@ -79,10 +78,10 @@ public class HieroRuleExtractor implements RuleExtractor {
         // a backwards-compatibility hack for matt
         if (conf.get("thrax.english-is-parsed") != null)
             TARGET_IS_PARSED = conf.getBoolean("thrax.english-is-parsed", false);
-        X_ID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
+        int defaultID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
         REVERSE = conf.getBoolean("thrax.reverse", false);
-        if (HIERO_LABELS.isEmpty())
-            HIERO_LABELS.add(X_ID);
+        defaultLabel = new HashSet<Integer>();
+        defaultLabel.add(defaultID);
     }
 
     public List<Rule> extract(String inp) throws MalformedInputException
@@ -116,16 +115,16 @@ public class HieroRuleExtractor implements RuleExtractor {
         }
 
         PhrasePair [][] phrasesByStart = initialPhrasePairs(source, target, alignment);
-        HashMap<IntPair,Collection<Integer>> labelsBySpan = computeAllLabels(phrasesByStart, target.length);
+        labeler.setInput(inp);
 
         Queue<Rule> q = new LinkedList<Rule>();
         for (int i = 0; i < source.length; i++)
             q.offer(new Rule(source, target, alignment, i, NT_LIMIT));
 
-        return processQueue(q, phrasesByStart, labelsBySpan);
+        return processQueue(q, phrasesByStart);
     }
 
-    protected List<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart, HashMap<IntPair,Collection<Integer>> labelsBySpan)
+    protected List<Rule> processQueue(Queue<Rule> q, PhrasePair [][] phrasesByStart)
     {
         List<Rule> rules = new ArrayList<Rule>();
         while (q.peek() != null) {
@@ -133,7 +132,7 @@ public class HieroRuleExtractor implements RuleExtractor {
 
 	    for (Rule t : getAlignmentVariants(r)) {
                 if (isWellFormed(t)) {
-			for (Rule s : getLabelVariants(t, labelsBySpan)) {
+			for (Rule s : getLabelVariants(t)) {
 			    rules.add(s);
 			}
 		}
@@ -244,7 +243,9 @@ public class HieroRuleExtractor implements RuleExtractor {
             targetTerminals == 0)
             return false;
         if (r.rhs.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT ||
-            r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT) {
+            r.rhs.targetEnd - r.rhs.targetStart > INIT_LENGTH_LIMIT ||
+            r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT ||
+            r.rhs.sourceEnd - r.rhs.sourceStart > INIT_LENGTH_LIMIT) {
             if (ALLOW_FULL_SENTENCE_RULES &&
                 r.rhs.sourceStart == 0 &&
                 r.rhs.sourceEnd == r.source.length &&
@@ -259,6 +260,8 @@ public class HieroRuleExtractor implements RuleExtractor {
                  !r.alignment.sourceIsAligned(r.rhs.sourceStart) ||
                  !r.alignment.targetIsAligned(r.rhs.targetEnd - 1) ||
                  !r.alignment.targetIsAligned(r.rhs.targetStart)))
+            return false;
+        if (!r.rhs.consistentWith(r.alignment))
             return false;
         return (r.alignedWords >= LEXICAL_MINIMUM);
     }
@@ -302,19 +305,19 @@ public class HieroRuleExtractor implements RuleExtractor {
 	return result;
     }
 
-    protected Collection<Rule> getLabelVariants(Rule r, HashMap<IntPair,Collection<Integer>> labelsBySpan)
+    protected Collection<Rule> getLabelVariants(Rule r)
     {
         Collection<Rule> result = new HashSet<Rule>();
         Queue<Rule> q = new LinkedList<Rule>();
         for (int i = 0; i < r.numNTs; i++)
             r.setNT(i, -1);
-        Collection<Integer> lhsLabels = labelsBySpan.get(new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
+        Collection<Integer> lhsLabels = labeler.getLabels(new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
         if (lhsLabels == null || lhsLabels.isEmpty()) {
 //            System.err.println("WARNING: no labels for left-hand side of rule. Span is " + new IntPair(r.rhs.targetStart, r.rhs.targetEnd));
             if (!ALLOW_X_NONLEX &&
                 r.numNTs > 0)
                 return result;
-            lhsLabels = HIERO_LABELS;
+            lhsLabels = defaultLabel;
         }
         for (int lhs : lhsLabels) {
             Rule s = r.copy();
@@ -322,12 +325,12 @@ public class HieroRuleExtractor implements RuleExtractor {
             q.offer(s);
         }
         for (int i = 0; i < r.numNTs; i++) {
-            Collection<Integer> labels = labelsBySpan.get(r.ntSpan(i));
+            Collection<Integer> labels = labeler.getLabels(r.ntSpan(i));
             if (labels == null || labels.isEmpty()) {
 //                System.err.println("WARNING: no labels for target-side span of " + r.ntSpan(i));
                 if (!ALLOW_X_NONLEX)
                     return result;
-                labels = HIERO_LABELS;
+                labels = defaultLabel;
             }
             for (Rule s = q.peek(); s != null && s.getNT(i) == -1; s = q.peek()) {
                 s = q.poll();
@@ -368,25 +371,10 @@ public class HieroRuleExtractor implements RuleExtractor {
         return result;
     }
 
-    static Collection<Integer> HIERO_LABELS = new ArrayList<Integer>();
-    protected HashMap<IntPair,Collection<Integer>> computeAllLabels(PhrasePair [][] phrases, int targetLength)
-    {
-        HashMap<IntPair,Collection<Integer>> labelsBySpan = new HashMap<IntPair,Collection<Integer>>();
-        for (PhrasePair [] plist : phrases) {
-            for (PhrasePair pp : plist) {
-                int from = pp.targetStart;
-                int to = pp.targetEnd;
-                IntPair span = new IntPair(from, to);
-                labelsBySpan.put(span, HIERO_LABELS);
-            }
-        }
-        return labelsBySpan;
-    }
-
-    public static void main(String [] argv) throws IOException,MalformedInputException
+    public static void main(String [] argv) throws IOException,MalformedInputException,ConfigurationException
     {
         if (argv.length < 1) {
-            System.err.println("usage: HieroRuleExtractor <conf file>");
+            System.err.println("usage: HierarchicalRuleExtractor <conf file>");
             return;
         }
         Configuration conf = new Configuration();
@@ -394,7 +382,7 @@ public class HieroRuleExtractor implements RuleExtractor {
         for (String opt : options.keySet())
             conf.set("thrax." + opt, options.get(opt));
         Scanner scanner = new Scanner(System.in);
-        HieroRuleExtractor extractor = new HieroRuleExtractor(conf);
+        RuleExtractor extractor = RuleExtractorFactory.create(conf);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             for (Rule r : extractor.extract(line))

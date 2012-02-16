@@ -28,7 +28,6 @@ import org.apache.hadoop.io.DoubleWritable;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.ArrayList;
 
 public class WordLexicalProbabilityCalculator extends Configured implements Tool
 {

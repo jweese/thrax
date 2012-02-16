@@ -1,27 +1,22 @@
 package edu.jhu.thrax.hadoop.datatypes;
 
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.TwoDArrayWritable;
-import org.apache.hadoop.io.MapWritable;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.io.WritableComparator;
-import org.apache.hadoop.io.WritableComparable;
-
-import org.apache.hadoop.mapreduce.Partitioner;
-
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
+import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
+import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.io.WritableComparator;
+import org.apache.hadoop.io.WritableUtils;
+import org.apache.hadoop.mapreduce.Partitioner;
+
 import edu.jhu.thrax.ThraxConfig;
-import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.datatypes.Rule;
-import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
-import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
+import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
+import edu.jhu.thrax.util.Vocabulary;
 
 public class RuleWritable implements WritableComparable<RuleWritable>
 {
@@ -58,12 +53,19 @@ public class RuleWritable implements WritableComparable<RuleWritable>
 
     public RuleWritable(Rule r)
     {
-        String [] parts = r.toString().split(ThraxConfig.DELIMITER_REGEX);
+        this(r.toString());
+        f2e = new AlignmentArray(sourceAlignmentArray(r));
+        e2f = new AlignmentArray(targetAlignmentArray(r));
+    }
+    
+    public RuleWritable(String rule_string)
+    {
+        String [] parts = rule_string.split(ThraxConfig.DELIMITER_REGEX);
         lhs = new Text(parts[0].trim());
         source = new Text(parts[1].trim());
         target = new Text(parts[2].trim());
-        f2e = new AlignmentArray(sourceAlignmentArray(r));
-        e2f = new AlignmentArray(targetAlignmentArray(r));
+        f2e = new AlignmentArray();
+        e2f = new AlignmentArray();
         featureLabel = new Text();
         featureScore = new DoubleWritable();
     }
@@ -288,21 +290,9 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         }
     }
 
-    public static class YieldPartitioner extends Partitioner<RuleWritable, IntWritable>
+    public static class YieldPartitioner extends Partitioner<RuleWritable, Writable>
     {
-        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
-        {
-            int hash = 163;
-            hash = 37 * hash + key.lhs.hashCode();
-            hash = 37 * hash + key.source.hashCode();
-            hash = 37 * hash + key.target.hashCode();
-            return (hash & Integer.MAX_VALUE) % numPartitions;
-        }
-    }
-
-    public static class NullYieldPartitioner extends Partitioner<RuleWritable, NullWritable>
-    {
-        public int getPartition(RuleWritable key, NullWritable value, int numPartitions)
+        public int getPartition(RuleWritable key, Writable value, int numPartitions)
         {
             int hash = 163;
             hash = 37 * hash + key.lhs.hashCode();
@@ -348,26 +338,26 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         }
     }
 
-    public static class LHSPartitioner extends Partitioner<RuleWritable, IntWritable>
+    public static class LHSPartitioner extends Partitioner<RuleWritable, Writable>
     {
-        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        public int getPartition(RuleWritable key, Writable value, int numPartitions)
         {
             return (key.lhs.hashCode() & Integer.MAX_VALUE) % numPartitions;
         }
     }
 
 
-    public static class SourcePartitioner extends Partitioner<RuleWritable, IntWritable>
+    public static class SourcePartitioner extends Partitioner<RuleWritable, Writable>
     {
-        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        public int getPartition(RuleWritable key, Writable value, int numPartitions)
         {
             return (key.source.hashCode() & Integer.MAX_VALUE) % numPartitions;
         }
     }
 
-    public static class TargetPartitioner extends Partitioner<RuleWritable, IntWritable>
+    public static class TargetPartitioner extends Partitioner<RuleWritable, Writable>
     {
-        public int getPartition(RuleWritable key, IntWritable value, int numPartitions)
+        public int getPartition(RuleWritable key, Writable value, int numPartitions)
         {
             return (key.target.hashCode() & Integer.MAX_VALUE) % numPartitions;
         }
