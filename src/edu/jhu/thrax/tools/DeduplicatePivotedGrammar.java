@@ -102,6 +102,11 @@ public class DeduplicatePivotedGrammar {
 			logger.severe("No features specified.");
 			return;
 		}
+		if (!labeled && sparse) {
+			logger.severe("I cannot condone grammars that are both sparse " +
+					"and unlabeled.");
+			return;
+		}
 
 		simple = SimpleFeatureFactory.getAll(feature_string);
 		pivoted = PivotedFeatureFactory.getAll(feature_string);
