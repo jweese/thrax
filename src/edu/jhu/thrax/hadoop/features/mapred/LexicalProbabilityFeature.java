@@ -68,9 +68,9 @@ public class LexicalProbabilityFeature extends MapReduceFeature
             String e2fpath = workDir + "lexprobse2f/part-*";
             String f2epath = workDir + "lexprobsf2e/part-*";
 
-            HashMapLexprobTable e2f = new HashMapLexprobTable(conf, e2fpath);
-            HashMapLexprobTable f2e = new HashMapLexprobTable(conf, f2epath);
-			table = new DoubleHashMapTable(e2f, f2e);
+            TrieLexprobTable e2f = new TrieLexprobTable(conf, e2fpath);
+            TrieLexprobTable f2e = new TrieLexprobTable(conf, f2epath);
+			table = new DoubleTrieTable(e2f, f2e);
         }
 
         protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context) throws IOException, InterruptedException
