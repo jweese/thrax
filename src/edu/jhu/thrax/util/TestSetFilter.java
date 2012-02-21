@@ -3,8 +3,8 @@ package edu.jhu.thrax.util;
 import java.util.Scanner;
 import java.util.Collections;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
@@ -26,13 +26,16 @@ public class TestSetFilter
 {
     private static List<String> testSentences;
     private static Map<String,Set<Integer>> sentencesByWord;
+	private static HashMap<String,Boolean> acceptedSourceSides;
+	private static Set<String> ngrams;
+	private static int cached = 0;
 
     private static final String NT_REGEX = "\\[[^\\]]+?\\]";
-    private static final int RULE_LENGTH = 12;
+    private static int RULE_LENGTH = 12;
 
 	private static boolean verbose = false;
-        private static boolean parallel = false;
-        private static boolean fast = false;
+	private static boolean parallel = false;
+	private static boolean fast = false;
 
     private static void getTestSentences(String filename)
     {
@@ -50,6 +53,8 @@ public class TestSetFilter
 
 		if (verbose) 
 			System.err.println("Added " + testSentences.size() + " sentences.\n");
+
+		ngrams = getTestNGrams(testSentences);
     }
 
 	/** setSentence()
@@ -72,6 +77,8 @@ public class TestSetFilter
 		addSentenceToWordHash(sentencesByWord, sentence, 0);
 		// and add the sentence
 		testSentences.add(sentence);
+
+		ngrams = getTestNGrams(testSentences);
 	}
 
 	/** filterGrammarToFile
@@ -100,6 +107,7 @@ public class TestSetFilter
 			PrintWriter out = new PrintWriter(new GZIPOutputStream(new FileOutputStream(filteredGrammarFile)));
 			byte newline[] = "\n".getBytes("UTF-8");
 
+			// iterate over all lines in the grammar
 			while (scanner.hasNextLine()) {
 				if (verbose) {
 					if ((rulesIn+1) % 2000 == 0) {
@@ -113,7 +121,7 @@ public class TestSetFilter
 				}
 				rulesIn++;
 				String rule = scanner.nextLine();
-				if ( (fast && inTestSetFastVersion(getTestNGrams(testSentences),rule)) || (! fast && inTestSet(rule)) ) {
+				if (inTestSet(rule)) {
 					out.println(rule);
 					rulesOut++;
 				}
@@ -147,16 +155,53 @@ public class TestSetFilter
         return Pattern.compile(pattern);
     }
 
+	/**
+	 * Top-level filter, responsible for calling the fast or exact version.
+	 */
     private static boolean inTestSet(String rule)
     {
-        Pattern pattern = getPattern(rule);
-        for (int i : getSentencesForRule(sentencesByWord, rule)) {
-            if (pattern.matcher(testSentences.get(i)).find()) {
-                return true;
-            }
-        }
-        return hasAbstractSource(rule) > 1;
-    }
+        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        if (parts.length != 4)
+			return false;
+
+		String sourceSide = parts[1].trim();
+		if (! acceptedSourceSides.containsKey(sourceSide)) {
+			if (fast) {
+				acceptedSourceSides.put(sourceSide,inTestSetFast(rule));
+			} else {
+				acceptedSourceSides.put(sourceSide,inTestSetExact(rule));
+			}
+		} else {
+			cached++;
+		}
+		
+		return acceptedSourceSides.get(sourceSide);
+	}
+
+
+
+	private static boolean inTestSetFast(String rule) {
+
+		String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+		String source = parts[1];
+
+		for (String chunk : source.split(NT_REGEX)) {
+			chunk = chunk.trim();
+			if (!ngrams.contains(chunk))
+				return false;
+		}
+		return true;
+	}
+
+	private static boolean inTestSetExact(String rule) {
+		Pattern pattern = getPattern(rule);
+		for (int i : getSentencesForRule(sentencesByWord, rule)) {
+			if (pattern.matcher(testSentences.get(i)).find()) {
+				return true;
+			}
+		}
+		return hasAbstractSource(rule) > 1;
+	}
 
     private static void addSentenceToWordHash(Map<String,Set<Integer>> sentencesByWord, String sentence, int index)
     {
@@ -262,32 +307,20 @@ public class TestSetFilter
         return result;
     }
 
-    private static boolean inTestSetFastVersion(Set<String> ngrams, String rule)
-    {
-        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
-        if (parts.length != 4)
-            return false;
-        String source = parts[1];
-        for (String chunk : source.split(NT_REGEX)) {
-            chunk = chunk.trim();
-            if (!ngrams.contains(chunk))
-                return false;
-        }
-        return true;
-    }
-
     public static void main(String [] argv)
     {
         // do some setup
         if (argv.length < 1) {
-            System.err.println("usage: TestSetFilter [-v|-p|-f] <test set1> [test set2 ...]");
+            System.err.println("usage: TestSetFilter [-v|-p|-f|-n N] <test set1> [test set2 ...]");
             System.err.println("    -v    verbose output");
             System.err.println("    -p    parallel compatibility");
             System.err.println("    -f    fast mode");
+            System.err.println("    -n    max n-gram to compare to (default 12)");
             return;
         }
         testSentences = new ArrayList<String>();
         sentencesByWord = new HashMap<String,Set<Integer>>();
+		acceptedSourceSides = new HashMap<String,Boolean>();
         Set<String> testNGrams;
         for (int i = 0; i < argv.length; i++) {
 			if (argv[i].equals("-v")) {
@@ -302,14 +335,23 @@ public class TestSetFilter
 				fast = true;
 				continue;
 			}
+			else if (argv[i].equals("-n")) {
+				RULE_LENGTH = Integer.parseInt(argv[i+1]);
+				i++;
+				continue;
+			}
             getTestSentences(argv[i]);
         }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;
         int rulesOut = 0;
-		if (verbose)
+		if (verbose) {
 			System.err.println("Processing rules...");
+			if (fast)
+				System.err.println("Using fast version...");
+			System.err.println("Using at max " + RULE_LENGTH + " n-grams...");
+		}
         while (scanner.hasNextLine()) {
 			if (verbose) {
 				if ((rulesIn+1) % 2000 == 0) {
@@ -323,13 +365,8 @@ public class TestSetFilter
 			}
             rulesIn++;
             String rule = scanner.nextLine();
-            boolean keep;
-            if (fast)
-                keep = inTestSetFastVersion(getTestNGrams(testSentences), rule);
-            else
-                keep = inTestSet(rule);
 
-            if (keep) {
+            if (inTestSet(rule)) {
                 System.out.println(rule);
                 if (parallel)
                     System.out.flush();
@@ -344,6 +381,7 @@ public class TestSetFilter
 			System.err.println("[INFO] Total rules read: " + rulesIn);
 			System.err.println("[INFO] Rules kept: " + rulesOut);
 			System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
+			System.err.println("[INFO] cached queries: " + cached);
 		}
 
         return;
