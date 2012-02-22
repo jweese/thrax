@@ -53,19 +53,17 @@ public class FormatUtils {
 		sb.append(r.target);
 		sb.append(DELIM);
 		for (Text t : fs.keySet()) {
-			double score;
+			String score;
 			if (fs.get(t) instanceof DoubleWritable) {
-				score = ((DoubleWritable) fs.get(t)).get();
+				score = String.format("%.5f", ((DoubleWritable) fs.get(t)).get());
 			} else if (fs.get(t) instanceof IntWritable) {
-				score = ((IntWritable) fs.get(t)).get();
+				score = String.format("%d", ((IntWritable) fs.get(t)).get());
 			} else {
 				throw new RuntimeException("Expecting either double or integer " +
 						"feature values.");
 			}
-			if (score == 0.0) {
-				if (sparse)
-					continue;
-				score = 0;
+			if (sparse && (score.equals("0") || score.equals("0.00000"))) {
+				continue;
 			}
 			if (label)
 				sb.append(String.format("%s=%s ", t, score));
