@@ -53,12 +53,19 @@ public class RuleWritable implements WritableComparable<RuleWritable>
 
     public RuleWritable(Rule r)
     {
-        String [] parts = r.toString().split(ThraxConfig.DELIMITER_REGEX);
+        this(r.toString());
+        f2e = new AlignmentArray(sourceAlignmentArray(r));
+        e2f = new AlignmentArray(targetAlignmentArray(r));
+    }
+    
+    public RuleWritable(String rule_string)
+    {
+        String [] parts = rule_string.split(ThraxConfig.DELIMITER_REGEX);
         lhs = new Text(parts[0].trim());
         source = new Text(parts[1].trim());
         target = new Text(parts[2].trim());
-        f2e = new AlignmentArray(sourceAlignmentArray(r));
-        e2f = new AlignmentArray(targetAlignmentArray(r));
+        f2e = new AlignmentArray();
+        e2f = new AlignmentArray();
         featureLabel = new Text();
         featureScore = new DoubleWritable();
     }

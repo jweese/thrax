@@ -34,6 +34,12 @@ public class SimpleFeatureFactory {
 			return new WordCountDifferenceFeature();
 		else if (name.equals("word-length-difference"))
 			return new WordLengthDifferenceFeature();
+		else if (name.equals("word-cr"))
+			return new WordCompressionRatioFeature();
+		else if (name.equals("char-count-difference"))
+			return new CharacterCountDifferenceFeature();
+		else if (name.equals("char-cr"))
+			return new CharacterCompressionRatioFeature();
 		else if (name.equals("glue-rule"))
 			return new GlueRuleFeature();
 
@@ -41,7 +47,7 @@ public class SimpleFeatureFactory {
 	}
 
 	public static List<SimpleFeature> getAll(String names) {
-		String[] feature_names = names.split("\\s+");
+		String[] feature_names = names.split("\\s+|,");
 		List<SimpleFeature> features = new ArrayList<SimpleFeature>();
 
 		for (String feature_name : feature_names) {
