@@ -20,6 +20,7 @@ import edu.jhu.thrax.util.io.InputUtilities;
 import edu.jhu.thrax.ThraxConfig;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Mapper;
 
 /**
  * This class extracts Hiero-style SCFG rules. The inputs that are needed
@@ -51,12 +52,15 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
     private SpanLabeler labeler;
     private Collection<Integer> defaultLabel;
 
+	private Mapper.Context context;
+
     /**
      * Default constructor. The grammar parameters are initalized according
      * to how they are set in the thrax config file.
      */
-    public HierarchicalRuleExtractor(Configuration conf, SpanLabeler labeler)
+    public HierarchicalRuleExtractor(Mapper.Context mapContext, Configuration conf, SpanLabeler labeler)
     {
+		this.context = mapContext;
         this.labeler = labeler;
         INIT_LENGTH_LIMIT = conf.getInt("thrax.initial-phrase-length", 10);
         NONLEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.nonlex-source-length", 5);
@@ -129,10 +133,12 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
         List<Rule> rules = new ArrayList<Rule>();
         while (q.peek() != null) {
             Rule r = q.poll();
+			context.progress();
 
 	    for (Rule t : getAlignmentVariants(r)) {
                 if (isWellFormed(t)) {
 			for (Rule s : getLabelVariants(t)) {
+				context.progress();
 			    rules.add(s);
 			}
 		}
@@ -382,7 +388,7 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
         for (String opt : options.keySet())
             conf.set("thrax." + opt, options.get(opt));
         Scanner scanner = new Scanner(System.in);
-        RuleExtractor extractor = RuleExtractorFactory.create(conf);
+        RuleExtractor extractor = RuleExtractorFactory.create(null, conf);
         while (scanner.hasNextLine()) {
             String line = scanner.nextLine();
             for (Rule r : extractor.extract(line))

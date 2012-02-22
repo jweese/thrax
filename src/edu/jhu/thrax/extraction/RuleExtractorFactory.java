@@ -2,6 +2,7 @@ package edu.jhu.thrax.extraction;
 
 import edu.jhu.thrax.util.exceptions.ConfigurationException;
 
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.conf.Configuration;
 
 /**
@@ -19,7 +20,7 @@ public class RuleExtractorFactory {
      *                                allow an extractor to be created
      * type of grammar
      */
-    public static RuleExtractor create(Configuration conf) throws ConfigurationException
+    public static RuleExtractor create(Mapper.Context context, Configuration conf) throws ConfigurationException
     {
         String gt = conf.get("thrax.grammar", "NONE");
         boolean SOURCE_IS_PARSED = conf.getBoolean("thrax.source-is-parsed", false);
@@ -36,7 +37,7 @@ public class RuleExtractorFactory {
         else {
             throw new ConfigurationException("unknown grammar type: " + gt);
         }
-        return new HierarchicalRuleExtractor(conf, labeler);
+        return new HierarchicalRuleExtractor(context, conf, labeler);
         // when you create new grammars, add them here.
 
     }
