@@ -22,6 +22,11 @@ import java.io.File;
 
 import edu.jhu.thrax.ThraxConfig;
 
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.SequenceFile;
+
 public class TestSetFilter
 {
     private static List<String> testSentences;
@@ -36,6 +41,23 @@ public class TestSetFilter
 	private static boolean verbose = false;
 	private static boolean parallel = false;
 	private static boolean fast = false;
+
+	public static void getTestSentences(SequenceFile.Reader reader) throws IOException, InterruptedException
+	{
+        testSentences = new ArrayList<String>();
+        sentencesByWord = new HashMap<String,Set<Integer>>();
+		acceptedSourceSides = new HashMap<String,Boolean>();
+		LongWritable k = new LongWritable();
+		Text v = new Text();
+		while (reader.next(k,v)) {
+			String line = v.toString();
+			addSentenceToWordHash(sentencesByWord, line, testSentences.size());
+			testSentences.add(line);
+		}
+		if (verbose) 
+			System.err.println("Added " + testSentences.size() + " sentences.\n");
+		ngrams = getTestNGrams(testSentences);
+	}
 
     private static void getTestSentences(String filename)
     {
@@ -158,7 +180,7 @@ public class TestSetFilter
 	/**
 	 * Top-level filter, responsible for calling the fast or exact version.
 	 */
-    private static boolean inTestSet(String rule)
+    public static boolean inTestSet(String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4)
