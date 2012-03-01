@@ -2,6 +2,7 @@ package edu.jhu.thrax.lexprob;
 
 import java.util.Iterator;
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.SequenceFile;
@@ -22,19 +23,25 @@ import edu.jhu.thrax.hadoop.datatypes.TextPair;
  * The constructor calls initialize with an Iterable that will range over all
  * the (TextPair,Double) pairs in a file glob.
  */
-public abstract class SequenceFileLexprobTable implements LexicalProbabilityTable
+public abstract class SequenceFileLexprobTable 
 {
+	protected FileSystem fs;
+	protected URI uri;
+	protected FileStatus [] files;
+
     public SequenceFileLexprobTable(Configuration conf, String fileGlob) throws IOException
     {
-        FileStatus [] files = FileSystem.get(conf).globStatus(new Path(fileGlob));
+		uri = URI.create(fileGlob);
+		fs = FileSystem.get(uri, conf);
+        files = fs.globStatus(new Path(fileGlob));
         if (files.length == 0)
             throw new IOException("no files found in lexprob glob:" + fileGlob);
 
-        Iterable<TableEntry> entries = getSequenceFileIterator(conf, files);
-        initialize(entries);
+        // Iterable<TableEntry> entries = getSequenceFileIterator(fs, conf, files);
+        // initialize(entries);
     }
 
-    public abstract void initialize(Iterable<TableEntry> entries);
+    protected abstract void initialize(Iterable<TableEntry> entries);
 
     public abstract double get(Text car, Text cdr);
 
@@ -44,16 +51,18 @@ public abstract class SequenceFileLexprobTable implements LexicalProbabilityTabl
      * Return an Iterable that will range over all the entries in a series of
      * globbed files.
      *
+	 * @param fs the FileSystem
      * @param conf a Hadoop configuration file (to describe the filesystem)
      * @param files an array of FileStatus from getGlobStatus
      * @return an Iterable over all entries in all files in the files glob
      */
-    private static Iterable<TableEntry> getSequenceFileIterator(Configuration conf, FileStatus [] files)
+    protected static Iterable<TableEntry> getSequenceFileIterator(FileSystem theFS, Configuration conf, FileStatus [] files)
     {
         final TextPair tp = new TextPair();
         final DoubleWritable d = new DoubleWritable(0.0);
         final FileStatus [] theFiles = files;
         final Configuration theConf = conf;
+		final FileSystem fs = theFS;
 
         final Iterator<TableEntry> iterator = new Iterator<TableEntry>() {
             int fileIndex = 0;
@@ -69,7 +78,7 @@ public abstract class SequenceFileLexprobTable implements LexicalProbabilityTabl
                     // if the reader is null, we haven't looked at a single
                     // file yet, so set the reader to read the first file
                     if (reader == null)
-                        reader = new SequenceFile.Reader(FileSystem.get(theConf), theFiles[0].getPath(), theConf);
+                        reader = new SequenceFile.Reader(fs, theFiles[0].getPath(), theConf);
                     // reader is not null here, so try to read an entry
                     boolean gotNew = reader.next(tp, d);
                     if (gotNew) {
@@ -82,7 +91,8 @@ public abstract class SequenceFileLexprobTable implements LexicalProbabilityTabl
                     // but if there are no more, return false
                     if (fileIndex >= theFiles.length)
                         return false;
-                    reader = new SequenceFile.Reader(FileSystem.get(theConf), theFiles[fileIndex].getPath(), theConf);
+					reader.close();
+                    reader = new SequenceFile.Reader(fs, theFiles[fileIndex].getPath(), theConf);
                     // new file, so try again
                     gotNew = reader.next(tp, d);
                     if (gotNew) {
@@ -92,7 +102,7 @@ public abstract class SequenceFileLexprobTable implements LexicalProbabilityTabl
                     return false;
                 }
                 catch (IOException e) {
-                    throw new IllegalArgumentException();
+                    throw new IllegalArgumentException(e);
                 }
             }
 
