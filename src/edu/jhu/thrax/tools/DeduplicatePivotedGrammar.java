@@ -95,7 +95,7 @@ public class DeduplicatePivotedGrammar {
 			return;
 		}
 		if (index_file == null) {
-			logger.severe("No grammar specified.");
+			logger.severe("No index file specified.");
 			return;
 		}
 		if (feature_string == null) {
