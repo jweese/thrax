@@ -1,18 +1,23 @@
 package edu.jhu.thrax.hadoop.extraction;
 
 import java.io.IOException;
+import java.net.URI;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
 
 import edu.jhu.thrax.datatypes.Rule;
 import edu.jhu.thrax.extraction.RuleExtractor;
 import edu.jhu.thrax.extraction.RuleExtractorFactory;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.MalformedInput;
+import edu.jhu.thrax.util.TestSetFilter;
 import edu.jhu.thrax.util.exceptions.ConfigurationException;
 import edu.jhu.thrax.util.exceptions.EmptyAlignmentException;
 import edu.jhu.thrax.util.exceptions.EmptySentenceException;
@@ -26,17 +31,33 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
 {
     private RuleExtractor extractor;
     private IntWritable one = new IntWritable(1);
+	private boolean filter = false;
 
     protected void setup(Context context) throws IOException, InterruptedException
     {
         Configuration conf = context.getConfiguration();
         try {
             extractor = RuleExtractorFactory.create(conf);
+			String filename = conf.get("thrax.filter-set", "(no filter set)");
+			System.err.println("TEST SET file is " + filename);
+			if (!filename.equals("(no filter set)")) {
+				initializeFilter(filename, conf, context);
+				filter = true;
+			}
         }
         catch (ConfigurationException ex) {
             System.err.println(ex.getMessage());
         }
     }
+
+	private void initializeFilter(String filename, Configuration conf, Context context) throws IOException, InterruptedException
+	{
+		URI uri = URI.create(filename);
+		FileSystem fs = FileSystem.get(uri, conf);
+		Path filepath = new Path(filename);
+		SequenceFile.Reader reader = new SequenceFile.Reader(fs, filepath, conf);
+		TestSetFilter.getTestSentences(reader);
+	}
 
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
     {
@@ -45,8 +66,13 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
         String line = value.toString();
         try {
             for (Rule r : extractor.extract(line)) {
-                RuleWritable rw = new RuleWritable(r);
-                context.write(rw, one);
+				if (filter && !TestSetFilter.inTestSet(r.toString() + " ||| 0")) {
+					context.getCounter("filtering", "not in test set").increment(1);
+				}
+				else {
+					RuleWritable rw = new RuleWritable(r);
+					context.write(rw, one);
+				}
             }
         }
         catch (NotEnoughFieldsException e) {

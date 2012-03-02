@@ -22,6 +22,11 @@ import java.io.File;
 
 import edu.jhu.thrax.ThraxConfig;
 
+import org.apache.hadoop.mapreduce.RecordReader;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.SequenceFile;
+
 public class TestSetFilter
 {
     private List<String> testSentences;
