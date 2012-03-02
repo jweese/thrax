@@ -37,27 +37,12 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
     {
         Configuration conf = context.getConfiguration();
         try {
-            extractor = RuleExtractorFactory.create(context, conf);
-			String filename = conf.get("thrax.filter-set", "(no filter set)");
-			System.err.println("TEST SET file is " + filename);
-			if (!filename.equals("(no filter set)")) {
-				initializeFilter(filename, conf, context);
-				filter = true;
-			}
+            extractor = RuleExtractorFactory.create(conf);
         }
         catch (ConfigurationException ex) {
             System.err.println(ex.getMessage());
         }
     }
-
-	private void initializeFilter(String filename, Configuration conf, Context context) throws IOException, InterruptedException
-	{
-		URI uri = URI.create(filename);
-		FileSystem fs = FileSystem.get(uri, conf);
-		Path filepath = new Path(filename);
-		SequenceFile.Reader reader = new SequenceFile.Reader(fs, filepath, conf);
-		TestSetFilter.getTestSentences(reader);
-	}
 
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
     {
@@ -66,13 +51,8 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
         String line = value.toString();
         try {
             for (Rule r : extractor.extract(line)) {
-				if (filter && !TestSetFilter.inTestSet(r.toString() + " ||| 0")) {
-					context.getCounter("filtering", "not in test set").increment(1);
-				}
-				else {
-					RuleWritable rw = new RuleWritable(r);
-					context.write(rw, one);
-				}
+				RuleWritable rw = new RuleWritable(r);
+				context.write(rw, one);
             }
         }
         catch (NotEnoughFieldsException e) {
