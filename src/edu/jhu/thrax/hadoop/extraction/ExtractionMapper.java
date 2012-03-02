@@ -37,7 +37,7 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
     {
         Configuration conf = context.getConfiguration();
         try {
-            extractor = RuleExtractorFactory.create(conf);
+            extractor = RuleExtractorFactory.create(context, conf);
         }
         catch (ConfigurationException ex) {
             System.err.println(ex.getMessage());
