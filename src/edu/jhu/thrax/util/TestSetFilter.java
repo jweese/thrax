@@ -31,8 +31,11 @@ public class TestSetFilter
 {
     private List<String> testSentences;
     private Map<String,Set<Integer>> sentencesByWord;
-	private HashMap<String,Boolean> acceptedSourceSides;
 	private Set<String> ngrams;
+
+	// for caching of accepted rules
+	private String lastSourceSide;
+	private boolean acceptedLastSourceSide;
 
     private final String NT_REGEX = "\\[[^\\]]+?\\]";
 
@@ -45,7 +48,8 @@ public class TestSetFilter
 	public TestSetFilter() {
 		testSentences = new ArrayList<String>();
 		sentencesByWord = new HashMap<String,Set<Integer>>();
-		acceptedSourceSides = new HashMap<String,Boolean>();
+		acceptedLastSourceSide = false;
+		lastSourceSide = null;
 	}		
 
 	public void setVerbose(boolean value) {
@@ -197,17 +201,16 @@ public class TestSetFilter
 			return false;
 
 		String sourceSide = parts[1].trim();
-		if (! acceptedSourceSides.containsKey(sourceSide)) {
-			if (fast) {
-				acceptedSourceSides.put(sourceSide,inTestSetFast(rule));
-			} else {
-				acceptedSourceSides.put(sourceSide,inTestSetExact(rule));
-			}
+		if (! sourceSide.equals(lastSourceSide)) {
+			lastSourceSide = sourceSide;
+			acceptedLastSourceSide = fast 
+				? inTestSetFast(rule) 
+				: inTestSetExact(rule);
 		} else {
 			cached++;
 		}
 		
-		return acceptedSourceSides.get(sourceSide);
+		return acceptedLastSourceSide;
 	}
 
 
