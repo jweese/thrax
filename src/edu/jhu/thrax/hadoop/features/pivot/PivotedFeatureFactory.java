@@ -33,7 +33,7 @@ public class PivotedFeatureFactory {
 	}
 	
 	public static List<PivotedFeature> getAll(String names) {
-		String[] feature_names = names.split("\\s+");
+		String[] feature_names = names.split("\\s+|,");
 		List<PivotedFeature> features = new ArrayList<PivotedFeature>();
 		
 		for (String feature_name : feature_names) {
