@@ -24,20 +24,42 @@ import edu.jhu.thrax.ThraxConfig;
 
 public class TestSetFilter
 {
-    private static List<String> testSentences;
-    private static Map<String,Set<Integer>> sentencesByWord;
-	private static HashMap<String,Boolean> acceptedSourceSides;
-	private static Set<String> ngrams;
-	private static int cached = 0;
+    private List<String> testSentences;
+    private Map<String,Set<Integer>> sentencesByWord;
+	private HashMap<String,Boolean> acceptedSourceSides;
+	private Set<String> ngrams;
 
-    private static final String NT_REGEX = "\\[[^\\]]+?\\]";
-    private static int RULE_LENGTH = 12;
+    private final String NT_REGEX = "\\[[^\\]]+?\\]";
 
-	private static boolean verbose = false;
-	private static boolean parallel = false;
-	private static boolean fast = false;
+	public int cached = 0;
+    public int RULE_LENGTH = 12;
+	public boolean verbose = false;
+	public boolean parallel = false;
+	public boolean fast = false;
 
-    private static void getTestSentences(String filename)
+	public TestSetFilter() {
+		testSentences = new ArrayList<String>();
+		sentencesByWord = new HashMap<String,Set<Integer>>();
+		acceptedSourceSides = new HashMap<String,Boolean>();
+	}		
+
+	public void setVerbose(boolean value) {
+		verbose = value;
+	}
+
+	public void setParallel(boolean value) {
+		parallel = value;
+	} 
+
+	public void setFast(boolean value) {
+		fast = value;
+	}
+
+	public void setRuleLength(int value) {
+		RULE_LENGTH = value;
+	}
+
+    private void getTestSentences(String filename)
     {
         try {
             Scanner scanner = new Scanner(new File(filename), "UTF-8");
@@ -62,7 +84,7 @@ public class TestSetFilter
 	 * Sets a single sentence against which the grammar is filtered.
 	 * Used in filtering the grammar on the fly at runtime.
 	 */
-	public static void setSentence(String sentence) {
+	public void setSentence(String sentence) {
 		if (testSentences == null)
 			testSentences = new ArrayList<String>();
 
@@ -87,13 +109,18 @@ public class TestSetFilter
 	 * the resulting grammar to a file.  The input grammar is assumed
 	 * to be compressed, and the output file is also compressed.
 	 */
-	public static void filterGrammarToFile(String fullGrammarFile,
-										   String sentence,
-										   String filteredGrammarFile,
-										   boolean fast) {
+	public void filterGrammarToFile(String fullGrammarFile,
+									String sentence,
+									String filteredGrammarFile,
+									boolean fast) {
 		
-		TestSetFilter.fast = fast;
+		System.err.println(String.format("filterGrammarToFile(%s,%s,%s,%s)\n",
+										 fullGrammarFile,
+										 sentence,
+										 filteredGrammarFile,
+										 (fast ? "fast" : "exact")));
 
+		fast = fast;
 		setSentence(sentence);
 
 		try {
@@ -141,7 +168,7 @@ public class TestSetFilter
         }
 	}
 
-    public static Pattern getPattern(String rule)
+    public Pattern getPattern(String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4) {
@@ -158,7 +185,7 @@ public class TestSetFilter
 	/**
 	 * Top-level filter, responsible for calling the fast or exact version.
 	 */
-    private static boolean inTestSet(String rule)
+    public boolean inTestSet(String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4)
@@ -180,7 +207,7 @@ public class TestSetFilter
 
 
 
-	private static boolean inTestSetFast(String rule) {
+	private boolean inTestSetFast(String rule) {
 
 		String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
 		String source = parts[1];
@@ -193,7 +220,7 @@ public class TestSetFilter
 		return true;
 	}
 
-	private static boolean inTestSetExact(String rule) {
+	private boolean inTestSetExact(String rule) {
 		Pattern pattern = getPattern(rule);
 		for (int i : getSentencesForRule(sentencesByWord, rule)) {
 			if (pattern.matcher(testSentences.get(i)).find()) {
@@ -203,7 +230,7 @@ public class TestSetFilter
 		return hasAbstractSource(rule) > 1;
 	}
 
-    private static void addSentenceToWordHash(Map<String,Set<Integer>> sentencesByWord, String sentence, int index)
+    private void addSentenceToWordHash(Map<String,Set<Integer>> sentencesByWord, String sentence, int index)
     {
         String [] tokens = sentence.split("\\s+");
         for (String t : tokens) {
@@ -217,7 +244,7 @@ public class TestSetFilter
         }
     }
 
-    private static Set<Integer> getSentencesForRule(Map<String,Set<Integer>> sentencesByWord, String rule)
+    private Set<Integer> getSentencesForRule(Map<String,Set<Integer>> sentencesByWord, String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4)
@@ -242,7 +269,7 @@ public class TestSetFilter
 	 * If the rule is abstract, the rule's arity is returned.
 	 * Otherwise, 0 is returned.
 	 */
-    private static int hasAbstractSource(String rule)
+    private int hasAbstractSource(String rule)
     {
         String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
         if (parts.length != 4)
@@ -257,7 +284,7 @@ public class TestSetFilter
         return nonterminalCount;
     }
 
-    private static <T> Set<T> intersect(List<Set<T>> list)
+    private <T> Set<T> intersect(List<Set<T>> list)
     {
         if (list.isEmpty())
             return Collections.emptySet();
@@ -272,7 +299,7 @@ public class TestSetFilter
         return result;
     }
 
-    private static Set<String> getTestNGrams(List<String> sentences)
+    private Set<String> getTestNGrams(List<String> sentences)
     {
         if (sentences.isEmpty())
             return Collections.emptySet();
@@ -282,7 +309,7 @@ public class TestSetFilter
         return result;
     }
 
-    private static Set<String> getNGramsUpToLength(int length, String sentence)
+    private Set<String> getNGramsUpToLength(int length, String sentence)
     {
         if (length < 1)
             return Collections.emptySet();
@@ -296,7 +323,7 @@ public class TestSetFilter
         return result;
     }
 
-    private static String createNGram(String [] tokens, int start, int order)
+    private String createNGram(String [] tokens, int start, int order)
     {
         if (order < 1 || start + order > tokens.length) {
             return "";
@@ -318,42 +345,42 @@ public class TestSetFilter
             System.err.println("    -n    max n-gram to compare to (default 12)");
             return;
         }
-        testSentences = new ArrayList<String>();
-        sentencesByWord = new HashMap<String,Set<Integer>>();
-		acceptedSourceSides = new HashMap<String,Boolean>();
-        Set<String> testNGrams;
+
+		int sentenceNumber = -1;
+		TestSetFilter filter = new TestSetFilter();
+
         for (int i = 0; i < argv.length; i++) {
 			if (argv[i].equals("-v")) {
-				verbose = true;
+				filter.setVerbose(true);
 				continue;
 			}
 			else if (argv[i].equals("-p")) {
-				parallel = true;
+				filter.setParallel(true);
 				continue;
 			}
 			else if (argv[i].equals("-f")) {
-				fast = true;
+				filter.setFast(true);
 				continue;
 			}
 			else if (argv[i].equals("-n")) {
-				RULE_LENGTH = Integer.parseInt(argv[i+1]);
+				filter.setRuleLength(Integer.parseInt(argv[i+1]));
 				i++;
 				continue;
 			}
-            getTestSentences(argv[i]);
+			filter.getTestSentences(argv[i]);
         }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         int rulesIn = 0;
         int rulesOut = 0;
-		if (verbose) {
+		if (filter.verbose) {
 			System.err.println("Processing rules...");
-			if (fast)
+			if (filter.fast)
 				System.err.println("Using fast version...");
-			System.err.println("Using at max " + RULE_LENGTH + " n-grams...");
+			System.err.println("Using at max " + filter.RULE_LENGTH + " n-grams...");
 		}
         while (scanner.hasNextLine()) {
-			if (verbose) {
+			if (filter.verbose) {
 				if ((rulesIn+1) % 2000 == 0) {
 					System.err.print(".");
 					System.err.flush();
@@ -366,22 +393,22 @@ public class TestSetFilter
             rulesIn++;
             String rule = scanner.nextLine();
 
-            if (inTestSet(rule)) {
+            if (filter.inTestSet(rule)) {
                 System.out.println(rule);
-                if (parallel)
+                if (filter.parallel)
                     System.out.flush();
                 rulesOut++;
 			}
-            else if (parallel) {
+            else if (filter.parallel) {
                 System.out.println("");
                 System.out.flush();
             }
         }
-		if (verbose) {
+		if (filter.verbose) {
 			System.err.println("[INFO] Total rules read: " + rulesIn);
 			System.err.println("[INFO] Rules kept: " + rulesOut);
 			System.err.println("[INFO] Rules dropped: " + (rulesIn - rulesOut));
-			System.err.println("[INFO] cached queries: " + cached);
+			System.err.println("[INFO] cached queries: " + filter.cached);
 		}
 
         return;
