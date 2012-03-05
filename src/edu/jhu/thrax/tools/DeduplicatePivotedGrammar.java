@@ -53,12 +53,16 @@ public class DeduplicatePivotedGrammar {
 				labeled, sparse));
 	}
 
-	private static void writeIndex(String index_file) throws IOException,
-			FileNotFoundException {
+	private static void writeIndex(String index_file, MapWritable features)
+			throws IOException, FileNotFoundException {
 		OutputStreamWriter out = new OutputStreamWriter(
 				new FileOutputStream(index_file), "UTF-8");
 		Map<Text, Writable> sorted_features = new TreeMap<Text, Writable>();
 
+		// Copy feature values over from last rule occurrence. 
+		for (Writable label : features.keySet())
+			sorted_features.put((Text) label, features.get(label));
+		
 		for (PivotedFeature pf : pivoted)
 			sorted_features.put(pf.getFeatureLabel(), null);
 
@@ -160,7 +164,7 @@ public class DeduplicatePivotedGrammar {
 				last_rule = rule;
 			}
 			writeRule(rule, features);
-			writeIndex(index_file);
+			writeIndex(index_file, features);
 
 			reader.close();
 		} catch (IOException e) {
