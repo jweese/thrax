@@ -37,12 +37,18 @@ public class DeduplicatePivotedGrammar {
 	private static boolean sparse;
 	private static boolean labeled;
 
-	private static void writeRule(RuleWritable rule) {
+	private static void writeRule(RuleWritable rule, MapWritable features) {
 		Map<Text, Writable> aggregated = new TreeMap<Text, Writable>();
+		// Copy feature values over from last rule occurrence. 
+		for (Writable label : features.keySet())
+			aggregated.put((Text) label, features.get(label));
+		// Overwrite pivoted features with aggregated values.
 		for (PivotedFeature pf : pivoted)
 			aggregated.put(pf.getFeatureLabel(), pf.finalizeAggregation());
+		// Recompute simple features.
 		for (SimpleFeature f : simple)
 			f.score(rule, aggregated);
+		// Print to output.
 		System.out.println(FormatUtils.ruleToText(rule, aggregated,
 				labeled, sparse));
 	}
@@ -117,7 +123,7 @@ public class DeduplicatePivotedGrammar {
 
 			RuleWritable rule = null;
 			RuleWritable last_rule = null;
-
+			
 			for (PivotedFeature pf : pivoted)
 				pf.initializeAggregation();
 
@@ -143,7 +149,7 @@ public class DeduplicatePivotedGrammar {
 				rule = new RuleWritable(rule_line);
 
 				if (last_rule != null && !last_rule.sameYield(rule)) {
-					writeRule(last_rule);
+					writeRule(last_rule, features);
 					for (PivotedFeature pf : pivoted)
 						pf.initializeAggregation();
 				}
@@ -153,7 +159,7 @@ public class DeduplicatePivotedGrammar {
 
 				last_rule = rule;
 			}
-			writeRule(rule);
+			writeRule(rule, features);
 			writeIndex(index_file);
 
 			reader.close();
