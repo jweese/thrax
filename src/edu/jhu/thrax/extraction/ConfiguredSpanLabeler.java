@@ -14,6 +14,6 @@ public abstract class ConfiguredSpanLabeler implements SpanLabeler
         conf = c;
     }
 
-    public abstract Collection<Integer> getLabels(IntPair span);
+    public abstract String getLabel(int start, int end);
 }
 
