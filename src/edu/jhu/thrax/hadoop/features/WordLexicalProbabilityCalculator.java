@@ -83,8 +83,8 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 source = target;
                 target = tmp;
             }
-            Alignment alignment = new Alignment(parts[2], reverse);
-            if (!alignment.consistent(source.length, target.length)) {
+            Alignment alignment; // FIXME = new Alignment(parts[2], reverse);
+            if (!alignment.consistentWith(source.length, target.length)) {
                 context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
                 return;
             }
@@ -92,13 +92,14 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             for (int i = 0; i < source.length; i++) {
                 Text src = new Text(source[i]);
                 TextPair marginal = new TextPair(src, TextMarginalComparator.MARGINAL);
-                if (alignment.sourceIsAligned(i)) {
-                    for (int x : alignment.f2e[i]) {
+                if (alignment.sourceIndexIsAligned(i)) {
+                    for (int x : alignment.targetIndicesAlignedTo(i)) {
                         Text tgt = new Text(target[x]);
                         TextPair tp = new TextPair(src, tgt);
                         counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
                     }
-                    counts.put(marginal, counts.containsKey(marginal) ? counts.get(marginal) + alignment.f2e[i].length : alignment.f2e[i].length);
+					int numWords = alignment.numTargetWordsAlignedTo(i);
+                    counts.put(marginal, counts.containsKey(marginal) ? counts.get(marginal) + numWords : numWords);
                 }
                 else {
                     TextPair tp = new TextPair(src, UNALIGNED);
@@ -165,22 +166,23 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 source = target;
                 target = tmp;
             }
-            Alignment alignment = new Alignment(parts[2], reverse);
-            if (!alignment.consistent(source.length, target.length)) {
+            Alignment alignment; // FIXME = new Alignment(parts[2], reverse);
+            if (!alignment.consistentWith(source.length, target.length)) {
                 context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
                 return;
             }
 
             for (int i = 0; i < target.length; i++) {
                 Text tgt = new Text(target[i]);
-                if (alignment.targetIsAligned(i)) {
-                    for (int x : alignment.e2f[i]) {
+                if (alignment.targetIndexIsAligned(i)) {
+                    for (int x : alignment.sourceIndicesAlignedTo(i)) {
                         Text src = new Text(source[x]);
                         TextPair tp = new TextPair(tgt, src);
                         counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
                     }
                     TextPair m = new TextPair(tgt, TextMarginalComparator.MARGINAL);
-                    counts.put(m, counts.containsKey(m) ? counts.get(m) + alignment.e2f[i].length : alignment.e2f[i].length);
+					int numWords = alignment.numSourceWordsAlignedTo(i);
+                    counts.put(m, counts.containsKey(m) ? counts.get(m) + numWords : numWords);
                 }
                 else {
                     TextPair u = new TextPair(tgt, UNALIGNED);
