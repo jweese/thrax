@@ -4,6 +4,9 @@ import edu.jhu.thrax.datatypes.*;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Scanner;
+
+import java.io.IOException;
 
 public class HierarchicalRuleExtractor
 {
@@ -39,10 +42,14 @@ public class HierarchicalRuleExtractor
 		List<PhrasePair> result = new ArrayList<PhrasePair>();
 		for (int i = 0; i < sourceLength; i++) {
 			for (int x = 1; x <= initialPhraseSourceLimit; x++) {
+				if (i + x > sourceLength)
+					break;
 				for (int j = 0; j < targetLength; j++) {
 					for (int y = 1; y <= initialPhraseTargetLimit; y++) {
+						if (j + y > targetLength)
+							break;
 						PhrasePair pp = new PhrasePair(i, i + x, j, j + y);
-						if (pp.isInitialPhrasePair(a, requireMinimalPhrases, minimumInitialAlignmentPoints)) {
+						if (pp.isInitialPhrasePair(a, !requireMinimalPhrases, minimumInitialAlignmentPoints)) {
 							result.add(pp);
 						}
 					}
@@ -107,6 +114,24 @@ public class HierarchicalRuleExtractor
 		if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints)
 			return false;
 		return true;
+	}
+
+	public static void main(String [] argv) throws IOException
+	{
+		Scanner scanner = new Scanner(System.in);
+		HierarchicalRuleExtractor extractor = new HierarchicalRuleExtractor();
+		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			String [] parts = line.split(" \\|\\|\\| ");
+			if (parts.length >= 3) {
+				int sourceLength = Integer.parseInt(parts[0]);
+				int targetLength = Integer.parseInt(parts[1]);
+				Alignment alignment = ArrayAlignment.fromString(parts[2], false);
+				for (HierarchicalRule r : extractor.extract(sourceLength, targetLength, alignment))
+					System.out.println(r);
+			}
+		}
+		return;
 	}
 
 }
