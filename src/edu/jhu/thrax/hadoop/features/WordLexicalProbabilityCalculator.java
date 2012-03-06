@@ -2,6 +2,7 @@ package edu.jhu.thrax.hadoop.features;
 
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.datatypes.Alignment;
+import edu.jhu.thrax.datatypes.ArrayAlignment;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 import edu.jhu.thrax.util.exceptions.*;
@@ -29,6 +30,7 @@ import org.apache.hadoop.io.DoubleWritable;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 
 public class WordLexicalProbabilityCalculator extends Configured implements Tool
 {
@@ -86,7 +88,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 source = target;
                 target = tmp;
             }
-            Alignment alignment; // FIXME = new Alignment(parts[2], reverse);
+            Alignment alignment = ArrayAlignment.fromString(parts[2], reverse ^ sourceGivenTarget);
             if (!alignment.consistentWith(source.length, target.length)) {
                 context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
                 return;
@@ -96,8 +98,9 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 Text src = new Text(source[i]);
                 TextPair marginal = new TextPair(src, TextMarginalComparator.MARGINAL);
                 if (alignment.sourceIndexIsAligned(i)) {
-                    for (int x : alignment.targetIndicesAlignedTo(i)) {
-                        Text tgt = new Text(target[x]);
+					Iterator<Integer> targetIndices = alignment.targetIndicesAlignedTo(i);
+                    while (targetIndices.hasNext()) {
+                        Text tgt = new Text(target[targetIndices.next()]);
                         TextPair tp = new TextPair(src, tgt);
                         counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
                     }
