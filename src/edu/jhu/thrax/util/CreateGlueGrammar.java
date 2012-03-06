@@ -36,8 +36,8 @@ public class CreateGlueGrammar {
 		String nt_file = null;
 
 		String goal_symbol = "GOAL";
-		String[] features;
-		String[] external;
+		String[] features = null;
+		String[] external = null;
 
 		boolean labeled = false;
 		boolean sparse = false;
@@ -77,8 +77,10 @@ public class CreateGlueGrammar {
 				feature_string += " " + opts.get("features");
 		}
 
-		features = feature_string.trim().split("\\s+|,");
-		external = external_string.trim().split("\\s+|,");
+		if (!feature_string.isEmpty())
+			features = feature_string.trim().split("\\s+|,");
+		if (!external_string.isEmpty())
+			external = external_string.trim().split("\\s+|,");
 
 		Set<String> nts = new HashSet<String>();
 		if (nt_file != null) {
@@ -110,23 +112,27 @@ public class CreateGlueGrammar {
 			Text nt = new Text(nonterminal);
 			unary_map.clear();
 			binary_map.clear();
-
-			for (String e : external) {
-				Text extrenal_label = new Text(e);
-				unary_map.put(extrenal_label, ZERO);
-				binary_map.put(extrenal_label, ZERO);
-			}
-			for (String f : features) {
-				SimpleFeature sf = SimpleFeatureFactory.get(f);
-				if (sf != null) {
-					sf.unaryGlueRuleScore(nt, unary_map);
-					sf.binaryGlueRuleScore(nt, binary_map);
-					continue;
+			
+			if (external != null) {
+				for (String e : external) {
+					Text extrenal_label = new Text(e);
+					unary_map.put(extrenal_label, ZERO);
+					binary_map.put(extrenal_label, ZERO);
 				}
-				MapReduceFeature mrf = FeatureJobFactory.get(f);
-				if (mrf != null) {
-					mrf.unaryGlueRuleScore(nt, unary_map);
-					mrf.binaryGlueRuleScore(nt, binary_map);
+			}
+			if (features != null) {
+				for (String f : features) {
+					SimpleFeature sf = SimpleFeatureFactory.get(f);
+					if (sf != null) {
+						sf.unaryGlueRuleScore(nt, unary_map);
+						sf.binaryGlueRuleScore(nt, binary_map);
+						continue;
+					}
+					MapReduceFeature mrf = FeatureJobFactory.get(f);
+					if (mrf != null) {
+						mrf.unaryGlueRuleScore(nt, unary_map);
+						mrf.binaryGlueRuleScore(nt, binary_map);
+					}
 				}
 			}
 			System.out.println(FormatUtils.ruleToText(
