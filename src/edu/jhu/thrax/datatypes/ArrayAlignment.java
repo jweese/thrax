@@ -173,7 +173,7 @@ class AlignmentIterator implements Iterator<Integer>
 
 	public boolean hasNext()
 	{
-		return keys[current] == key;
+		return current < keys.length && keys[current] == key;
 	}
 
 	public Integer next()

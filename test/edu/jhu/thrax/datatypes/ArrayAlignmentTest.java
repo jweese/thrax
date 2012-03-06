@@ -4,6 +4,8 @@ import org.testng.annotations.Test;
 import org.testng.annotations.Parameters;
 import org.testng.Assert;
 
+import java.util.Iterator;
+
 public class ArrayAlignmentTest
 {
 	@Test
@@ -95,5 +97,51 @@ public class ArrayAlignmentTest
 		ArrayAlignment a = ArrayAlignment.fromString("1-3 1-1 1-77", true);
 		Assert.assertEquals(a.numSourceWordsAlignedTo(1), 3);
 	}
+
+	@Test
+	public void targetIndicesAlignedTo_Unaligned_EmptyIterator()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("1-3 5-1 6-77", false);
+		Assert.assertFalse(a.targetIndicesAlignedTo(3).hasNext());
+	}
+
+	@Test
+	public void sourceIndicesAlignedTo_Unaligned_EmptyIterator()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("1-3 5-1 6-77", false);
+		Assert.assertFalse(a.sourceIndicesAlignedTo(15).hasNext());
+	}
+
+	@Test
+	public void targetIndicesAlignedTo_Aligned_IteratorCorrect()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("1-3 5-77 5-1", false);
+		Iterator<Integer> targetIndices = a.targetIndicesAlignedTo(5);
+		int j;
+		Assert.assertTrue(targetIndices.hasNext());
+		j = targetIndices.next();
+		Assert.assertEquals(j, 1);
+		Assert.assertTrue(targetIndices.hasNext());
+		j = targetIndices.next();
+		Assert.assertEquals(j, 77);
+		Assert.assertFalse(targetIndices.hasNext());
+	}
+
+	@Test
+	public void sourceIndicesAlignedTo_Aligned_IteratorCorrect()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("1-3 5-77 5-3", false);
+		Iterator<Integer> sourceIndices = a.sourceIndicesAlignedTo(3);
+		int j;
+		Assert.assertTrue(sourceIndices.hasNext());
+		j = sourceIndices.next();
+		Assert.assertEquals(j, 1);
+		Assert.assertTrue(sourceIndices.hasNext());
+		j = sourceIndices.next();
+		Assert.assertEquals(j, 5);
+		Assert.assertFalse(sourceIndices.hasNext());
+	}
+
+
 }
 
