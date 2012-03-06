@@ -7,6 +7,7 @@ import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.util.MalformedInput;
 import edu.jhu.thrax.util.io.InputUtilities;
+import edu.jhu.thrax.hadoop.jobs.WordLexprobJob;
 
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -33,12 +34,13 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 {
     public static final Text UNALIGNED = new Text("/UNALIGNED/");
 
-    public static class TargetGivenSourceMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
+    public static class Map extends Mapper<LongWritable, Text, TextPair, IntWritable>
     {
         private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
         private boolean sourceParsed;
         private boolean targetParsed;
         private boolean reverse;
+		private boolean sourceGivenTarget;
 
         protected void setup(Context context) throws IOException, InterruptedException
         {
@@ -49,6 +51,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
             if (conf.get("thrax.english-is-parsed") != null)
                 targetParsed = conf.getBoolean("thrax.english-is-parsed", false);
             reverse = conf.getBoolean("thrax.reverse", false);
+			sourceGivenTarget = conf.getBoolean(WordLexprobJob.SOURCE_GIVEN_TARGET, false);
         }
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
@@ -78,7 +81,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
                 return;
             }
-            if (reverse) {
+            if (reverse ^ sourceGivenTarget) {
                 String [] tmp = source;
                 source = target;
                 target = tmp;
@@ -105,90 +108,6 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                     TextPair tp = new TextPair(src, UNALIGNED);
                     counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
                     counts.put(marginal, counts.containsKey(marginal) ? counts.get(marginal) + 1 : 1);
-                }
-            }
-
-            for (TextPair tp : counts.keySet()) {
-                context.write(tp, new IntWritable(counts.get(tp)));
-            }
-        }
-    }
-
-    public static class SourceGivenTargetMap extends Mapper<LongWritable, Text, TextPair, IntWritable>
-    {
-        private HashMap<TextPair,Integer> counts = new HashMap<TextPair,Integer>();
-        private boolean sourceParsed;
-        private boolean targetParsed;
-        private boolean reverse;
-
-        protected void setup(Context context) throws IOException, InterruptedException
-        {
-            Configuration conf = context.getConfiguration();
-            sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
-            targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
-            // backwards compatibility hack
-            if (conf.get("thrax.english-is-parsed") != null)
-                targetParsed = conf.getBoolean("thrax.english-is-parsed", false);
-            reverse = conf.getBoolean("thrax.reverse", false);
-        }
-
- 
-        protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
-        {
-            counts.clear();
-
-            String line = value.toString();
-            String [] parts = line.trim().split(ThraxConfig.DELIMITER_REGEX);
-            if (parts.length < 3) {
-                context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
-                return;
-            }
-            String [] source;
-            String [] target;
-            try {
-                source = InputUtilities.getWords(parts[0], sourceParsed);
-                target = InputUtilities.getWords(parts[1], targetParsed);
-            }
-            catch (MalformedParseException e) {
-                context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
-                return;
-            }
-            catch (MalformedInputException e) {
-                context.getCounter(MalformedInput.UNKNOWN).increment(1);
-                return;
-            }
-            if (source.length == 0 || target.length == 0) {
-                context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
-                return;
-            }
-            if (reverse) {
-                String [] tmp = source;
-                source = target;
-                target = tmp;
-            }
-            Alignment alignment; // FIXME = new Alignment(parts[2], reverse);
-            if (!alignment.consistentWith(source.length, target.length)) {
-                context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
-                return;
-            }
-
-            for (int i = 0; i < target.length; i++) {
-                Text tgt = new Text(target[i]);
-                if (alignment.targetIndexIsAligned(i)) {
-                    for (int x : alignment.sourceIndicesAlignedTo(i)) {
-                        Text src = new Text(source[x]);
-                        TextPair tp = new TextPair(tgt, src);
-                        counts.put(tp, counts.containsKey(tp) ? counts.get(tp) + 1 : 1);
-                    }
-                    TextPair m = new TextPair(tgt, TextMarginalComparator.MARGINAL);
-					int numWords = alignment.numSourceWordsAlignedTo(i);
-                    counts.put(m, counts.containsKey(m) ? counts.get(m) + numWords : numWords);
-                }
-                else {
-                    TextPair u = new TextPair(tgt, UNALIGNED);
-                    counts.put(u, counts.containsKey(u) ? counts.get(u) + 1 : 1);
-                    TextPair m = new TextPair(tgt, TextMarginalComparator.MARGINAL);
-                    counts.put(m, counts.containsKey(m) ? counts.get(m) + 1 : 1);
                 }
             }
 
@@ -245,7 +164,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         Configuration conf = getConf();
         Job job = new Job(conf, "lexprob-f2e");
         job.setJarByClass(WordLexicalProbabilityCalculator.class);
-        job.setMapperClass(TargetGivenSourceMap.class);
+        job.setMapperClass(Map.class);
         job.setReducerClass(Reduce.class);
         job.setCombinerClass(IntSumReducer.class);
         job.setPartitionerClass(Partition.class);
@@ -260,9 +179,11 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         FileOutputFormat.setOutputPath(job, new Path(f2eOut));
         job.waitForCompletion(true);
 
-        Job e2fjob = new Job(conf, "lexprob-e2f");
+		Configuration newConf = new Configuration(conf);
+		newConf.setBoolean("thrax.__wordlexprob_sgt", true);
+        Job e2fjob = new Job(newConf, "lexprob-e2f");
         e2fjob.setJarByClass(WordLexicalProbabilityCalculator.class);
-        e2fjob.setMapperClass(SourceGivenTargetMap.class);
+        e2fjob.setMapperClass(Map.class);
         e2fjob.setReducerClass(Reduce.class);
         e2fjob.setCombinerClass(IntSumReducer.class);
         e2fjob.setPartitionerClass(Partition.class);
