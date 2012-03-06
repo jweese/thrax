@@ -36,5 +36,22 @@ public class ArrayAlignmentTest
 		Assert.assertFalse(a.targetIndexIsAligned(3));
 	}
 
+	@Test
+	public void sourceIndexIsAligned_IndexPresent_returnsTrue()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("0-0 1-2 77-32", false);
+		Assert.assertTrue(a.sourceIndexIsAligned(0));
+		Assert.assertTrue(a.sourceIndexIsAligned(1));
+		Assert.assertTrue(a.sourceIndexIsAligned(77));
+	}
+
+	@Test
+	public void targetIndexIsAligned_IndexPresent_returnsTrue()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("0-0 1-2 77-32", false);
+		Assert.assertTrue(a.targetIndexIsAligned(0));
+		Assert.assertTrue(a.targetIndexIsAligned(2));
+		Assert.assertTrue(a.targetIndexIsAligned(32));
+	}
 }
 
