@@ -4,24 +4,24 @@ package edu.jhu.thrax.datatypes;
  * This class represents a phrase pair. Essentially it is four integers
  * describing the boundaries of the source and target sides of the phrase pair.
  */
-public class PhrasePair implements Cloneable {
-
+public class PhrasePair 
+{
     /**
      * The index of the start of the source side of this PhrasePair.
      */
-    public int sourceStart;
+    public final int sourceStart;
     /**
      * One plus the index of the end of the source side of this PhrasePair.
      */
-    public int sourceEnd;
+    public final int sourceEnd;
     /**
      * The index of the start of the target side of this PhrasePair.
      */
-    public int targetStart;
+    public final int targetStart;
     /**
      * One plus the index of the end of the target side of this PhrasePair.
      */
-    public int targetEnd;
+    public final int targetEnd;
 
     /**
      * Constructor.
@@ -39,46 +39,9 @@ public class PhrasePair implements Cloneable {
         targetEnd = te;
     }
 
-    /**
-     * Determines whether this PhrasePair is consistent with the given
-     * Alignment. A PhrasePair is consistent if no source word is aligned to
-     * a target word outside of the target span, and no target word is aligned
-     * to a source word outside of the source span.
-     *
-     * @param a an Alignment
-     * @return true if this PhrasePair is consistent, false otherwise
-     */
-    public boolean consistentWith(Alignment a)
-    {
-        for (int i = sourceStart; i < sourceEnd; i++) {
-            if (i >= a.f2e.length)
-                break;
-            for (int x : a.f2e[i]) {
-                if (x < targetStart || x >= targetEnd)
-                    return false;
-            }
-        }
-
-        for (int j = targetStart; j < targetEnd; j++) {
-            if (j >= a.e2f.length)
-                break;
-            for (int x : a.e2f[j]) {
-                if (x < sourceStart || x >= sourceEnd)
-                    return false;
-            }
-        }
-
-        return true;
-    }
-
     public String toString()
     {
         return String.format("[%d,%d)+[%d,%d)", sourceStart, sourceEnd, targetStart, targetEnd);
-    }
-
-    public Object clone()
-    {
-        return new PhrasePair(sourceStart, sourceEnd, targetStart, targetEnd);
     }
 
     public boolean equals(Object o)
