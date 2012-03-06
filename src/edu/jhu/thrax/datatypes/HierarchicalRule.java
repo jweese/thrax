@@ -41,6 +41,14 @@ public class HierarchicalRule
 		return result;
 	}
 
+	public int numAlignmentPoints(Alignment a)
+	{
+		int result = lhs.numAlignmentPoints(a);
+		for (PhrasePair pp : nts)
+			result -= pp.numAlignmentPoints(a);
+		return result;
+	}
+
 	public PhrasePair getLhs()
 	{
 		return lhs;
