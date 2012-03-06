@@ -109,6 +109,16 @@ public class PhrasePair
 			&& a.targetIndexIsAligned(targetEnd - 1);
 	}
 
+	public int sourceLength()
+	{
+		return sourceEnd - sourceStart;
+	}
+
+	public int targetLength()
+	{
+		return targetEnd - targetStart;
+	}
+
     public String toString()
     {
         return String.format("[%d,%d)+[%d,%d)", sourceStart, sourceEnd, targetStart, targetEnd);
