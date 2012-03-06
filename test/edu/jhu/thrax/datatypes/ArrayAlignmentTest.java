@@ -53,5 +53,47 @@ public class ArrayAlignmentTest
 		Assert.assertTrue(a.targetIndexIsAligned(2));
 		Assert.assertTrue(a.targetIndexIsAligned(32));
 	}
+
+	@Test
+	public void numTargetWordsAlignedTo_Unaligned_isZero()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("0-0 1-1", false);
+		Assert.assertEquals(a.numTargetWordsAlignedTo(5), 0);
+	}
+
+	@Test
+	public void numTargetWordsAlignedTo_Singleton_isOne()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("0-0 1-1", false);
+		Assert.assertEquals(a.numTargetWordsAlignedTo(1), 1);
+	}
+
+	@Test
+	public void numSourceWordsAlignedTo_Unaligned_isZero()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("0-0 1-1", false);
+		Assert.assertEquals(a.numSourceWordsAlignedTo(5), 0);
+	}
+
+	@Test
+	public void numSourceWordsAlignedTo_Singleton_isOne()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("0-0 1-1", false);
+		Assert.assertEquals(a.numSourceWordsAlignedTo(1), 1);
+	}
+
+	@Test
+	public void numTargetWordsAlignedTo_Multiple()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("1-3 1-1 1-77", false);
+		Assert.assertEquals(a.numTargetWordsAlignedTo(1), 3);
+	}
+
+	@Test
+	public void numSourceWordsAlignedTo_Multiple()
+	{
+		ArrayAlignment a = ArrayAlignment.fromString("1-3 1-1 1-77", true);
+		Assert.assertEquals(a.numSourceWordsAlignedTo(1), 3);
+	}
 }
 
