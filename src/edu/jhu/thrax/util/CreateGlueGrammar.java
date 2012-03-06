@@ -69,14 +69,14 @@ public class CreateGlueGrammar {
 			return;
 		}
 
-		Map<String, String> opts = ConfFileParser.parse(config_file);
-		if (opts.containsKey("goal-symbol"))
-			goal_symbol = opts.get("goal-symbol");
-		if (opts.containsKey("features"))
-			feature_string += " " + opts.get("features");
+		if (config_file != null) {
+			Map<String, String> opts = ConfFileParser.parse(config_file);
+			if (opts.containsKey("goal-symbol"))
+				goal_symbol = opts.get("goal-symbol");
+			if (opts.containsKey("features"))
+				feature_string += " " + opts.get("features");
+		}
 
-		logger.info("'" + feature_string + "'");
-		
 		features = feature_string.trim().split("\\s+|,");
 		external = external_string.trim().split("\\s+|,");
 
