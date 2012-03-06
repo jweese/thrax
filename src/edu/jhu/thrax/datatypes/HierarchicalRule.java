@@ -25,16 +25,32 @@ public class HierarchicalRule
 		return nts.length;
 	}
 
+	public int numSourceTerminals()
+	{
+		int result = lhs.sourceLength();
+		for (PhrasePair pp : nts)
+			result -= pp.sourceLength();
+		return result;
+	}
+
+	public int numTargetTerminals()
+	{
+		int result = lhs.targetLength();
+		for (PhrasePair pp : nts)
+			result -= pp.targetLength();
+		return result;
+	}
+
+	public PhrasePair getLhs()
+	{
+		return lhs;
+	}
+
 	public PhrasePair getNonterminal(int index)
 	{
 		if (index < 0 || index > nts.length)
 			return null;
 		return nts[index];
-	}
-
-	public boolean lhsContains(PhrasePair pp)
-	{
-		return lhs.contains(pp);
 	}
 
 	public HierarchicalRule addNonterminal(PhrasePair pp)
