@@ -1,5 +1,7 @@
 package edu.jhu.thrax.datatypes;
 
+import java.util.Iterator;
+
 /**
  * This class represents a phrase pair. Essentially it is four integers
  * describing the boundaries of the source and target sides of the phrase pair.
@@ -38,6 +40,74 @@ public class PhrasePair
         targetStart = ts;
         targetEnd = te;
     }
+
+	/**
+	 * Determines if another PhrasePair is contained (non-strictly) within
+	 * this PhrasePair. Another PhrasePair is contained non-strictly if none
+	 * of its boundary points lie outside of this PhrasePair.
+	 *
+	 * @param other the other PhrasePair
+	 * @return true if other is contained non-strictly in this PhrasePar,
+	 * false if at least one point lies outside
+	 */
+	public boolean contains(PhrasePair other)
+	{
+		return other.sourceStart >= sourceStart
+			&& other.sourceEnd <= sourceEnd
+			&& other.targetStart >= targetStart
+			&& other.targetEnd <= targetEnd;
+	}
+
+	/**
+	 * Determine if this PhrasePair can be considered as an initial phrase
+	 * pair according to a particular alignment. A phrase pair is called an
+	 * initial phrase pair if the following conditions are satisfied:
+	 * <p>
+	 * 1) no source words are aligned outside the target span of the phrase
+	 * 2) no target words are aligned outside the source span of the phrase
+	 * 3) a certain number of alignment points are present in the phrase pair
+	 * <p>
+	 * In addition, we may optionally specify that only the smallest phrase
+	 * pair with the same alignment is kept: that is, we may disallow the
+	 * presence of unaligned words at the edges of the PhrasePair.
+	 *
+	 * @param a the Alignment
+	 * @param allowUnaligned whether to allow unaligned words at the edges of
+	 * initial phrase pairs
+	 * @param minimumAligned the minimum number of alignment points needed
+	 * @return true if this is an initial phrase pair, false otherewise
+	 */
+	public boolean isInitialPhrasePair(Alignment a, boolean allowUnaligned, int minimumAligned)
+	{
+		int numLinks = 0;
+		for (int i = sourceStart; i < sourceEnd; i++) {
+			Iterator<Integer> js = a.targetIndicesAlignedTo(i);
+			while (js.hasNext()) {
+				numLinks++;
+				int j = js.next();
+				if (j < targetStart || j >= targetEnd)
+					return false;
+			}
+		}
+		for (int j = targetStart; j < targetEnd; j++) {
+			Iterator<Integer> is = a.sourceIndicesAlignedTo(j);
+			while (is.hasNext()) {
+				numLinks++;
+				int i = is.next();
+				if (i < sourceStart || i >= sourceEnd)
+					return false;
+			}
+		}
+		return numLinks >= minimumAligned && (allowUnaligned || isMinimal(a));
+	}
+
+	private boolean isMinimal(Alignment a)
+	{
+		return a.sourceIndexIsAligned(sourceStart)
+			&& a.sourceIndexIsAligned(sourceEnd - 1)
+			&& a.targetIndexIsAligned(targetStart)
+			&& a.targetIndexIsAligned(targetEnd - 1);
+	}
 
     public String toString()
     {
