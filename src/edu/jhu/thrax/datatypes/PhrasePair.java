@@ -119,6 +119,30 @@ public class PhrasePair
 		return targetEnd - targetStart;
 	}
 
+	public int numAlignmentPoints(Alignment a)
+	{
+		if (sourceLength() < targetLength())
+			return countAlignmentPointsSource(a);
+		else
+			return countAlignmentPointsTarget(a);
+	}
+
+	private int countAlignmentPointsSource(Alignment a)
+	{
+		int result = 0;
+		for (int i = sourceStart; i < sourceEnd; i++)
+			result += a.numTargetWordsAlignedTo(i);
+		return result;
+	}
+
+	private int countAlignmentPointsTarget(Alignment a)
+	{
+		int result = 0;
+		for (int j = targetStart; j < targetEnd; j++)
+			result += a.numSourceWordsAlignedTo(j);
+		return result;
+	}
+
     public String toString()
     {
         return String.format("[%d,%d)+[%d,%d)", sourceStart, sourceEnd, targetStart, targetEnd);
