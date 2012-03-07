@@ -6,7 +6,7 @@ import edu.jhu.thrax.syntax.ParseTree;
 
 import org.apache.hadoop.conf.Configuration;
 
-public class SAMTLabeler extends ConfiguredSpanLabeler {
+public class SAMTLabeler implements SpanLabeler {
 
     private boolean TARGET_IS_SAMT_SYNTAX = true;
     private boolean ALLOW_CONSTITUENT_LABEL = true;
@@ -20,7 +20,6 @@ public class SAMTLabeler extends ConfiguredSpanLabeler {
 
     public SAMTLabeler(Configuration conf, String parse)
     {
-        super(conf);
         TARGET_IS_SAMT_SYNTAX = conf.getBoolean("thrax.target-is-samt-syntax", true);
         ALLOW_CONSTITUENT_LABEL = conf.getBoolean("thrax.allow-constituent-label", true);
         ALLOW_CCG_LABEL = conf.getBoolean("thrax.allow-ccg-label", true);

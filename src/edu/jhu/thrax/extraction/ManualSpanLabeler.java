@@ -1,18 +1,15 @@
 package edu.jhu.thrax.extraction;
 
-import org.apache.hadoop.conf.Configuration;
-
-public class ManualSpanLabeler extends ConfiguredSpanLabeler
+public class ManualSpanLabeler implements SpanLabeler
 {
     private final String [] labels;
 	private final String defaultLabel;
     private final int sentenceLength;
 
-    public ManualSpanLabeler(Configuration conf, String [] ls)
+    public ManualSpanLabeler(String [] ls, String def)
     {
-        super(conf);
 		labels = ls;
-		defaultLabel = conf.get("thrax.default-nt", "X");
+		defaultLabel = def;
 		sentenceLength = getSentenceLength(labels.length);
     }
 
