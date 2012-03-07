@@ -120,15 +120,24 @@ public class HierarchicalRuleExtractor
 	{
 		Scanner scanner = new Scanner(System.in, "utf-8");
 		HierarchicalRuleExtractor extractor = new HierarchicalRuleExtractor();
+		SpanLabeler labeler = null;
+		if (argv.length > 0) {
+			if (argv[0].equals("--hiero"))
+				labeler = new HieroLabeler("X");
+		}
 		while (scanner.hasNextLine()) {
 			String line = scanner.nextLine();
 			String [] parts = line.split(" \\|\\|\\| ");
 			if (parts.length >= 3) {
-				int sourceLength = Integer.parseInt(parts[0]);
-				int targetLength = Integer.parseInt(parts[1]);
+				String [] source = parts[0].split("\\s+");
+				String [] target = parts[1].split("\\s+");
 				Alignment alignment = ArrayAlignment.fromString(parts[2], false);
-				for (HierarchicalRule r : extractor.extract(sourceLength, targetLength, alignment))
-					System.out.println(r);
+				for (HierarchicalRule r : extractor.extract(source.length, target.length, alignment)) {
+					if (labeler != null)
+						System.out.println(r.toString(source, target, labeler, true));
+					else
+						System.out.println(r);
+				}
 			}
 		}
 		return;
