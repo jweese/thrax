@@ -113,5 +113,11 @@ public class SAMTLabeler extends ConfiguredSpanLabeler {
         return c;
     }
 
+	// FIXME:
+	// actually implement this method
+	public String getLabel(int from, int to)
+	{
+		throw new UnsupportedOperationException();
+	}
 }
 
