@@ -105,14 +105,19 @@ public class ParseTree
 		return new Node(0);
 	}
 
-	public List<Node> nodesWithSpan(int from, int to)
+	public int length()
+	{
+		return end[0];
+	}
+
+	public List<Node> internalNodesWithSpan(int from, int to)
 	{
 		int index = firstIndexOf(start, from);
 		if (index < 0)
 			return Collections.<Node>emptyList();
 		List<Node> result = new ArrayList<Node>();
 		while (start[index] == from && end[index] <= to) {
-			if (end[index] == to)
+			if (end[index] == to && numChildren[index] > 0)
 				result.add(new Node(index));
 		}
 		return result;
@@ -156,7 +161,7 @@ public class ParseTree
 		return result;
 	}
 
-	private class Node
+	public class Node
 	{
 		private final int index;
 
