@@ -2,6 +2,8 @@ package edu.jhu.thrax.datatypes;
 
 import java.util.Arrays;
 
+import edu.jhu.thrax.extraction.SpanLabeler;
+
 public class HierarchicalRule
 {
 	private final PhrasePair lhs;
@@ -98,6 +100,20 @@ public class HierarchicalRule
 		result = result * 37 + lhs.hashCode();
 		result = result * 37 + Arrays.hashCode(nts);
 		return result;
+	}
+
+	private String lhsLabel(SpanLabeler labeler, boolean useSource)
+	{
+		String raw = lhs.getLabel(labeler, useSource);
+		return raw == null ? null : "[" + raw + "]";
+	}
+
+	private String ntLabel(int i, SpanLabeler labeler, boolean useSource)
+	{
+		if (i < 0 || i >= nts.length)
+			return null;
+		String raw = nts[i].getLabel(labeler, useSource);
+		return raw == null ? null : String.format("[%s,%d]", raw, i + 1);
 	}
 }
 

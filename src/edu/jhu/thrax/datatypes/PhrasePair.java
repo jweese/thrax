@@ -2,6 +2,8 @@ package edu.jhu.thrax.datatypes;
 
 import java.util.Iterator;
 
+import edu.jhu.thrax.extraction.SpanLabeler;
+
 /**
  * This class represents a phrase pair. Essentially it is four integers
  * describing the boundaries of the source and target sides of the phrase pair.
@@ -170,4 +172,12 @@ public class PhrasePair
         result *= 163 + targetEnd;
         return result;
     }
+
+	public String getLabel(SpanLabeler labeler, boolean useSource)
+	{
+		if (useSource)
+			return labeler.getLabel(sourceStart, sourceEnd);
+		else
+			return labeler.getLabel(targetStart, targetEnd);
+	}
 }
