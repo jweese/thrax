@@ -2,14 +2,13 @@ package edu.jhu.thrax.extraction;
 
 import org.apache.hadoop.conf.Configuration;
 
-public class HieroLabeler extends ConfiguredSpanLabeler
+public class HieroLabeler implements SpanLabeler
 {
-    private String label;
+    private final String label;
 
-    public HieroLabeler(Configuration conf)
+    public HieroLabeler(String s)
     {
-        super(conf);
-        label = conf.get("thrax.default-nt", "X");
+        label = s;
     }
 
     public String getLabel(int start, int end)
