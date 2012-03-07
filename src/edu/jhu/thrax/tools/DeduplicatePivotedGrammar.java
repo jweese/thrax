@@ -86,6 +86,9 @@ public class DeduplicatePivotedGrammar {
 		String index_file = null;
 		String feature_string = null;
 
+		boolean index_only = false;
+		boolean index_written = false;
+		
 		for (int i = 0; i < args.length; i++) {
 			if ("-g".equals(args[i]) && (i < args.length - 1)) {
 				grammar_file = args[++i];
@@ -97,6 +100,8 @@ public class DeduplicatePivotedGrammar {
 				labeled = true;
 			} else if ("-s".equals(args[i])) {
 				sparse = true;
+			} else if ("-o".equals(args[i])) {
+				index_only = true;
 			}
 		}
 
@@ -151,6 +156,15 @@ public class DeduplicatePivotedGrammar {
 					}
 				}
 				rule = new RuleWritable(rule_line);
+				
+				if (!index_written) {
+					writeIndex(index_file, features);
+					index_written = true;
+					if (index_only) {
+						reader.close();
+						return;
+					}
+				}
 
 				if (last_rule != null && !last_rule.sameYield(rule)) {
 					writeRule(last_rule, features);
@@ -164,7 +178,6 @@ public class DeduplicatePivotedGrammar {
 				last_rule = rule;
 			}
 			writeRule(rule, features);
-			writeIndex(index_file, features);
 
 			reader.close();
 		} catch (IOException e) {
