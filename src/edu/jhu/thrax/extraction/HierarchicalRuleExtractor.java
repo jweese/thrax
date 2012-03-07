@@ -118,7 +118,7 @@ public class HierarchicalRuleExtractor
 
 	public static void main(String [] argv) throws IOException
 	{
-		Scanner scanner = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in, "utf-8");
 		HierarchicalRuleExtractor extractor = new HierarchicalRuleExtractor();
 		while (scanner.hasNextLine()) {
 			String line = scanner.nextLine();
