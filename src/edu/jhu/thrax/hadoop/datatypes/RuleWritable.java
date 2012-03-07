@@ -15,7 +15,6 @@ import org.apache.hadoop.mapreduce.Partitioner;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
-import edu.jhu.thrax.util.Vocabulary;
 
 public class RuleWritable implements WritableComparable<RuleWritable>
 {
