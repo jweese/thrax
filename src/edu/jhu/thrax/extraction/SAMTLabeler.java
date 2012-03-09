@@ -8,10 +8,10 @@ import org.apache.hadoop.conf.Configuration;
 
 public class SAMTLabeler implements SpanLabeler {
 
-    private boolean ALLOW_CONSTITUENT_LABEL = true;
-    private boolean ALLOW_CCG_LABEL = true;
-    private boolean ALLOW_CONCAT_LABEL = true;
-    private boolean ALLOW_DOUBLE_CONCAT = true;
+    private boolean allowConstituent = true;
+    private boolean allowCCG = true;
+    private boolean allowConcat = true;
+    private boolean allowDoubleConcat = true;
     private UnaryCategoryHandler unaryCategoryHandler = UnaryCategoryHandler.ALL;
 
 	private ParseTree tree;
@@ -19,10 +19,10 @@ public class SAMTLabeler implements SpanLabeler {
 
     public SAMTLabeler(Configuration conf, String parse)
     {
-        ALLOW_CONSTITUENT_LABEL = conf.getBoolean("thrax.allow-constituent-label", true);
-        ALLOW_CCG_LABEL = conf.getBoolean("thrax.allow-ccg-label", true);
-        ALLOW_CONCAT_LABEL = conf.getBoolean("thrax.allow-concat-label", true);
-        ALLOW_DOUBLE_CONCAT = conf.getBoolean("thrax.allow-double-plus", true);
+        allowConstituent = conf.getBoolean("thrax.allow-constituent-label", true);
+        allowCCG = conf.getBoolean("thrax.allow-ccg-label", true);
+        allowConcat = conf.getBoolean("thrax.allow-concat-label", true);
+        allowDoubleConcat = conf.getBoolean("thrax.allow-double-plus", true);
 		defaultLabel = conf.get("thrax.default-nt", "X");
 		tree = ParseTree.fromPennFormat(parse);
 		if (tree == null)
@@ -34,17 +34,17 @@ public class SAMTLabeler implements SpanLabeler {
 		if (tree == null)
 			return defaultLabel;
 		String label;
-		if (ALLOW_CONSTITUENT_LABEL) {
+		if (allowConstituent) {
 			label = constituentLabel(from, to);
 			if (label != null)
 				return label;
 		}
-		if (ALLOW_CONCAT_LABEL) {
+		if (allowConcat) {
 			label = concatenatedLabel(from, to);
 			if (label != null)
 				return label;
 		}
-		if (ALLOW_CCG_LABEL) {
+		if (allowCCG) {
 			label = forwardSlashLabel(from, to);
 			if (label != null)
 				return label;
@@ -52,7 +52,7 @@ public class SAMTLabeler implements SpanLabeler {
 			if (label != null)
 				return label;
 		}
-		if (ALLOW_DOUBLE_CONCAT) {
+		if (allowDoubleConcat) {
 			label = doubleConcatenatedLabel(from, to);
 			if (label != null)
 				return label;
