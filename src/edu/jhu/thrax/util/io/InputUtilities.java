@@ -6,6 +6,7 @@ import edu.jhu.thrax.util.exceptions.*;
 import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.datatypes.ArrayAlignment;
 import edu.jhu.thrax.datatypes.AlignedSentencePair;
+import edu.jhu.thrax.util.FormatUtils;
 
 /**
  * Methods for validating user input. These should be used everywher user
@@ -75,11 +76,23 @@ public class InputUtilities
 	{
 		String [] sourceWords = getWords(source, sourceIsParsed);
 		String [] targetWords = getWords(target, targetIsParsed);
-		Alignment alignment = ArrayAlignment.fromString(al, reverse);
+		if (sourceWords.length == 0 || targetWords.length == 0)
+			throw new MalformedInputException("empty sentence");
+		Alignment alignment = ArrayAlignment.fromString(al.trim(), reverse);
+		if (!alignment.consistentWith(sourceWords.length, targetWords.length))
+			throw new MalformedInputException("inconsistent alignment");
 		if (reverse)
 			return new AlignedSentencePair(targetWords, sourceWords, alignment);
 		else
 			return new AlignedSentencePair(sourceWords, targetWords, alignment);
+	}
+
+	public static AlignedSentencePair alignedSentencePair(String line, boolean sourceIsParsed, boolean targetIsParsed, boolean reverse) throws MalformedInputException
+	{
+		String [] parts = line.split(FormatUtils.DELIMITER_REGEX);
+		if (parts.length < 3)
+			throw new MalformedInputException("not enough fields");
+		return alignedSentencePair(parts[0], sourceIsParsed, parts[1], targetIsParsed, parts[2], reverse);
 	}
 }
 
