@@ -62,7 +62,7 @@ public class SAMTLabeler implements SpanLabeler {
 			if (label != null)
 				return label;
 		}
-		return null;
+		return defaultLabel;
 	}
 
 	private String constituentLabel(int from, int to)
