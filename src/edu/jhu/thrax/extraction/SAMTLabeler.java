@@ -13,7 +13,7 @@ public class SAMTLabeler implements SpanLabeler {
     private boolean ALLOW_CCG_LABEL = true;
     private boolean ALLOW_CONCAT_LABEL = true;
     private boolean ALLOW_DOUBLE_CONCAT = true;
-    private String UNARY_CATEGORY_HANDLER = "all";
+    private UnaryCategoryHandler unaryCategoryHandler = UnaryCategoryHandler.ALL;
 
 	private ParseTree tree;
 	private String defaultLabel;
@@ -25,7 +25,6 @@ public class SAMTLabeler implements SpanLabeler {
         ALLOW_CCG_LABEL = conf.getBoolean("thrax.allow-ccg-label", true);
         ALLOW_CONCAT_LABEL = conf.getBoolean("thrax.allow-concat-label", true);
         ALLOW_DOUBLE_CONCAT = conf.getBoolean("thrax.allow-double-plus", true);
-        UNARY_CATEGORY_HANDLER = conf.get("thrax.unary-category-handler", "all");
 		defaultLabel = conf.get("thrax.default-nt", "X");
 		tree = ParseTree.fromPennFormat(parse);
 		if (tree == null)
@@ -68,16 +67,18 @@ public class SAMTLabeler implements SpanLabeler {
 		List<ParseTree.Node> nodes = tree.internalNodesWithSpan(from, to);
 		if (nodes.isEmpty())
 			return null;
-		if (UNARY_CATEGORY_HANDLER.equals("top"))
+		switch (unaryCategoryHandler) {
+		case TOP:
 			return nodes.get(0).label();
-		else if (UNARY_CATEGORY_HANDLER.equals("bottom"))
+		case BOTTOM:
 			return nodes.get(nodes.size() - 1).label();
-		else {
+		case ALL:
 			String result = nodes.get(0).label();
 			for (int i = 1; i < nodes.size(); i++)
 				result += ":" + nodes.get(i).label();
 			return result;
 		}
+		return null;
 	}
 
 	private String concatenatedLabel(int from, int to)
@@ -125,6 +126,21 @@ public class SAMTLabeler implements SpanLabeler {
 			}
 		}
 		return null;
+	}
+
+	public enum UnaryCategoryHandler
+	{
+		TOP, BOTTOM, ALL;
+
+		public static UnaryCategoryHandler fromString(String s)
+		{
+			if (s.equalsIgnoreCase("top"))
+				return TOP;
+			else if (s.equalsIgnoreCase("bottom"))
+				return BOTTOM;
+			else
+				return ALL;
+		}
 	}
 }
 
