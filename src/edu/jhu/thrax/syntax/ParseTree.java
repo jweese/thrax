@@ -105,9 +105,14 @@ public class ParseTree
 		return new Node(0);
 	}
 
-	public int length()
+	public int numLeaves()
 	{
 		return end[0];
+	}
+
+	public int numNodes()
+	{
+		return labels.length;
 	}
 
 	public List<Node> internalNodesWithSpan(int from, int to)

@@ -93,7 +93,7 @@ public class SAMTLabeler implements SpanLabeler {
 
 	private String forwardSlashLabel(int from, int to)
 	{
-		for (int end = to + 1; end <= tree.length(); end++) {
+		for (int end = to + 1; end <= tree.numLeaves(); end++) {
 			String a = constituentLabel(from, end);
 			String b = constituentLabel(to, end);
 			if (a != null && b != null)
