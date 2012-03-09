@@ -66,5 +66,34 @@ public class ParseTreeTest
 		Assert.assertEquals(node.spanEnd(), 1);
 		Assert.assertFalse(node.numChildren() == 0);
 	}
+
+	@Test
+	public void leaf_ChildIterator_isEmpty()
+	{
+		ParseTree pt = ParseTree.fromPennFormat("a");
+		ParseTree.Node node = pt.root();
+		Assert.assertFalse(node.children().hasNext());
+	}
+
+	@Test
+	public void tree_ChildIterator()
+	{
+		ParseTree pt = ParseTree.fromPennFormat("(A b c)");
+		ParseTree.Node node = pt.root();
+		Iterator<ParseTree.Node> iter = node.children();
+		Assert.assertTrue(iter.hasNext());
+		node = iter.next();
+		Assert.assertEquals(node.label(), "b");
+		Assert.assertEquals(node.spanStart(), 0);
+		Assert.assertEquals(node.spanEnd(), 1);
+		Assert.assertFalse(node.children().hasNext());
+		Assert.assertTrue(iter.hasNext());
+		node = iter.next();
+		Assert.assertEquals(node.label(), "c");
+		Assert.assertEquals(node.spanStart(), 1);
+		Assert.assertEquals(node.spanEnd(), 2);
+		Assert.assertFalse(node.children().hasNext());
+		Assert.assertFalse(iter.hasNext());
+	}
 }
 

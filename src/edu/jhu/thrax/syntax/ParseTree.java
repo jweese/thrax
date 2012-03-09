@@ -91,6 +91,7 @@ public class ParseTree
 					increment(es, i);
 				if (!ancestors.empty())
 					increment(cs, ancestors.peek());
+				start++;
 			}
 		}
 	}
