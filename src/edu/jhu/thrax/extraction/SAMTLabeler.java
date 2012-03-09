@@ -4,26 +4,31 @@ import java.util.List;
 
 import edu.jhu.thrax.syntax.ParseTree;
 
-import org.apache.hadoop.conf.Configuration;
-
 public class SAMTLabeler implements SpanLabeler {
 
     private boolean allowConstituent = true;
     private boolean allowCCG = true;
     private boolean allowConcat = true;
     private boolean allowDoubleConcat = true;
-    private UnaryCategoryHandler unaryCategoryHandler = UnaryCategoryHandler.ALL;
+    private UnaryCategoryHandler unaryCategoryHandler;
 
 	private ParseTree tree;
 	private String defaultLabel;
 
-    public SAMTLabeler(Configuration conf, String parse)
+    public SAMTLabeler(String parse,
+					   boolean constituent,
+					   boolean ccg,
+					   boolean concat,
+					   boolean doubleConcat,
+					   String unary,
+					   String def)
     {
-        allowConstituent = conf.getBoolean("thrax.allow-constituent-label", true);
-        allowCCG = conf.getBoolean("thrax.allow-ccg-label", true);
-        allowConcat = conf.getBoolean("thrax.allow-concat-label", true);
-        allowDoubleConcat = conf.getBoolean("thrax.allow-double-plus", true);
-		defaultLabel = conf.get("thrax.default-nt", "X");
+        allowConstituent = constituent;
+        allowCCG = ccg;
+        allowConcat = concat;
+        allowDoubleConcat = doubleConcat;
+		defaultLabel = def;
+		unaryCategoryHandler = UnaryCategoryHandler.fromString(unary);
 		tree = ParseTree.fromPennFormat(parse);
 		if (tree == null)
 			System.err.printf("WARNING: SAMT labeler: %s is not a parse tree\n", parse);
@@ -126,7 +131,7 @@ public class SAMTLabeler implements SpanLabeler {
 		return null;
 	}
 
-	public enum UnaryCategoryHandler
+	private enum UnaryCategoryHandler
 	{
 		TOP, BOTTOM, ALL;
 
