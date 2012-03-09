@@ -60,6 +60,14 @@ public class SAMTLabelerTest
 	{
 		SAMTLabeler labeler = new SAMTLabeler("(A (B c) (D e))", false, true, false, true, "all", "X");
 		Assert.assertEquals(labeler.getLabel(0, 1), "A/D");
+		Assert.assertEquals(labeler.getLabel(1, 2), "A\\B");
+	}
+
+	@Test
+	public void getLabel_NoConstCatCCG_returnDoubleCat()
+	{
+		SAMTLabeler labeler = new SAMTLabeler("(A (B c) (D e) (F g))", false, false, false, true, "all", "X");
+		Assert.assertEquals(labeler.getLabel(0, 3), "B+D+F");
 	}
 }
 
