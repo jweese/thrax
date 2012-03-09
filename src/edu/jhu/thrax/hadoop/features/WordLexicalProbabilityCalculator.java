@@ -1,6 +1,6 @@
 package edu.jhu.thrax.hadoop.features;
 
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.datatypes.ArrayAlignment;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
@@ -60,7 +60,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         {
             counts.clear();
             String line = value.toString();
-            String [] parts = line.split(ThraxConfig.DELIMITER_REGEX);
+            String [] parts = line.split(FormatUtils.DELIMITER_REGEX);
             if (parts.length < 3) {
                 context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
                 return;
