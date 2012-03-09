@@ -40,5 +40,26 @@ public class SAMTLabelerTest
 		SAMTLabeler labeler = new SAMTLabeler("(A (B c))", true, true, true, true, "all", "X");
 		Assert.assertEquals(labeler.getLabel(0, 1), "A:B");
 	}
+
+	@Test
+	public void getLabel_NoConst_returnCat()
+	{
+		SAMTLabeler labeler = new SAMTLabeler("(A (B c) (D e))", false, true, true, true, "all", "X");
+		Assert.assertEquals(labeler.getLabel(0, 2), "B+D");
+	}
+
+	@Test
+	public void getLabel_NoConstCat_noCCG_returnDefault()
+	{
+		SAMTLabeler labeler = new SAMTLabeler("(A (B c) (D e))", false, true, false, true, "all", "X");
+		Assert.assertEquals(labeler.getLabel(0, 2), "X");
+	}
+
+	@Test
+	public void getLabel_NoConstCat_returnCCG()
+	{
+		SAMTLabeler labeler = new SAMTLabeler("(A (B c) (D e))", false, true, false, true, "all", "X");
+		Assert.assertEquals(labeler.getLabel(0, 1), "A/D");
+	}
 }
 
