@@ -19,5 +19,26 @@ public class SAMTLabelerTest
 		Assert.assertEquals(labeler.getLabel(0, 3), "X");
 		Assert.assertEquals(labeler.getLabel(-2, 1), "X");
 	}
+
+	@Test
+	public void getLabel_UnaryChain_Top()
+	{
+		SAMTLabeler labeler = new SAMTLabeler("(A (B c))", true, true, true, true, "top", "X");
+		Assert.assertEquals(labeler.getLabel(0, 1), "A");
+	}
+
+	@Test
+	public void getLabel_UnaryChain_Bottom()
+	{
+		SAMTLabeler labeler = new SAMTLabeler("(A (B c))", true, true, true, true, "bottom", "X");
+		Assert.assertEquals(labeler.getLabel(0, 1), "B");
+	}
+
+	@Test
+	public void getLabel_UnaryChain_All()
+	{
+		SAMTLabeler labeler = new SAMTLabeler("(A (B c))", true, true, true, true, "all", "X");
+		Assert.assertEquals(labeler.getLabel(0, 1), "A:B");
+	}
 }
 
