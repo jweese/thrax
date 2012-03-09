@@ -17,5 +17,11 @@
         </packages>
     </test>
 
+	<test name="Extraction">
+		<packages>
+			<package name="edu.jhu.thrax.extraction"/>
+		</packages>
+	</test>
+
 </suite>
 
