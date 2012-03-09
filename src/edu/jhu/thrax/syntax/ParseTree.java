@@ -121,7 +121,8 @@ public class ParseTree
 		if (index < 0)
 			return Collections.<Node>emptyList();
 		List<Node> result = new ArrayList<Node>();
-		while (start[index] == from && end[index] >= to) {
+		while (index < start.length && 
+			   start[index] == from && end[index] >= to) {
 			if (end[index] == to && numChildren[index] > 0)
 				result.add(new Node(index));
 			index++;

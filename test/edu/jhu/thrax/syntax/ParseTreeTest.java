@@ -48,5 +48,23 @@ public class ParseTreeTest
 		Assert.assertEquals(node.spanEnd(), 2);
 		Assert.assertFalse(node.numChildren() == 0);
 	}
+
+	@Test
+	public void internalNodesWithSpan_unaryChain()
+	{
+		ParseTree pt = ParseTree.fromPennFormat("(A (B c))");
+		List<ParseTree.Node> list = pt.internalNodesWithSpan(0, 1);
+		Assert.assertEquals(list.size(), 2);
+		ParseTree.Node node = list.get(0);
+		Assert.assertEquals(node.label(), "A");
+		Assert.assertEquals(node.spanStart(), 0);
+		Assert.assertEquals(node.spanEnd(), 1);
+		Assert.assertFalse(node.numChildren() == 0);
+		node = list.get(1);
+		Assert.assertEquals(node.label(), "B");
+		Assert.assertEquals(node.spanStart(), 0);
+		Assert.assertEquals(node.spanEnd(), 1);
+		Assert.assertFalse(node.numChildren() == 0);
+	}
 }
 
