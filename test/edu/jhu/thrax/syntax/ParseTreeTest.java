@@ -4,6 +4,7 @@ import org.testng.annotations.Test;
 import org.testng.Assert;
 
 import java.util.Iterator;
+import java.util.List;
 
 public class ParseTreeTest
 {
@@ -33,6 +34,19 @@ public class ParseTreeTest
 	{
 		ParseTree pt = ParseTree.fromPennFormat("(A (B c d))");
 		Assert.assertEquals(pt.numNodes(), 4);
+	}
+
+	@Test 
+	void internalNodesWithSpan_Single()
+	{
+		ParseTree pt = ParseTree.fromPennFormat("(A (B c d) e)");
+		List<ParseTree.Node> list = pt.internalNodesWithSpan(0, 2);
+		Assert.assertEquals(list.size(), 1);
+		ParseTree.Node node = list.get(0);
+		Assert.assertEquals(node.label(), "B");
+		Assert.assertEquals(node.spanStart(), 0);
+		Assert.assertEquals(node.spanEnd(), 2);
+		Assert.assertFalse(node.numChildren() == 0);
 	}
 }
 
