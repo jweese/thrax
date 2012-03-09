@@ -20,6 +20,32 @@ public class HierarchicalRuleExtractor
 	private int targetSymbolLimit = 1000;
 	private int minimumRuleAlignmentPoints = 1;
 
+	public HierarchicalRuleExtractor()
+	{
+		// just use the defaults!
+	}
+
+	public HierarchicalRuleExtractor(int arity,
+									 int initialPhraseSource,
+									 int initialPhraseTarget,
+									 int initialAlignment,
+									 boolean initialAligned,
+									 int sourceLimit,
+									 int targetLimit,
+									 int ruleAlignment,
+									 boolean adjacent)
+	{
+		arityLimit = arity;
+		initialPhraseSourceLimit = initialPhraseSource;
+		initialPhraseTargetLimit = initialPhraseTarget;
+		minimumInitialAlignmentPoints = initialAlignment;
+		requireMinimalPhrases = initialAligned;
+		sourceSymbolLimit = sourceLimit;
+		targetSymbolLimit = targetLimit;
+		minimumRuleAlignmentPoints = ruleAlignment;
+		allowAdjacent = adjacent;
+	}
+
 	public List<HierarchicalRule> extract(int sourceLength, int targetLength, Alignment alignment)
 	{
 		List<PhrasePair> initialPhrasePairs = initialPhrasePairs(sourceLength, targetLength, alignment);
