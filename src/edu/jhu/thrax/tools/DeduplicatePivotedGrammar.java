@@ -14,7 +14,7 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.features.SimpleFeature;
 import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
@@ -29,7 +29,7 @@ public class DeduplicatePivotedGrammar {
 			Logger.getLogger(DeduplicatePivotedGrammar.class.getName());
 
 	private static final String DELIM = String.format(" %s ",
-			ThraxConfig.DELIMITER_REGEX);
+			FormatUtils.DELIMITER_REGEX);
 
 	private static List<SimpleFeature> simple;
 	private static List<PivotedFeature> pivoted;
