@@ -3,6 +3,7 @@ package edu.jhu.thrax.hadoop.features;
 import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.datatypes.ArrayAlignment;
+import edu.jhu.thrax.datatypes.AlignedSentencePair;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 import edu.jhu.thrax.util.exceptions.*;
@@ -60,35 +61,17 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
         {
             counts.clear();
             String line = value.toString();
-            String [] parts = line.split(FormatUtils.DELIMITER_REGEX);
-            if (parts.length < 3) {
-                context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
-                return;
-            }
-            String [] source;
-            String [] target;
+			AlignedSentencePair sentencePair;
             try {
-                source = InputUtilities.getWords(parts[0], sourceParsed);
-                target = InputUtilities.getWords(parts[1], targetParsed);
+                sentencePair = InputUtilities.alignedSentencePair(line, sourceParsed, targetParsed, reverse ^ sourceGivenTarget);
             }
             catch (MalformedInputException e) {
                 context.getCounter("input errors", e.getMessage()).increment(1);
                 return;
             }
-            if (source.length == 0 || target.length == 0) {
-                context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
-                return;
-            }
-            if (reverse ^ sourceGivenTarget) {
-                String [] tmp = source;
-                source = target;
-                target = tmp;
-            }
-            Alignment alignment = ArrayAlignment.fromString(parts[2], reverse ^ sourceGivenTarget);
-            if (!alignment.consistentWith(source.length, target.length)) {
-                context.getCounter(MalformedInput.INCONSISTENT_ALIGNMENT).increment(1);
-                return;
-            }
+			String [] source = sentencePair.source;
+			String [] target = sentencePair.target;
+            Alignment alignment = sentencePair.alignment;
 
             for (int i = 0; i < source.length; i++) {
                 Text src = new Text(source[i]);
