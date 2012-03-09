@@ -21,6 +21,15 @@ public class AlignmentArray implements WritableComparable<AlignmentArray> {
 		array = values;
 	}
 
+	public AlignmentArray(String[][] values) {
+		array = new Text[values.length][];
+		for (int i = 0; i < values.length; i++) {
+			array[i] = new Text[values[i].length];
+			for (int j = 0; j < values[i].length; j++)
+				array[i][j] = new Text(values[i][j]);
+		}
+	}
+
 	public void set(Text[][] values) {
 		array = values;
 	}
