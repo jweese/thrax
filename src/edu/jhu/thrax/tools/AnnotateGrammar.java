@@ -10,7 +10,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.features.SimpleFeature;
 import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
@@ -23,7 +23,7 @@ public class AnnotateGrammar {
 			Logger.getLogger(AnnotateGrammar.class.getName());
 	
 	private static final String DELIM = String.format(" %s ",
-			ThraxConfig.DELIMITER_REGEX);
+			FormatUtils.DELIMITER_REGEX);
 
 	public static void main(String[] args) {
 
