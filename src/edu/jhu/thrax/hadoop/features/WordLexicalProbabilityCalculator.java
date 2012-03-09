@@ -71,12 +71,8 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
                 source = InputUtilities.getWords(parts[0], sourceParsed);
                 target = InputUtilities.getWords(parts[1], targetParsed);
             }
-            catch (MalformedParseException e) {
-                context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
-                return;
-            }
             catch (MalformedInputException e) {
-                context.getCounter(MalformedInput.UNKNOWN).increment(1);
+                context.getCounter("input errors", e.getMessage()).increment(1);
                 return;
             }
             if (source.length == 0 || target.length == 0) {

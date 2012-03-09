@@ -18,9 +18,9 @@ public class InputUtilities
      *
      * @param parse a representation of a parse tree (Penn treebank style)
      * @return an array of String giving the labels of the tree's leaves
-     * @throws MalformedParseException if the parse tree is not well-formed
+     * @throws MalformedInputException if the parse tree is not well-formed
      */
-    public static String [] parseYield(String parse) throws MalformedParseException
+    public static String [] parseYield(String parse) throws MalformedInputException
     {
         String trimmed = parse.trim();
         if (trimmed.equals(""))
@@ -38,7 +38,7 @@ public class InputUtilities
             }
             if (")".equals(t)) {
                 if (level == 0)
-                    throw new MalformedParseException(parse);
+                    throw new MalformedInputException("malformed parse");
                 level--;
             }
             else if (!expectNT)
@@ -46,7 +46,7 @@ public class InputUtilities
             expectNT = false;
         }
         if (level != 0)
-            throw new MalformedParseException(parse);
+            throw new MalformedInputException("malformed parse");
         return result.toArray(new String[result.size()]);
     }
 

@@ -15,13 +15,6 @@ import org.apache.hadoop.fs.Path;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.MalformedInput;
 import edu.jhu.thrax.util.TestSetFilter;
-import edu.jhu.thrax.util.exceptions.ConfigurationException;
-import edu.jhu.thrax.util.exceptions.EmptyAlignmentException;
-import edu.jhu.thrax.util.exceptions.EmptySentenceException;
-import edu.jhu.thrax.util.exceptions.InconsistentAlignmentException;
-import edu.jhu.thrax.util.exceptions.MalformedInputException;
-import edu.jhu.thrax.util.exceptions.MalformedParseException;
-import edu.jhu.thrax.util.exceptions.NotEnoughFieldsException;
 
 public class ExtractionMapper extends Mapper<LongWritable, Text,
                                              RuleWritable, IntWritable>
