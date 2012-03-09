@@ -3,6 +3,10 @@ package edu.jhu.thrax.util.io;
 import java.util.ArrayList;
 import edu.jhu.thrax.util.exceptions.*;
 
+import edu.jhu.thrax.datatypes.Alignment;
+import edu.jhu.thrax.datatypes.ArrayAlignment;
+import edu.jhu.thrax.datatypes.AlignedSentencePair;
+
 /**
  * Methods for validating user input. These should be used everywher user
  * input is received.
@@ -66,5 +70,16 @@ public class InputUtilities
             return parseYield(trimmed);
         return trimmed.split("\\s+");
     }
+
+	public static AlignedSentencePair alignedSentencePair(String source, boolean sourceIsParsed, String target, boolean targetIsParsed, String al, boolean reverse) throws MalformedInputException
+	{
+		String [] sourceWords = getWords(source, sourceIsParsed);
+		String [] targetWords = getWords(target, targetIsParsed);
+		Alignment alignment = ArrayAlignment.fromString(al, reverse);
+		if (reverse)
+			return new AlignedSentencePair(targetWords, sourceWords, alignment);
+		else
+			return new AlignedSentencePair(sourceWords, targetWords, alignment);
+	}
 }
 
