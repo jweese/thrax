@@ -12,13 +12,13 @@ import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.Partitioner;
 
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 public class RuleWritable implements WritableComparable<RuleWritable>
 {
-    private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
+    private static final String DELIM = String.format(" %s ", FormatUtils.DELIMITER);
     public Text lhs;
     public Text source;
     public Text target;
@@ -51,7 +51,7 @@ public class RuleWritable implements WritableComparable<RuleWritable>
 
     public RuleWritable(String rule_string)
     {
-        String [] parts = rule_string.split(ThraxConfig.DELIMITER_REGEX);
+        String [] parts = rule_string.split(FormatUtils.DELIMITER_REGEX);
         lhs = new Text(parts[0].trim());
         source = new Text(parts[1].trim());
         target = new Text(parts[2].trim());
