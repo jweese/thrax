@@ -8,7 +8,6 @@ import org.apache.hadoop.conf.Configuration;
 
 public class SAMTLabeler implements SpanLabeler {
 
-    private boolean TARGET_IS_SAMT_SYNTAX = true;
     private boolean ALLOW_CONSTITUENT_LABEL = true;
     private boolean ALLOW_CCG_LABEL = true;
     private boolean ALLOW_CONCAT_LABEL = true;
@@ -20,7 +19,6 @@ public class SAMTLabeler implements SpanLabeler {
 
     public SAMTLabeler(Configuration conf, String parse)
     {
-        TARGET_IS_SAMT_SYNTAX = conf.getBoolean("thrax.target-is-samt-syntax", true);
         ALLOW_CONSTITUENT_LABEL = conf.getBoolean("thrax.allow-constituent-label", true);
         ALLOW_CCG_LABEL = conf.getBoolean("thrax.allow-ccg-label", true);
         ALLOW_CONCAT_LABEL = conf.getBoolean("thrax.allow-concat-label", true);
