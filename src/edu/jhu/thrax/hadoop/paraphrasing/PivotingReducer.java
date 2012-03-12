@@ -24,6 +24,8 @@ public class PivotingReducer extends
 	private static final Logger logger =
 			Logger.getLogger(PivotingReducer.class.getName());
 	
+	private static enum PivotingCounters { F_READ, EF_READ, EE_WRITTEN };
+	
 	private static final Text EMPTY = new Text("");
 	private static final DoubleWritable ZERO = new DoubleWritable(0.0);
 
@@ -92,6 +94,8 @@ public class PivotingReducer extends
 					pivotOne(targets.get(j), targets.get(i), context);
 			}
 		}
+		context.getCounter(PivotingCounters.F_READ).increment(1);
+		context.getCounter(PivotingCounters.EF_READ).increment(targets.size());
 	}
 
 	protected void pivotOne(ParaphrasePattern src, ParaphrasePattern tgt,
@@ -111,8 +115,10 @@ public class PivotingReducer extends
 			pivoted_features.put(f.getFeatureLabel(),
 					f.pivot(src.features, tgt.features));
 		
-		if (!prune(pivoted_features))
+		if (!prune(pivoted_features)) {
 			context.write(pivoted_rule, pivoted_features);
+			context.getCounter(PivotingCounters.EE_WRITTEN).increment(1);
+		}
 	}
 
 	protected Map<Text, PruningRule> parsePruningRules(String conf_string) {
