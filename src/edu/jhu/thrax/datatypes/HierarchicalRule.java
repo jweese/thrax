@@ -88,9 +88,9 @@ public class HierarchicalRule
 	public String toString(String [] sourceWords, String [] targetWords, SpanLabeler labeler, boolean useSourceSpansForLabels)
 	{
 		String result = lhsLabel(labeler, useSourceSpansForLabels);
-		result += " |||";
+		result += " ||| ";
 		result += sourceString(sourceWords, labeler, useSourceSpansForLabels);
-		result += " |||";
+		result += " ||| ";
 		result += targetString(targetWords, labeler, useSourceSpansForLabels);
 		return result;
 	}
@@ -151,13 +151,15 @@ public class HierarchicalRule
 		String result = "";
 		int currNT = 0;
 		for (int i = lhs.sourceStart; i < lhs.sourceEnd; i++) {
+			if (i != lhs.sourceStart)
+				result += " ";
 			if (currNT < nts.length && i == nts[currNT].sourceStart) {
-				result += " " + ntLabel(currNT, labeler, useSource);
+				result += ntLabel(currNT, labeler, useSource);
 				i = nts[currNT].sourceEnd - 1;
 				currNT++;
 			}
 			else {
-				result += " " + sourceWords[i];
+				result += sourceWords[i];
 			}
 		}
 		return result;
@@ -188,17 +190,19 @@ public class HierarchicalRule
 	{
 		String result = "";
 		for (int i = lhs.targetStart; i < lhs.targetEnd; i++) {
+			if (i != lhs.targetStart)
+				result += " ";
 			boolean nt = false;
 			for (int j = 0; j < arity(); j++) {
 				if (i == nts[j].targetStart) {
-					result += " " + ntLabel(j, labeler, useSource);
+					result += ntLabel(j, labeler, useSource);
 					i = nts[j].targetEnd - 1;
 					nt = true;
 					break;
 				}
 			}
 			if (!nt) {
-				result += " " + targetWords[i];
+				result += targetWords[i];
 			}
 		}
 		return result;
