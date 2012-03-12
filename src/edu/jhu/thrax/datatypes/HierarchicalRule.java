@@ -114,7 +114,7 @@ public class HierarchicalRule
 		return result;
 	}
 
-	private String lhsLabel(SpanLabeler labeler, boolean useSource)
+	public String lhsLabel(SpanLabeler labeler, boolean useSource)
 	{
 		String raw = lhs.getLabel(labeler, useSource);
 		return raw == null ? null : "[" + raw + "]";
@@ -146,7 +146,7 @@ public class HierarchicalRule
 		return result;
 	}
 
-	private String sourceString(String [] sourceWords, SpanLabeler labeler, boolean useSource)
+	public String sourceString(String [] sourceWords, SpanLabeler labeler, boolean useSource)
 	{
 		String result = "";
 		int currNT = 0;
@@ -184,7 +184,7 @@ public class HierarchicalRule
 		return result;
 	}
 
-	private String targetString(String [] targetWords, SpanLabeler labeler, boolean useSource)
+	public String targetString(String [] targetWords, SpanLabeler labeler, boolean useSource)
 	{
 		String result = "";
 		for (int i = lhs.targetStart; i < lhs.targetEnd; i++) {
