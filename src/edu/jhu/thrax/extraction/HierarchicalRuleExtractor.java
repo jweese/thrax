@@ -96,8 +96,17 @@ public class HierarchicalRuleExtractor
 					continue;
 				if (pp.sourceStart >= end)
 					break;
-				if (r.getLhs().contains(pp))
-					result.add(r.addNonterminal(pp));
+				if (r.getLhs().contains(pp)) {
+					boolean disjointFromAllNTs = true;
+					for (int i = 0; i < r.arity(); i++) {
+						if (!r.getNonterminal(i).targetIsDisjointFrom(pp)) {
+							disjointFromAllNTs = false;
+							break;
+						}
+					}
+					if (disjointFromAllNTs)
+						result.add(r.addNonterminal(pp));
+				}
 			}
 		}
 		HierarchicalRule [] resultArray = new HierarchicalRule[result.size()];
