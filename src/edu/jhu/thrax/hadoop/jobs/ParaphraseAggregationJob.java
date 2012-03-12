@@ -55,7 +55,6 @@ public class ParaphraseAggregationJob extends ThraxJob {
 
 		String outputPath = conf.get("thrax.outputPath", "");
 		FileOutputFormat.setOutputPath(job, new Path(outputPath));
-		FileOutputFormat.setCompressOutput(job, true);
 
 		return job;
 	}
