@@ -43,7 +43,6 @@ public class ExtractionJob extends ThraxJob
             FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
         }
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "rules"));
-        FileOutputFormat.setCompressOutput(job, true);
 
         return job;
     }
