@@ -6,7 +6,7 @@ public class RuleWritableExtractorFactory
 {
 	public static RuleWritableExtractor create(Mapper.Context context)
 	{
-		return null;
+		return new HierarchicalRuleWritableExtractor(context);
 	}
 }
 
