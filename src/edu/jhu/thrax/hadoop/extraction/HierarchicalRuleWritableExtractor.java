@@ -45,7 +45,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		int initialPhraseSource = conf.getInt("thrax.initial-phrase-length", 10);
 		int initialPhraseTarget = conf.getInt("thrax.initial-phrase-length", 10);
 		int initialAlignment = conf.getInt("thrax.initial-lexicality", 1);
-		boolean initialAligned = conf.getBoolean("thrax.loose", false);
+		boolean initialAligned = ! conf.getBoolean("thrax.loose", false);
 		int sourceLimit = conf.getInt("thrax.nonlex-source-length", 5);
 		int targetLimit = conf.getInt("thrax.nonlex-target-length", 5);
 		int ruleAlignment = conf.getInt("thrax.lexicality", 1);
