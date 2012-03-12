@@ -30,6 +30,18 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 	public HierarchicalRuleWritableExtractor(Mapper.Context c)
 	{
 		context = c;
+		Configuration conf = c.getConfiguration();
+		sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
+		targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
+		reverse = conf.getBoolean("thrax.reverse", false);
+		// TODO: this configuration key needs a more general name now
+		sourceLabels = ! conf.getBoolean("thrax.target-is-samt-syntax", true);
+		extractor = getExtractor(conf);
+	}
+
+	private static HierarchicalRuleExtractor getExtractor(Configuration conf)
+	{
+		return null;
 	}
 
 	public Iterable<RuleWritable> extract(Text line)
