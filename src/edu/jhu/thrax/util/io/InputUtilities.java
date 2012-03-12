@@ -79,12 +79,16 @@ public class InputUtilities
 		if (sourceWords.length == 0 || targetWords.length == 0)
 			throw new MalformedInputException("empty sentence");
 		Alignment alignment = ArrayAlignment.fromString(al.trim(), reverse);
-		if (!alignment.consistentWith(sourceWords.length, targetWords.length))
-			throw new MalformedInputException("inconsistent alignment");
-		if (reverse)
+		if (reverse) {
+			if (!alignment.consistentWith(targetWords.length, sourceWords.length))
+				throw new MalformedInputException("inconsistent alignment");
 			return new AlignedSentencePair(targetWords, sourceWords, alignment);
-		else
+		}
+		else {
+			if (!alignment.consistentWith(sourceWords.length, targetWords.length))
+				throw new MalformedInputException("inconsistent alignment");
 			return new AlignedSentencePair(sourceWords, targetWords, alignment);
+		}
 	}
 
 	public static AlignedSentencePair alignedSentencePair(String line, boolean sourceIsParsed, boolean targetIsParsed, boolean reverse) throws MalformedInputException
