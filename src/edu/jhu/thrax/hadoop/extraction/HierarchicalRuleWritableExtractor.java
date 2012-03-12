@@ -79,8 +79,12 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		List<HierarchicalRule> rules = extractor.extract(source.length, target.length, alignment);
 		List<RuleWritable> result = new ArrayList<RuleWritable>(rules.size());
 		SpanLabeler labeler = getSpanLabeler(line, context.getConfiguration());
-		for (HierarchicalRule r : rules)
-			result.add(toRuleWritable(r, labeler, source, target, alignment));
+		for (HierarchicalRule r : rules) {
+			RuleWritable writable = toRuleWritable(r, labeler, source, target, alignment);
+			if (writable != null) {
+				result.add(writable);
+			}
+		}
 		return result;
 	}
 
