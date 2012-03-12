@@ -24,6 +24,8 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 	private boolean targetParsed;
 	private boolean reverse;
 	private boolean sourceLabels;
+	private String defaultLabel;
+	private boolean allowDefaultLHSOnNonlexicalRules;
 
 	private HierarchicalRuleExtractor extractor;
 
@@ -36,6 +38,8 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		reverse = conf.getBoolean("thrax.reverse", false);
 		// TODO: this configuration key needs a more general name now
 		sourceLabels = ! conf.getBoolean("thrax.target-is-samt-syntax", true);
+		defaultLabel = conf.get("thrax.default-nt", "X");
+		allowDefaultLHSOnNonlexicalRules = conf.getBoolean("thrax.allow-nonlexical-x", true);
 		extractor = getExtractor(conf);
 	}
 
@@ -102,32 +106,31 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 
 	private SpanLabeler getSpanLabeler(Text line, Configuration conf)
 	{
-		String defaultNT = conf.get("thrax.default-nt", "X");
 		String labelType = conf.get("thrax.grammar", "hiero");
 		if (labelType.equalsIgnoreCase("hiero")) {
-			return new HieroLabeler(defaultNT);
+			return new HieroLabeler(defaultLabel);
 		}
 		else if (labelType.equalsIgnoreCase("samt")) {
 			String [] fields = line.toString().split(FormatUtils.DELIMITER_REGEX);
 			if (fields.length < 2)
-				return new HieroLabeler(defaultNT);
+				return new HieroLabeler(defaultLabel);
 			String parse = fields[sourceLabels ? 0 : 1].trim();
 			boolean constituent = conf.getBoolean("thrax.allow-constituent-label", true);
 			boolean ccg = conf.getBoolean("thrax.allow-ccg-label", true);
 			boolean concat = conf.getBoolean("thrax.allow-concat-label", true);
 			boolean doubleConcat = conf.getBoolean("thrax.allow-double-plus", true);
 			String unary = conf.get("thrax.unary-category-handler", "all");
-			return new SAMTLabeler(parse, constituent, ccg, concat, doubleConcat, unary, defaultNT);
+			return new SAMTLabeler(parse, constituent, ccg, concat, doubleConcat, unary, defaultLabel);
 		}
 		else if (labelType.equalsIgnoreCase("manual")) {
 			String [] fields = line.toString().split(FormatUtils.DELIMITER_REGEX);
 			if (fields.length < 4)
-				return new HieroLabeler(defaultNT);
+				return new HieroLabeler(defaultLabel);
 			String [] labels = fields[3].trim().split("\\s+");
-			return new ManualSpanLabeler(labels, defaultNT);
+			return new ManualSpanLabeler(labels, defaultLabel);
 		}
 		else {
-			return new HieroLabeler(defaultNT);
+			return new HieroLabeler(defaultLabel);
 		}
 	}
 
