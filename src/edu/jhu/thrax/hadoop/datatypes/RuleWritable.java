@@ -61,6 +61,17 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         featureScore = new DoubleWritable();
     }
 
+    public RuleWritable(Text left, Text src, Text tgt, AlignmentArray sa, AlignmentArray ta)
+    {
+        lhs = left;
+        source = src;
+        target = tgt;
+        f2e = sa;
+        e2f = ta;
+        featureLabel = new Text();
+        featureScore = new DoubleWritable();
+    }
+
     public void set(RuleWritable r)
     {
         lhs.set(r.lhs);
