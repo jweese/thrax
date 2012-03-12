@@ -50,6 +50,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		int targetLimit = conf.getInt("thrax.nonlex-target-length", 5);
 		int ruleAlignment = conf.getInt("thrax.lexicality", 1);
 		boolean adjacent = conf.getBoolean("thrax.adjacent-nts", false);
+		boolean abs = conf.getBoolean("thrax.allow-abstract-rules", false);
 		return new HierarchicalRuleExtractor(arity,
 											 initialPhraseSource,
 											 initialPhraseTarget,
@@ -58,7 +59,8 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 											 sourceLimit,
 											 targetLimit,
 											 ruleAlignment,
-											 adjacent);
+											 adjacent,
+											 abs);
 	}
 
 	public Iterable<RuleWritable> extract(Text line)

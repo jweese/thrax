@@ -19,6 +19,7 @@ public class HierarchicalRuleExtractor
 	private int sourceSymbolLimit = 5;
 	private int targetSymbolLimit = 1000;
 	private int minimumRuleAlignmentPoints = 1;
+	private boolean allowAbstract = false;
 
 	public HierarchicalRuleExtractor()
 	{
@@ -33,7 +34,8 @@ public class HierarchicalRuleExtractor
 									 int sourceLimit,
 									 int targetLimit,
 									 int ruleAlignment,
-									 boolean adjacent)
+									 boolean adjacent,
+									 boolean allow_abstract)
 	{
 		arityLimit = arity;
 		initialPhraseSourceLimit = initialPhraseSource;
@@ -44,6 +46,7 @@ public class HierarchicalRuleExtractor
 		targetSymbolLimit = targetLimit;
 		minimumRuleAlignmentPoints = ruleAlignment;
 		allowAdjacent = adjacent;
+		allowAbstract = allow_abstract;
 	}
 
 	public List<HierarchicalRule> extract(int sourceLength, int targetLength, Alignment alignment)
@@ -147,6 +150,10 @@ public class HierarchicalRuleExtractor
 		if (r.arity() + r.numTargetTerminals() > targetSymbolLimit)
 			return false;
 		if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints)
+			return false;
+		if (!allowAbstract &&
+			r.numSourceTerminals() == 0 &&
+			r.numTargetTerminals() == 0)
 			return false;
 		return true;
 	}
