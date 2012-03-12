@@ -93,6 +93,8 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		String lhs = r.lhsLabel(spanLabeler, sourceLabels);
 		String src = r.sourceString(source, spanLabeler, sourceLabels);
 		String tgt = r.targetString(target, spanLabeler, sourceLabels);
+		if (!isValidLabeling(lhs, src, tgt, spanLabeler))
+			return null;
 		String [][] sourceAlignment = r.sourceAlignmentArray(source, target, alignment);
 		String [][] targetAlignment = r.targetAlignmentArray(source, target, alignment);
 		return new RuleWritable(new Text(lhs), new Text(src), new Text(tgt), new AlignmentArray(sourceAlignment), new AlignmentArray(targetAlignment));
@@ -127,6 +129,11 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		else {
 			return new HieroLabeler(defaultNT);
 		}
+	}
+
+	private boolean isValidLabeling(String lhs, String source, String target, SpanLabeler labeler)
+	{
+		return true;
 	}
 }
 
