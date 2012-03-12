@@ -5,6 +5,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Mapper;
 
 import edu.jhu.thrax.util.io.InputUtilities;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.datatypes.AlignmentArray;
@@ -25,7 +26,6 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 	private boolean sourceLabels;
 
 	private HierarchicalRuleExtractor extractor;
-	private SpanLabeler labeler;
 
 	public HierarchicalRuleWritableExtractor(Mapper.Context c)
 	{
@@ -47,6 +47,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		Alignment alignment = sentencePair.alignment;
 		List<HierarchicalRule> rules = extractor.extract(source.length, target.length, alignment);
 		List<RuleWritable> result = new ArrayList<RuleWritable>(rules.size());
+		SpanLabeler labeler = getSpanLabeler(line, context.getConfiguration());
 		for (HierarchicalRule r : rules)
 			result.add(toRuleWritable(r, labeler, source, target, alignment));
 		return result;
@@ -60,6 +61,37 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		String [][] sourceAlignment = r.sourceAlignmentArray(source, target, alignment);
 		String [][] targetAlignment = r.targetAlignmentArray(source, target, alignment);
 		return new RuleWritable(new Text(lhs), new Text(src), new Text(tgt), new AlignmentArray(sourceAlignment), new AlignmentArray(targetAlignment));
+	}
+
+	private SpanLabeler getSpanLabeler(Text line, Configuration conf)
+	{
+		String defaultNT = conf.get("thrax.default-nt", "X");
+		String labelType = conf.get("thrax.grammar", "hiero");
+		if (labelType.equalsIgnoreCase("hiero")) {
+			return new HieroLabeler(defaultNT);
+		}
+		else if (labelType.equalsIgnoreCase("samt")) {
+			String [] fields = line.toString().split(FormatUtils.DELIMITER_REGEX);
+			if (fields.length < 2)
+				return new HieroLabeler(defaultNT);
+			String parse = fields[sourceLabels ? 0 : 1].trim();
+			boolean constituent = conf.getBoolean("thrax.allow-constituent-label", true);
+			boolean ccg = conf.getBoolean("thrax.allow-ccg-label", true);
+			boolean concat = conf.getBoolean("thrax.allow-concat-label", true);
+			boolean doubleConcat = conf.getBoolean("thrax.allow-double-plus", true);
+			String unary = conf.get("thrax.unary-category-handler", "all");
+			return new SAMTLabeler(parse, constituent, ccg, concat, doubleConcat, unary, defaultNT);
+		}
+		else if (labelType.equalsIgnoreCase("manual")) {
+			String [] fields = line.toString().split(FormatUtils.DELIMITER_REGEX);
+			if (fields.length < 4)
+				return new HieroLabeler(defaultNT);
+			String [] labels = fields[3].trim().split("\\s+");
+			return new ManualSpanLabeler(labels, defaultNT);
+		}
+		else {
+			return new HieroLabeler(defaultNT);
+		}
 	}
 }
 
