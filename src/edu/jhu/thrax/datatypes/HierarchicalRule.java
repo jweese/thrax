@@ -1,8 +1,10 @@
 package edu.jhu.thrax.datatypes;
 
 import java.util.Arrays;
+import java.util.Iterator;
 
 import edu.jhu.thrax.extraction.SpanLabeler;
+import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 public class HierarchicalRule
 {
@@ -126,6 +128,24 @@ public class HierarchicalRule
 		return raw == null ? null : String.format("[%s,%d]", raw, i + 1);
 	}
 
+	private int [] sourceTerminalIndices()
+	{
+		int [] result = new int[numSourceTerminals()];
+		int j = 0;
+		int currNT = 0;
+		for (int i = lhs.sourceStart; i < lhs.sourceEnd; i++) {
+			if (currNT < nts.length && i == nts[currNT].sourceStart) {
+				i = nts[currNT].sourceEnd - 1;
+				currNT++;
+			}
+			else {
+				result[j] = i;
+				j++;
+			}
+		}
+		return result;
+	}
+
 	private String sourceString(String [] sourceWords, SpanLabeler labeler, boolean useSource)
 	{
 		String result = "";
@@ -138,6 +158,27 @@ public class HierarchicalRule
 			}
 			else {
 				result += " " + sourceWords[i];
+			}
+		}
+		return result;
+	}
+
+	private int [] targetTerminalIndices()
+	{
+		int [] result = new int[numTargetTerminals()];
+		int curr = 0;
+		for (int i = lhs.targetStart; i < lhs.targetEnd; i++) {
+			boolean nt = false;
+			for (int j = 0; j < arity(); j++) {
+				if (i == nts[j].targetStart) {
+					i = nts[j].targetEnd - 1;
+					nt = true;
+					break;
+				}
+			}
+			if (!nt) {
+				result[curr] = i;
+				curr++;
 			}
 		}
 		return result;
@@ -163,5 +204,47 @@ public class HierarchicalRule
 		return result;
 	}
 
+	public String [][] sourceAlignmentArray(String [] sourceWords, String [] targetWords, Alignment alignment)
+	{
+		String [][] result = new String[numSourceTerminals()][];
+		int currTerminal = 0;
+		for (int i : sourceTerminalIndices()) {
+			Iterator<Integer> indices = alignment.targetIndicesAlignedTo(i);
+			int len = alignment.numTargetWordsAlignedTo(i);
+			result[currTerminal] = singleAlignmentArray(sourceWords[i], targetWords, indices, len);
+			currTerminal++;
+		}
+		return result;
+	}
+
+	public String [][] targetAlignmentArray(String [] sourceWords, String [] targetWords, Alignment alignment)
+	{
+		String [][] result = new String[numTargetTerminals()][];
+		int currTerminal = 0;
+		for (int i : targetTerminalIndices()) {
+			Iterator<Integer> indices = alignment.sourceIndicesAlignedTo(i);
+			int len = alignment.numSourceWordsAlignedTo(i);
+			result[currTerminal] = singleAlignmentArray(targetWords[i], sourceWords, indices, len);
+			currTerminal++;
+		}
+		return result;
+	}
+
+
+	private static String [] singleAlignmentArray(String word, String [] targetWords, Iterator<Integer> indices, int len)
+	{
+		String [] result = new String[len == 0 ? 2 : len + 1];
+		result[0] = word;
+		if (len == 0) {
+			result[1] = WordLexicalProbabilityCalculator.UNALIGNED.toString();
+			return result;
+		}
+		int j = 1;
+		while (indices.hasNext()) {
+			result[j] = targetWords[indices.next()];
+			j++;
+		}
+		return result;
+	}
 }
 
