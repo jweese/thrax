@@ -7,6 +7,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import edu.jhu.thrax.util.io.InputUtilities;
 import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.datatypes.AlignmentArray;
 import edu.jhu.thrax.datatypes.*;
 import edu.jhu.thrax.extraction.*;
 
@@ -21,6 +22,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 	private boolean sourceParsed;
 	private boolean targetParsed;
 	private boolean reverse;
+	private boolean sourceLabels;
 
 	private HierarchicalRuleExtractor extractor;
 	private SpanLabeler labeler;
@@ -46,13 +48,18 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		List<HierarchicalRule> rules = extractor.extract(source.length, target.length, alignment);
 		List<RuleWritable> result = new ArrayList<RuleWritable>(rules.size());
 		for (HierarchicalRule r : rules)
-			result.add(toRuleWritable(r, labeler, source, target));
+			result.add(toRuleWritable(r, labeler, source, target, alignment));
 		return result;
 	}
 
-	private static RuleWritable toRuleWritable(HierarchicalRule r, SpanLabeler spanLabeler, String [] source, String [] target)
+	private RuleWritable toRuleWritable(HierarchicalRule r, SpanLabeler spanLabeler, String [] source, String [] target, Alignment alignment)
 	{
-		return null;
+		String lhs = r.lhsLabel(spanLabeler, sourceLabels);
+		String src = r.sourceString(source, spanLabeler, sourceLabels);
+		String tgt = r.targetString(target, spanLabeler, sourceLabels);
+		String [][] sourceAlignment = r.sourceAlignmentArray(source, target, alignment);
+		String [][] targetAlignment = r.targetAlignmentArray(source, target, alignment);
+		return new RuleWritable(new Text(lhs), new Text(src), new Text(tgt), new AlignmentArray(sourceAlignment), new AlignmentArray(targetAlignment));
 	}
 }
 
