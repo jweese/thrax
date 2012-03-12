@@ -59,7 +59,11 @@ public class ParaphrasePivotingJob extends ThraxJob {
 		
 		FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir")
 				+ "pivoted"));
-		FileOutputFormat.setCompressOutput(job, true);
+		
+		// Compress reducer output.
+		conf.set("mapred.output.compress", "true");
+		conf.set("mapred.output.compression",
+				"org.apache.hadoop.io.compress.SnappyCodec");
 
 		return job;
 	}
