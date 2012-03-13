@@ -144,17 +144,20 @@ public class HierarchicalRuleExtractor
 		// 1) limit of the total number of symbols on the source side
 		// 2) limit of the total number of symbols on the target side
 		// 3) minimum number of alignment points
-		// This is where you add more!
-		if (r.arity() + r.numSourceTerminals() > sourceSymbolLimit)
+		int arity = r.arity();
+		int numSourceTerminals = r.numSourceTerminals();
+		int numTargetTerminals = r.numTargetTerminals();
+		if (arity + numSourceTerminals > sourceSymbolLimit)
 			return false;
-		if (r.arity() + r.numTargetTerminals() > targetSymbolLimit)
+		if (arity + numTargetTerminals > targetSymbolLimit)
 			return false;
 		if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints)
 			return false;
 		if (!allowAbstract &&
-			r.numSourceTerminals() == 0 &&
-			r.numTargetTerminals() == 0)
+			numSourceTerminals == 0 &&
+			numTargetTerminals == 0)
 			return false;
+		// This is where you add more!
 		return true;
 	}
 
