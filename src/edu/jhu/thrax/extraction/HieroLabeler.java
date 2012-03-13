@@ -1,32 +1,17 @@
 package edu.jhu.thrax.extraction;
 
-import java.util.Collection;
-import java.util.HashSet;
-
-import edu.jhu.thrax.datatypes.IntPair;
-import edu.jhu.thrax.util.Vocabulary;
-import org.apache.hadoop.conf.Configuration;
-
-public class HieroLabeler extends ConfiguredSpanLabeler
+public class HieroLabeler implements SpanLabeler
 {
-    private Collection<Integer> hieroLabel;
+    private final String label;
 
-    public HieroLabeler(Configuration conf)
+    public HieroLabeler(String s)
     {
-        super(conf);
-        int defaultID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
-        hieroLabel = new HashSet<Integer>(1);
-        hieroLabel.add(defaultID);
+        label = s;
     }
 
-    public void setInput(String input)
+    public String getLabel(int start, int end)
     {
-        // do nothing
-    }
-
-    public Collection<Integer> getLabels(IntPair span)
-    {
-        return hieroLabel;
+        return label;
     }
 }
 

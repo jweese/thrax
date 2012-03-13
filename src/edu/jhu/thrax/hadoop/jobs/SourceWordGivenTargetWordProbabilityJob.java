@@ -18,31 +18,17 @@ import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 import java.io.IOException;
 
-public class SourceWordGivenTargetWordProbabilityJob extends ThraxJob
+public class SourceWordGivenTargetWordProbabilityJob extends WordLexprobJob
 {
+
+	public SourceWordGivenTargetWordProbabilityJob()
+	{
+		super(true);
+	}
+
     public Job getJob(Configuration conf) throws IOException
     {
-        Job job = new Job(conf, "source-word-lexprob");
-        job.setJarByClass(WordLexicalProbabilityCalculator.class);
-        job.setMapperClass(WordLexicalProbabilityCalculator.SourceGivenTargetMap.class);
-        job.setCombinerClass(IntSumReducer.class);
-        job.setSortComparatorClass(TextPair.SndMarginalComparator.class);
-        job.setPartitionerClass(WordLexicalProbabilityCalculator.Partition.class);
-        job.setReducerClass(WordLexicalProbabilityCalculator.Reduce.class);
-
-        job.setMapOutputKeyClass(TextPair.class);
-        job.setMapOutputValueClass(IntWritable.class);
-
-        job.setOutputKeyClass(TextPair.class);
-        job.setOutputValueClass(DoubleWritable.class);
-
-        job.setOutputFormatClass(SequenceFileOutputFormat.class);
-
-        FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));
-        int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
-        if (maxSplitSize != 0) {
-            FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
-        }
+        Job job = super.getJob(conf);
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "lexprobse2f"));
         return job;
     }

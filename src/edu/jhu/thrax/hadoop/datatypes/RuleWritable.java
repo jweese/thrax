@@ -12,15 +12,13 @@ import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.Partitioner;
 
-import edu.jhu.thrax.ThraxConfig;
-import edu.jhu.thrax.datatypes.Rule;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
-import edu.jhu.thrax.util.Vocabulary;
 
 public class RuleWritable implements WritableComparable<RuleWritable>
 {
-    private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER);
+    private static final String DELIM = String.format(" %s ", FormatUtils.DELIMITER);
     public Text lhs;
     public Text source;
     public Text target;
@@ -51,21 +49,25 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         featureScore = new DoubleWritable(r.featureScore.get());
     }
 
-    public RuleWritable(Rule r)
-    {
-        this(r.toString());
-        f2e = new AlignmentArray(sourceAlignmentArray(r));
-        e2f = new AlignmentArray(targetAlignmentArray(r));
-    }
-    
     public RuleWritable(String rule_string)
     {
-        String [] parts = rule_string.split(ThraxConfig.DELIMITER_REGEX);
+        String [] parts = rule_string.split(FormatUtils.DELIMITER_REGEX);
         lhs = new Text(parts[0].trim());
         source = new Text(parts[1].trim());
         target = new Text(parts[2].trim());
         f2e = new AlignmentArray();
         e2f = new AlignmentArray();
+        featureLabel = new Text();
+        featureScore = new DoubleWritable();
+    }
+
+    public RuleWritable(Text left, Text src, Text tgt, AlignmentArray sa, AlignmentArray ta)
+    {
+        lhs = left;
+        source = src;
+        target = tgt;
+        f2e = sa;
+        e2f = ta;
         featureLabel = new Text();
         featureScore = new DoubleWritable();
     }
@@ -99,70 +101,6 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         e2f.readFields(in);
         featureLabel.readFields(in);
         featureScore.readFields(in);
-    }
-
-    private static Text [][] sourceAlignmentArray(Rule r)
-    {
-        int numPairs = 0;
-        for (int i = r.rhs.sourceStart; i < r.rhs.sourceEnd; i++) {
-            if (r.sourceLex[i] == 0) {
-                numPairs++;
-            }
-        }
-        Text [][] result = new Text[numPairs][];
-        int idx = 0;
-        for (int i = r.rhs.sourceStart; i < r.rhs.sourceEnd; i++) {
-            if (r.sourceLex[i] == 0) {
-                Text src = new Text(Vocabulary.getWord(r.source[i]));
-                if (r.alignment.sourceIsAligned(i)) {
-                    result[idx] = new Text[r.alignment.f2e[i].length + 1];
-                    result[idx][0] = src;
-                    int j = 1;
-                    for (int x : r.alignment.f2e[i]) {
-                        result[idx][j++] = new Text(Vocabulary.getWord(r.target[x]));
-                    }
-                }
-                else {
-                    result[idx] = new Text[2];
-                    result[idx][0] = src;
-                    result[idx][1] = WordLexicalProbabilityCalculator.UNALIGNED;
-                }
-                idx++;
-            }
-        }
-        return result;
-    }
-
-    private static Text [][] targetAlignmentArray(Rule r)
-    {
-        int numPairs = 0;
-        for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
-            if (r.targetLex[i] == 0) {
-                numPairs++;
-            }
-        }
-        Text [][] result = new Text[numPairs][];
-        int idx = 0;
-        for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
-            if (r.targetLex[i] == 0) {
-                Text tgt = new Text(Vocabulary.getWord(r.target[i]));
-                if (r.alignment.targetIsAligned(i)) {
-                    result[idx] = new Text[r.alignment.e2f[i].length + 1];
-                    result[idx][0] = tgt;
-                    int j = 1;
-                    for (int x : r.alignment.e2f[i]) {
-                        result[idx][j++] = new Text(Vocabulary.getWord(r.source[x]));
-                    }
-                }
-                else {
-                    result[idx] = new Text[2];
-                    result[idx][0] = tgt;
-                    result[idx][1] = WordLexicalProbabilityCalculator.UNALIGNED;
-                }
-                idx++;
-            }
-        }
-        return result;
     }
 
     public boolean sameYield(RuleWritable r)

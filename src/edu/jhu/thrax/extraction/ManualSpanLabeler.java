@@ -1,52 +1,30 @@
 package edu.jhu.thrax.extraction;
 
-import java.util.Collection;
-import java.util.HashSet;
-
-import edu.jhu.thrax.datatypes.IntPair;
-import edu.jhu.thrax.ThraxConfig;
-import edu.jhu.thrax.util.Vocabulary;
-import org.apache.hadoop.conf.Configuration;
-
-public class ManualSpanLabeler extends ConfiguredSpanLabeler
+public class ManualSpanLabeler implements SpanLabeler
 {
-    private String [] labels;
-    private Collection<Integer> currentLabel;
-    private int defaultID;
-    private int sentenceLength;
+    private final String [] labels;
+	private final String defaultLabel;
+    private final int sentenceLength;
 
-    public ManualSpanLabeler(Configuration conf)
+    public ManualSpanLabeler(String [] ls, String def)
     {
-        super(conf);
-        defaultID = Vocabulary.getId(conf.get("thrax.default-nt", "X"));
-        currentLabel = new HashSet<Integer>();
+		labels = ls;
+		defaultLabel = def;
+		sentenceLength = getSentenceLength(labels.length);
     }
 
-    public void setInput(String input)
+    public String getLabel(int from, int to)
     {
-        String [] parts = input.split(ThraxConfig.DELIMITER_REGEX);
-        if (parts.length < 4)
-            labels = new String[0];
-        else 
-            labels = parts[3].trim().split("\\s+");
-        sentenceLength = getSentenceLength(labels.length);
-        return;
-    }
-
-    public Collection<Integer> getLabels(IntPair span)
-    {
-        currentLabel.clear();
-        int idx = getLabelIndex(span, sentenceLength);
+        int idx = getLabelIndex(from, to, sentenceLength);
         if (idx >= labels.length || idx < 0) {
-            currentLabel.add(defaultID);
+            return defaultLabel;
         }
         else {
-            currentLabel.add(Vocabulary.getId(labels[idx]));
+            return labels[idx];
         }
-        return currentLabel;
     }
 
-    static int getSentenceLength(int numLabels)
+    private static int getSentenceLength(int numLabels)
     {
         if (numLabels < 0)
             return 0;
@@ -63,7 +41,7 @@ public class ManualSpanLabeler extends ConfiguredSpanLabeler
         return result;
     }
 
-    static int getLabelIndex(IntPair span, int length)
+    private static int getLabelIndex(int from, int to, int length)
     {
         // let the length of the target sentence be L
         // the first L labels are for spans (0,1) ... (0,L)
@@ -71,11 +49,11 @@ public class ManualSpanLabeler extends ConfiguredSpanLabeler
         // and so on
         int result = 0;
         int offset = length;
-        for (int i = 0; i < span.fst; i++) {
+        for (int i = 0; i < from; i++) {
             result += offset;
             offset--;
         }
-        int difference = span.snd - span.fst - 1;
+        int difference = to - from - 1;
         result += difference;
         return result;
     }
