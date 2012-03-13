@@ -116,8 +116,7 @@ public class HierarchicalRule
 
 	public String lhsLabel(SpanLabeler labeler, boolean useSource)
 	{
-		String raw = lhs.getLabel(labeler, useSource);
-		return raw == null ? null : "[" + raw + "]";
+		return lhs.getLabel(labeler, useSource);
 	}
 
 	private String ntLabel(int i, SpanLabeler labeler, boolean useSource)

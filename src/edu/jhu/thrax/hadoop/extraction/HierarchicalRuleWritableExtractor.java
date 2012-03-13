@@ -101,7 +101,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 			return null;
 		String [][] sourceAlignment = r.sourceAlignmentArray(source, target, alignment);
 		String [][] targetAlignment = r.targetAlignmentArray(source, target, alignment);
-		return new RuleWritable(new Text(lhs), new Text(src), new Text(tgt), new AlignmentArray(sourceAlignment), new AlignmentArray(targetAlignment));
+		return new RuleWritable(new Text("[" + lhs + "]"), new Text(src), new Text(tgt), new AlignmentArray(sourceAlignment), new AlignmentArray(targetAlignment));
 	}
 
 	private SpanLabeler getSpanLabeler(Text line, Configuration conf)
@@ -136,7 +136,20 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 
 	private boolean isValidLabeling(String lhs, String source, String target, SpanLabeler labeler)
 	{
+		if (!allowDefaultLHSOnNonlexicalRules) {
+			if (defaultLabel.equals(lhs) && hasNonterminal(source) && hasNonterminal(target))
+				return false;
+			else if (source.indexOf("[" + defaultLabel + ",") >= 0)
+				return false;
+			else if (target.indexOf("[" + defaultLabel + ",") >= 0)
+				return false;
+		}
 		return true;
+	}
+
+	private static boolean hasNonterminal(String s)
+	{
+		return s.indexOf("1]") >= 0;
 	}
 }
 
