@@ -24,7 +24,8 @@ public class PivotingReducer extends
 	private static final Logger logger =
 			Logger.getLogger(PivotingReducer.class.getName());
 	
-	private static enum PivotingCounters { F_READ, EF_READ, EE_WRITTEN };
+	private static enum PivotingCounters { F_READ, EF_READ,
+		EE_CREATED, EE_WRITTEN };
 	
 	private static final Text EMPTY = new Text("");
 	private static final DoubleWritable ZERO = new DoubleWritable(0.0);
@@ -87,6 +88,11 @@ public class PivotingReducer extends
 
 	protected void pivotAll(Context context) throws IOException,
 			InterruptedException {
+		context.getCounter(PivotingCounters.F_READ).increment(1);
+		context.getCounter(PivotingCounters.EF_READ).increment(targets.size());
+		context.getCounter(PivotingCounters.EE_CREATED).increment(
+				(targets.size() * (targets.size() - 1)) / 2);
+		
 		for (int i = 0; i < targets.size(); i++) {
 			for (int j = i; j < targets.size(); j++) {
 				pivotOne(targets.get(i), targets.get(j), context);
@@ -94,8 +100,6 @@ public class PivotingReducer extends
 					pivotOne(targets.get(j), targets.get(i), context);
 			}
 		}
-		context.getCounter(PivotingCounters.F_READ).increment(1);
-		context.getCounter(PivotingCounters.EF_READ).increment(targets.size());
 	}
 
 	protected void pivotOne(ParaphrasePattern src, ParaphrasePattern tgt,
@@ -114,7 +118,7 @@ public class PivotingReducer extends
 		for (PivotedFeature f : features)
 			pivoted_features.put(f.getFeatureLabel(),
 					f.pivot(src.features, tgt.features));
-		
+
 		if (!prune(pivoted_features)) {
 			context.write(pivoted_rule, pivoted_features);
 			context.getCounter(PivotingCounters.EE_WRITTEN).increment(1);
