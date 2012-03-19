@@ -20,6 +20,7 @@ public class HierarchicalRuleExtractor
 	private int targetSymbolLimit = 1000;
 	private int minimumRuleAlignmentPoints = 1;
 	private boolean allowAbstract = false;
+	private boolean allowMixed = true;
 
 	public HierarchicalRuleExtractor()
 	{
@@ -35,7 +36,8 @@ public class HierarchicalRuleExtractor
 									 int targetLimit,
 									 int ruleAlignment,
 									 boolean adjacent,
-									 boolean allow_abstract)
+									 boolean allow_abstract,
+									 boolean allow_mixed)
 	{
 		arityLimit = arity;
 		initialPhraseSourceLimit = initialPhraseSource;
@@ -47,6 +49,7 @@ public class HierarchicalRuleExtractor
 		minimumRuleAlignmentPoints = ruleAlignment;
 		allowAdjacent = adjacent;
 		allowAbstract = allow_abstract;
+		allowMixed = allow_mixed;
 	}
 
 	public List<HierarchicalRule> extract(int sourceLength, int targetLength, Alignment alignment)
@@ -153,11 +156,17 @@ public class HierarchicalRuleExtractor
 			return false;
 		if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints)
 			return false;
+		// 4) whether to allow abstract rules (with no terminals)
 		if (!allowAbstract &&
 			numSourceTerminals == 0 &&
 			numTargetTerminals == 0)
 			return false;
-		// This is where you add more!
+		// 5) whether to allow mixed rules (with NTs and terminals together)
+		if (!allowMixed &&
+			arity > 0 &&
+			(numSourceTerminals > 0 || numTargetTerminals > 0))
+			return false;
+		// This is where you add more conditions!
 		return true;
 	}
 

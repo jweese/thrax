@@ -55,6 +55,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 		int ruleAlignment = conf.getInt("thrax.lexicality", 1);
 		boolean adjacent = conf.getBoolean("thrax.adjacent-nts", false);
 		boolean abs = conf.getBoolean("thrax.allow-abstract-rules", false);
+		boolean mixed = conf.getBoolean("thrax.allow-mixed-rules", true);
 		return new HierarchicalRuleExtractor(arity,
 											 initialPhraseSource,
 											 initialPhraseTarget,
@@ -64,7 +65,8 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor
 											 targetLimit,
 											 ruleAlignment,
 											 adjacent,
-											 abs);
+											 abs,
+											 mixed);
 	}
 
 	public Iterable<RuleWritable> extract(Text line)
