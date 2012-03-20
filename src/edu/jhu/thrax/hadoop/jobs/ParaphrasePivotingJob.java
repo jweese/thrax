@@ -52,7 +52,7 @@ public class ParaphrasePivotingJob extends ThraxJob {
 				+ "collected"));
 		int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
 		if (maxSplitSize != 0)
-			FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
+			FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 200);
 		
 		int numReducers = conf.getInt("thrax.reducers", 4);
 		job.setNumReduceTasks(numReducers);

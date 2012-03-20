@@ -68,8 +68,7 @@ public abstract class MapReduceFeature extends ThraxJob
         job.setOutputValueClass(NullWritable.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        int numReducers = conf.getInt("thrax.reducers", 4);
-        job.setNumReduceTasks(numReducers);
+        job.setNumReduceTasks(1);
 
         FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "rules"));
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + name));
