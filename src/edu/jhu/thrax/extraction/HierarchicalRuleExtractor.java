@@ -40,6 +40,7 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
     public boolean ALLOW_FULL_SENTENCE_RULES = true;
     public boolean ALLOW_ABSTRACT = false;
     public boolean ALLOW_X_NONLEX = false;
+    public int RULE_SPAN_MINIMUM = 10;
     public int RULE_SPAN_LIMIT = 12;
     public int LEX_TARGET_LENGTH_LIMIT = 12;
     public int LEX_SOURCE_LENGTH_LIMIT = 12;
@@ -70,6 +71,7 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
         ALLOW_FULL_SENTENCE_RULES = conf.getBoolean("thrax.allow-full-sentence-rules", true);
         ALLOW_ABSTRACT = conf.getBoolean("thrax.allow-abstract-rules", false);
         ALLOW_X_NONLEX = conf.getBoolean("thrax.allow-nonlexical-x", false);
+        RULE_SPAN_MINIMUM = conf.getInt("thrax.rule-span-minimum", 12);
         RULE_SPAN_LIMIT = conf.getInt("thrax.rule-span-limit", 12);
         LEX_TARGET_LENGTH_LIMIT = conf.getInt("thrax.lex-target-words", 12);
         LEX_SOURCE_LENGTH_LIMIT = conf.getInt("thrax.lex-source-words", 12);
@@ -242,6 +244,12 @@ public class HierarchicalRuleExtractor implements RuleExtractor {
             r.numTerminals == 0 &&
             targetTerminals == 0)
             return false;
+		// reject rules that are too short
+		if (r.rhs.targetEnd - r.rhs.targetStart < RULE_SPAN_LIMIT ||
+			r.rhs.sourceEnd - r.rhs.sourceStart < RULE_SPAN_LIMIT)
+			return false;
+		// reject rules that are too long, unless they are
+		// full-sentence rules (and full-sentence rules are allowed)
         if (r.rhs.targetEnd - r.rhs.targetStart > RULE_SPAN_LIMIT ||
             r.rhs.targetEnd - r.rhs.targetStart > INIT_LENGTH_LIMIT ||
             r.rhs.sourceEnd - r.rhs.sourceStart > RULE_SPAN_LIMIT ||
