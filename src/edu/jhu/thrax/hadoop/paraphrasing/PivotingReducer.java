@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
@@ -24,8 +25,8 @@ public class PivotingReducer extends
 	private static final Logger logger =
 			Logger.getLogger(PivotingReducer.class.getName());
 	
-	private static enum PivotingCounters { F_READ, EF_READ,
-		EE_CREATED, EE_WRITTEN };
+	private static enum PivotingCounters { F_READ, EF_READ, EF_PRUNED,
+		EE_PRUNED, EE_WRITTEN };
 	
 	private static final Text EMPTY = new Text("");
 	private static final DoubleWritable ZERO = new DoubleWritable(0.0);
@@ -39,7 +40,8 @@ public class PivotingReducer extends
 	private List<ParaphrasePattern> targets;
 	private List<PivotedFeature> features;
 	
-	private Map<Text, PruningRule> pruningRules;
+	private Map<Text, PruningRule> translationPruningRules;
+	private Map<Text, PruningRule> pivotedPruningRules;
 
 	protected void setup(Context context) throws IOException,
 			InterruptedException {
@@ -53,7 +55,9 @@ public class PivotingReducer extends
 
 		Configuration conf = context.getConfiguration();
 		features = PivotedFeatureFactory.getAll(conf.get("thrax.features", ""));
-		pruningRules = parsePruningRules(conf.get("thrax.pruning", ""));
+		
+		translationPruningRules = getTranslationPruningRules(conf.get("thrax.pruning", ""));
+		pivotedPruningRules = getPivotedPruningRules(conf.get("thrax.pruning", ""));
 	}
 
 	protected void reduce(RuleWritable key, Iterable<MapWritable> values,
@@ -75,8 +79,11 @@ public class PivotingReducer extends
 			targets.clear();
 		}
 		for (MapWritable value : values)
-			targets.add(new ParaphrasePattern(key.target.toString(), 
-					nts, lhs, value));
+			if (!prune(value, translationPruningRules)) {
+				targets.add(new ParaphrasePattern(key.target.toString(), nts, lhs, value));
+			} else {
+				context.getCounter(PivotingCounters.EF_PRUNED).increment(1);
+			}
 	}
 
 	protected void cleanup(Context context) throws IOException,
@@ -90,8 +97,6 @@ public class PivotingReducer extends
 			InterruptedException {
 		context.getCounter(PivotingCounters.F_READ).increment(1);
 		context.getCounter(PivotingCounters.EF_READ).increment(targets.size());
-		context.getCounter(PivotingCounters.EE_CREATED).increment(
-				(targets.size() * (targets.size() - 1)) / 2);
 		
 		for (int i = 0; i < targets.size(); i++) {
 			for (int j = i; j < targets.size(); j++) {
@@ -119,13 +124,15 @@ public class PivotingReducer extends
 			pivoted_features.put(f.getFeatureLabel(),
 					f.pivot(src.features, tgt.features));
 
-		if (!prune(pivoted_features)) {
+		if (!prune(pivoted_features, pivotedPruningRules)) {
 			context.write(pivoted_rule, pivoted_features);
 			context.getCounter(PivotingCounters.EE_WRITTEN).increment(1);
+		} else {
+			context.getCounter(PivotingCounters.EE_PRUNED).increment(1);
 		}
 	}
 
-	protected Map<Text, PruningRule> parsePruningRules(String conf_string) {
+	protected Map<Text, PruningRule> getPivotedPruningRules(String conf_string) {
 		Map<Text, PruningRule> rules = new HashMap<Text, PruningRule>();
 		String[] rule_strings = conf_string.split("\\s*,\\s*");
 		for (String rule_string : rule_strings) {
@@ -146,8 +153,39 @@ public class PivotingReducer extends
 		return rules;
 	}
 	
-	protected boolean prune(MapWritable features) {
-		for (Map.Entry<Text, PruningRule> e : pruningRules.entrySet()) {
+	protected Map<Text, PruningRule> getTranslationPruningRules(String conf_string) {
+		Map<Text, PruningRule> rules = new HashMap<Text, PruningRule>();
+		String[] rule_strings = conf_string.split("\\s*,\\s*");
+		for (String rule_string : rule_strings) {
+			String[] f;
+			boolean smaller;
+			if (rule_string.contains("<")) {
+				f = rule_string.split("<");
+				smaller = true;
+			} else if (rule_string.contains(">")) {
+				f = rule_string.split(">");
+				smaller = false;
+			} else {
+				continue;
+			}
+			Double threshold = Double.parseDouble(f[1]);
+			
+			Set<Text> lower_bound_labels = PivotedFeatureFactory.get(f[0]).getLowerBoundLabels();
+			if (lower_bound_labels != null)
+				for (Text label : lower_bound_labels)
+					rules.put(label, new PruningRule(smaller, threshold));
+			
+			Set<Text> upper_bound_labels = PivotedFeatureFactory.get(f[0]).getUpperBoundLabels();
+			if (upper_bound_labels != null)
+				for (Text label : upper_bound_labels)
+					rules.put(label, new PruningRule(!smaller, threshold));
+		}
+		return rules;
+	}
+	
+	protected boolean prune(MapWritable features,
+			final Map<Text, PruningRule> rules) {
+		for (Map.Entry<Text, PruningRule> e : rules.entrySet()) {
 			if (features.containsKey(e.getKey()) 
 					&& e.getValue().applies((DoubleWritable) features.get(e.getKey())))
 				return true;

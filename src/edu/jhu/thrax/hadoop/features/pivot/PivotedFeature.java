@@ -24,6 +24,10 @@ public interface PivotedFeature {
 
 	public DoubleWritable finalizeAggregation();
 	
+	public Set<Text> getLowerBoundLabels();
+	
+	public Set<Text> getUpperBoundLabels();
+	
 	public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map);
 
 	public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map);

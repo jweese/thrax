@@ -32,4 +32,17 @@ public class PivotedLexicalTargetGivenSourceFeature extends
 
 		return new DoubleWritable(egf + fge);
 	}
+
+	@Override
+	public Set<Text> getLowerBoundLabels() {
+		Set<Text> lower_bound_labels = new HashSet<Text>();
+		lower_bound_labels.add(new Text("Lex(e|f)"));
+		lower_bound_labels.add(new Text("Lex(f|e)"));
+		return lower_bound_labels;
+	}
+
+	@Override
+	public Set<Text> getUpperBoundLabels() {
+		return null;
+	}
 }

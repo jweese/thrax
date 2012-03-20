@@ -33,4 +33,17 @@ public class PivotedTargetPhraseGivenSourceFeature extends
 
 		return new DoubleWritable(tgt_f + f_src);
 	}
+
+	@Override
+	public Set<Text> getLowerBoundLabels() {
+		Set<Text> lower_bound_labels = new HashSet<Text>();
+		lower_bound_labels.add(new Text("p(e|f)"));
+		lower_bound_labels.add(new Text("p(f|e)"));
+		return lower_bound_labels;
+	}
+
+	@Override
+	public Set<Text> getUpperBoundLabels() {
+		return null;
+	}
 }
