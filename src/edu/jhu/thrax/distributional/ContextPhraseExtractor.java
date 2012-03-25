@@ -7,7 +7,7 @@ import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -222,9 +222,9 @@ public class ContextPhraseExtractor {
 			String line = reader.next().trim();
 			List<ContextPhrase> cps = cpe.extract(line);
 			for (ContextPhrase cp : cps) {
-				TreeMap<Text, Float> feature_map = new TreeMap<Text, Float>();
+				TreeMap<Text, Integer> feature_map = new TreeMap<Text, Integer>();
 				for (Writable fn : cp.getFeatures().keySet())
-					feature_map.put((Text) fn, ((FloatWritable) cp.getFeatures().get(fn)).get());
+					feature_map.put((Text) fn, ((IntWritable) cp.getFeatures().get(fn)).get());
 				System.out.println(FormatUtils.contextPhraseToText(cp.getPhrase(), feature_map));
 			}
 		}

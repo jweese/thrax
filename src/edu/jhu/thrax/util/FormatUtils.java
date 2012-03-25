@@ -75,7 +75,7 @@ public class FormatUtils {
 		return new Text(sb.substring(0, sb.length() - 1));
 	}
 	
-	public static Text contextPhraseToText(Text phrase, Map<Text, Float> fs) {
+	public static Text contextPhraseToText(Text phrase, Map<Text, Integer> fs) {
 		if (phrase == null)
 			throw new IllegalArgumentException("Cannot convert a null "
 					+ "phrase to Text.");
@@ -83,11 +83,9 @@ public class FormatUtils {
 		sb.append(phrase.toString());
 		sb.append(DELIM);
 		for (Text t : fs.keySet()) {
-			float f = fs.get(t);
-			if (f == 0)
-				continue;
-			String score = String.format("%.5f", f);
-			sb.append(String.format("%s=%s ", t, score));
+			int i = fs.get(t);
+			if (i != 0)
+				sb.append(String.format("%s=%d ", t, i));
 		}
 		return new Text(sb.substring(0, sb.length() - 1));
 	}

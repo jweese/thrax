@@ -7,6 +7,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -38,6 +39,8 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 		
 		String outputPath = conf.get("thrax.outputPath", "");
     FileOutputFormat.setOutputPath(job, new Path(outputPath));
+    FileOutputFormat.setOutputCompressorClass(job, GzipCodec.class);
+    FileOutputFormat.setCompressOutput(job, true);
 		
 		return job;
 	}
