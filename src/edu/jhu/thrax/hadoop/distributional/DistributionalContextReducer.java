@@ -1,7 +1,7 @@
 package edu.jhu.thrax.hadoop.distributional;
 
 import java.io.IOException;
-import java.util.TreeMap;
+import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.IntWritable;
@@ -26,7 +26,7 @@ public class DistributionalContextReducer extends
 
 	protected void reduce(Text key, Iterable<MapWritable> values, Context context)
 			throws IOException, InterruptedException {
-		TreeMap<Text, Integer> feature_map = new TreeMap<Text, Integer>();
+		HashMap<Text, Integer> feature_map = new HashMap<Text, Integer>();
 		int count = 0;
 		for (MapWritable mw : values) {
 			for (Writable fn : mw.keySet()) {

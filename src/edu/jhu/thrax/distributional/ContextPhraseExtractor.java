@@ -126,6 +126,7 @@ public class ContextPhraseExtractor {
 					
 					addSyntaxFeatures(i, j, cp);
 					addDependencyFeatures(i, j, cp);
+					cp.addFeature("count");
 					output.add(cp);
 				}
 			}
@@ -139,7 +140,6 @@ public class ContextPhraseExtractor {
 	private void generateAllGramFeatures() {
 		if (USE_LEX)
 			lex_features = buildGramFeatures(parse.getTerminals(), MAX_LEX_GRAM);
-		
 		if (USE_POS)
 			pos_features = buildGramFeatures(parse.getPOS(), MAX_POS_GRAM);
 		if (USE_LEM)
