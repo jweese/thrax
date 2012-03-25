@@ -11,7 +11,6 @@ import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextReducer;
@@ -23,11 +22,11 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 		job.setJarByClass(DistributionalContextMapper.class);
 		job.setMapperClass(DistributionalContextMapper.class);
 		job.setReducerClass(DistributionalContextReducer.class);
+		
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(MapWritable.class);
 		job.setOutputKeyClass(Text.class);
 		job.setOutputValueClass(NullWritable.class);
-		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
 		int numReducers = conf.getInt("thrax.reducers", 4);
 		job.setNumReduceTasks(numReducers);
@@ -39,6 +38,7 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 		
 		String outputPath = conf.get("thrax.outputPath", "");
     FileOutputFormat.setOutputPath(job, new Path(outputPath));
+    
     FileOutputFormat.setOutputCompressorClass(job, GzipCodec.class);
     FileOutputFormat.setCompressOutput(job, true);
 		
