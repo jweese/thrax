@@ -74,4 +74,21 @@ public class FormatUtils {
 		}
 		return new Text(sb.substring(0, sb.length() - 1));
 	}
+	
+	public static Text contextPhraseToText(Text phrase, Map<Text, Float> fs) {
+		if (phrase == null)
+			throw new IllegalArgumentException("Cannot convert a null "
+					+ "phrase to Text.");
+		StringBuilder sb = new StringBuilder();
+		sb.append(phrase.toString());
+		sb.append(DELIM);
+		for (Text t : fs.keySet()) {
+			float f = fs.get(t);
+			if (f == 0)
+				continue;
+			String score = String.format("%.5f", f);
+			sb.append(String.format("%s=%s ", t, score));
+		}
+		return new Text(sb.substring(0, sb.length() - 1));
+	}
 }

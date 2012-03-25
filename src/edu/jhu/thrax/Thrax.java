@@ -16,6 +16,7 @@ import org.apache.hadoop.util.ToolRunner;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
+import edu.jhu.thrax.hadoop.jobs.DistributionalContextExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.FeatureCollectionJob;
 import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
@@ -88,10 +89,10 @@ public class Thrax extends Configured implements Tool
     private synchronized void scheduleJobs() throws SchedulerException {
     	scheduler = new Scheduler();
     	
-    	// Schedule rule extraction job.
-    	scheduler.schedule(ExtractionJob.class);
-
-    	if ("translation".equals(conf.get("thrax.type", "translation"))) {
+    	String type = conf.get("thrax.type", "translation");
+    	if ("translation".equals(type)) {
+    		// Schedule rule extraction job.
+      	scheduler.schedule(ExtractionJob.class);
       	// Extracting a translation grammar.
     		for (String feature : conf.get("thrax.features", "").split("\\s+")) {
     			MapReduceFeature f = FeatureJobFactory.get(feature);
@@ -101,7 +102,9 @@ public class Thrax extends Configured implements Tool
     			}
     		}
     		scheduler.schedule(OutputJob.class);
-    	} else if ("paraphrasing".equals(conf.get("thrax.type", "translation"))) {
+    	} else if ("paraphrasing".equals(type)) {
+    		// Schedule rule extraction job.
+      	scheduler.schedule(ExtractionJob.class);
     		// Collect the translation grammar features required to compute 
     		// the requested paraphrasing features.
     		Set<String> prereq_features = new HashSet<String>();
@@ -125,7 +128,10 @@ public class Thrax extends Configured implements Tool
     		scheduler.schedule(ParaphrasePivotingJob.class);    		
     		// Schedule aggregation and output job.
     		scheduler.schedule(ParaphraseAggregationJob.class);
-    	} else {
+    	} else if ("distributional".equals(type)) {
+      	scheduler.schedule(DistributionalContextExtractionJob.class);
+    	}
+    	else {
     		System.err.println("Unknown grammar type. No jobs scheduled.");
     	}
     }
