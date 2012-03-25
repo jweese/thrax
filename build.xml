@@ -10,7 +10,7 @@
     <property name="hadoop-src" value="edu/jhu/thrax/hadoop"/>
 
     <property name="testng" value="${lib}/testng-5.8-jdk15.jar"/>
-    <property name="jarfiles" value="${env.HADOOP}/hadoop-core-${env.HADOOP_VERSION}.jar:${env.AWS_SDK}/lib/aws-java-sdk-${env.AWS_VERSION}.jar"/> 
+    <property name="jarfiles" value="${lib}/commons-lang3-3.1.jar:${env.HADOOP}/hadoop-core-${env.HADOOP_VERSION}.jar:${env.AWS_SDK}/lib/aws-java-sdk-${env.AWS_VERSION}.jar"/> 
 
     <target name="init">
         <tstamp/>
