@@ -30,6 +30,7 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
             return;
 		for (RuleWritable r : extractor.extract(value))
 			context.write(r, one);
+		context.progress();
     }
 }
 
