@@ -184,14 +184,14 @@ public class PhrasePair
 	public boolean sourceIsDisjointFrom(PhrasePair other)
 	{
 		if (other.sourceStart < sourceStart)
-			return other.sourceEnd < sourceStart;
+			return other.sourceEnd <= sourceStart;
 		return other.sourceStart >= sourceEnd;
 	}
 
 	public boolean targetIsDisjointFrom(PhrasePair other)
 	{
 		if (other.targetStart < targetStart)
-			return other.targetEnd < targetStart;
+			return other.targetEnd <= targetStart;
 		return other.targetStart >= targetEnd;
 	}
 }
