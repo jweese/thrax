@@ -38,16 +38,16 @@ public class Scheduler
         for (Class<? extends ThraxJob> c : job.getPrerequisites()) {
             schedule(c);
         }
-        jobs.put(jobClass, JobState.WAITING);
-        System.err.println("[SCHED] scheduled job for " + jobClass);
+        jobs.put(jobClass, JobState.PLANNED);
+        System.err.println("[SCHED] planned job for " + jobClass);
         return true;
     }
 
-    public boolean setState(Class<? extends ThraxJob> jobClass, JobState state) throws SchedulerException
+    public boolean setState(Class<? extends ThraxJob> job_class, JobState state) throws SchedulerException
     {
-        if (jobs.containsKey(jobClass)) {
-            jobs.put(jobClass, state);
-            System.err.println(String.format("[SCHED] %s in state %s", jobClass, state));
+        if (jobs.containsKey(job_class)) {
+            jobs.put(job_class, state);
+            System.err.println(String.format("[SCHED] %s in state %s", job_class, state));
             updateAllStates();
             return true;
         }
@@ -71,6 +71,26 @@ public class Scheduler
             }
         }
     }
+    
+	public void percolate(Class<? extends ThraxJob> job_class) throws SchedulerException {
+		ThraxJob job;
+		try {
+			job = job_class.newInstance();
+		} catch (Exception e) {
+			throw new SchedulerException(e.getMessage());
+		}
+		Set<Class<? extends ThraxJob>> prereqs = job.getPrerequisites();
+		
+		if (faked.contains(job.getName())) {
+			setState(job_class, JobState.SUCCESS);
+		} else if (prereqs == null || prereqs.isEmpty()) {
+			setState(job_class, JobState.READY);
+		} else {
+			setState(job_class, JobState.WAITING);
+			for (Class<? extends ThraxJob> p : prereqs)
+				percolate(p);
+		}
+	}
 
     public void checkReady(Class<? extends ThraxJob> c) throws SchedulerException
     {

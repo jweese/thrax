@@ -62,7 +62,6 @@ public class Thrax extends Configured implements Tool {
 		}
 
 		scheduleJobs();
-		scheduler.updateAllStates();
 
 		do {
 			for (Class<? extends ThraxJob> c : scheduler.getClassesByState(JobState.READY)) {
@@ -103,6 +102,7 @@ public class Thrax extends Configured implements Tool {
 				}
 			}
 			scheduler.schedule(OutputJob.class);
+			scheduler.percolate(OutputJob.class);
 		} else if ("paraphrasing".equals(type)) {
 			// Schedule rule extraction job.
 			scheduler.schedule(ExtractionJob.class);
@@ -128,8 +128,10 @@ public class Thrax extends Configured implements Tool {
 			scheduler.schedule(ParaphrasePivotingJob.class);
 			// Schedule aggregation and output job.
 			scheduler.schedule(ParaphraseAggregationJob.class);
+			scheduler.percolate(ParaphraseAggregationJob.class);
 		} else if ("distributional".equals(type)) {
 			scheduler.schedule(DistributionalContextExtractionJob.class);
+			scheduler.percolate(DistributionalContextExtractionJob.class);
 		} else {
 			System.err.println("Unknown grammar type. No jobs scheduled.");
 		}
