@@ -63,6 +63,10 @@ public class ParaphrasePivotingJob extends ThraxJob {
 		return job;
 	}
 
+	public String getName() {
+  	return "pivoting";
+  }
+	
 	public String getOutputSuffix() {
 		return "pivoted";
 	}

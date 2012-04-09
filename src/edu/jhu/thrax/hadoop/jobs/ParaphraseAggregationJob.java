@@ -58,6 +58,10 @@ public class ParaphraseAggregationJob extends ThraxJob {
 
 		return job;
 	}
+	
+	public String getName() {
+  	return "aggregate";
+  }
 
 	public String getOutputSuffix() {
 		return null;

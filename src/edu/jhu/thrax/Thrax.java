@@ -87,7 +87,7 @@ public class Thrax extends Configured implements Tool
     // currently distinguish two grammar types: translation and 
     // paraphrasing.
     private synchronized void scheduleJobs() throws SchedulerException {
-    	scheduler = new Scheduler();
+    	scheduler = new Scheduler(conf);
     	
     	String type = conf.get("thrax.type", "translation");
     	if ("translation".equals(type)) {

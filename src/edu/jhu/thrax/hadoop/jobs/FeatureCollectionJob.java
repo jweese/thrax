@@ -81,6 +81,10 @@ public class FeatureCollectionJob extends ThraxJob {
 		return job;
 	}
 
+	public String getName() {
+  	return "collect";
+  }
+	
 	public String getOutputSuffix() {
 		return "collected";
 	}

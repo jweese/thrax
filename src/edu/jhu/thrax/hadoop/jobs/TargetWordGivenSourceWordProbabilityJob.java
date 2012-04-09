@@ -47,6 +47,10 @@ public class TargetWordGivenSourceWordProbabilityJob extends ThraxJob
         return job;
     }
     
+    public String getName() {
+    	return "target-word-lexprob";
+    }
+    
     public String getOutputSuffix() {
     	return "lexprobsf2e";
     }

@@ -60,6 +60,10 @@ public class OutputJob extends ThraxJob
 
         return job;
     }
+    
+    public String getName() {
+    	return "collect";
+    }
 
     public String getOutputSuffix() {
     	return null;

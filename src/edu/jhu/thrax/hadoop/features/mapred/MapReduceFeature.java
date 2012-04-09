@@ -30,8 +30,6 @@ import java.util.Map;
 
 public abstract class MapReduceFeature extends ThraxJob
 {
-    public abstract String getName();
-    
     public String getOutputSuffix() {
     	return getName();
     }
@@ -68,6 +66,7 @@ public abstract class MapReduceFeature extends ThraxJob
         job.setOutputValueClass(NullWritable.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
+        // TODO: Fix this dirty balancing hack.
         int num_reducers = conf.getInt("thrax.reducers", 4);
         job.setNumReduceTasks(num_reducers / 4);
 

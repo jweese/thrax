@@ -44,6 +44,10 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 		
 		return job;
 	}
+	
+	public String getName() {
+  	return "distributional";
+  }
 
 	public String getOutputSuffix() {
 		return null;
