@@ -83,12 +83,15 @@ public class Scheduler
 		
 		if (faked.contains(job.getName())) {
 			setState(job_class, JobState.SUCCESS);
-		} else if (prereqs == null || prereqs.isEmpty()) {
-			setState(job_class, JobState.READY);
+			System.err.println(String.format("[SCHED] %s faked into state %s",
+					job_class, JobState.SUCCESS));
 		} else {
 			setState(job_class, JobState.WAITING);
-			for (Class<? extends ThraxJob> p : prereqs)
-				percolate(p);
+			System.err.println(String.format("[SCHED] %s set to %s", job_class,
+					JobState.WAITING));
+			if (prereqs != null)
+				for (Class<? extends ThraxJob> p : prereqs)
+					percolate(p);
 		}
 	}
 
