@@ -26,7 +26,6 @@ public class ParaphrasePivotingJob extends ThraxJob {
 	}
 	
 	public Set<Class<? extends ThraxJob>> getPrerequisites() {
-		prereqs.add(ExtractionJob.class);
 		prereqs.add(FeatureCollectionJob.class);
 		return prereqs;
 	}
