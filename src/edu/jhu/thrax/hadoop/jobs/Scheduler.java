@@ -83,12 +83,8 @@ public class Scheduler
 		
 		if (faked.contains(job.getName())) {
 			setState(job_class, JobState.SUCCESS);
-			System.err.println(String.format("[SCHED] %s faked into state %s",
-					job_class, JobState.SUCCESS));
 		} else {
 			setState(job_class, JobState.WAITING);
-			System.err.println(String.format("[SCHED] %s set to %s", job_class,
-					JobState.WAITING));
 			if (prereqs != null)
 				for (Class<? extends ThraxJob> p : prereqs)
 					percolate(p);
@@ -111,13 +107,7 @@ public class Scheduler
                 return;
         }
         // All prereqs are in state SUCCESS.
-        
-        if (faked.contains(job.getName())) {
-        	System.err.println(String.format("[SCHED] Faking %s into state SUCCESS.", c));
-        	setState(c, JobState.SUCCESS);
-        } else {
-        	setState(c, JobState.READY);
-        }
+        setState(c, JobState.READY);
     }
 
     public void checkFailedPrereq(Class<? extends ThraxJob> c) throws SchedulerException
