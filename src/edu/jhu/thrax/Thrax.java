@@ -90,6 +90,9 @@ public class Thrax extends Configured implements Tool
     	scheduler = new Scheduler(conf);
     	
     	String type = conf.get("thrax.type", "translation");
+    	
+    	System.err.println("Running in mode: " + type);
+    	
     	if ("translation".equals(type)) {
     		// Schedule rule extraction job.
       	scheduler.schedule(ExtractionJob.class);
