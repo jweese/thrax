@@ -16,9 +16,12 @@ public class Scheduler
     		jobs = new HashMap<Class<? extends ThraxJob>,JobState>();
     		faked = new HashSet<String>();
     		
-    		String[] faked_jobs = config.get("thrax.fake").split("\\s+");
-    		for (String faked_job : faked_jobs)
-    			faked.add(faked_job);
+    		String faked_line = config.get("thrax.fake");
+    		if (faked_line != null) {
+    			String[] faked_jobs = faked_line.split("\\s+");
+    			for (String faked_job : faked_jobs)
+    				faked.add(faked_job);
+    		}
     }
 
     public boolean schedule(Class<? extends ThraxJob> jobClass) throws SchedulerException
