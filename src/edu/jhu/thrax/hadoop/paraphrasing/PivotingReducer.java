@@ -73,14 +73,26 @@ public class PivotingReducer extends
 			currentLhs.set(key.lhs);
 			currentSource.set(key.source);
 
-			lhs = FormatUtils.stripNonterminal(currentLhs.toString());
-			nts = extractNonterminals(currentSource.toString());
+			if (currentLhs.getLength() == 0 || currentSource.getLength() == 0)
+				return;
+			
+			try {
+				lhs = FormatUtils.stripNonterminal(currentLhs.toString());
+				nts = extractNonterminals(currentSource.toString());
+			} catch (Exception e) {
+				return;
+			}
 
 			targets.clear();
 		}
 		for (MapWritable value : values)
 			if (!prune(value, translationPruningRules)) {
-				targets.add(new ParaphrasePattern(key.target.toString(), nts, lhs, value));
+				try {
+					ParaphrasePattern pp = new ParaphrasePattern(key.target.toString(), nts, lhs, value);
+					targets.add(pp);
+				} catch (Exception e) {
+					context.getCounter(PivotingCounters.EF_PRUNED).increment(1);
+				}
 			} else {
 				context.getCounter(PivotingCounters.EF_PRUNED).increment(1);
 			}
