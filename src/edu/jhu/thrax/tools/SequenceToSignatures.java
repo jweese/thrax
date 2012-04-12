@@ -1,7 +1,5 @@
 package edu.jhu.thrax.tools;
 
-import java.net.URI;
-
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -11,11 +9,9 @@ import edu.jhu.thrax.hadoop.distributional.SignatureWritable;
 
 public class SequenceToSignatures {
 	public static void main(String[] argv) throws Exception {
-		URI uri = URI.create(argv[0]);
-		Configuration conf = new Configuration();
-		FileSystem fs = FileSystem.get(uri, conf);
+		Configuration config = new Configuration();
 		Path path = new Path(argv[0]);
-		SequenceFile.Reader reader = new SequenceFile.Reader(fs, path, conf);
+		SequenceFile.Reader reader = new SequenceFile.Reader(FileSystem.getLocal(config), path, config);
 
 		SignatureWritable signature = new SignatureWritable();
 		while (reader.next(signature)) {
