@@ -133,7 +133,7 @@ public class Thrax extends Configured implements Tool {
 		} else if ("distributional".equals(type)) {
 			scheduler.schedule(DistributionalContextExtractionJob.class);
 			scheduler.schedule(DistributionalContextSortingJob.class);
-			scheduler.percolate(DistributionalContextExtractionJob.class);
+			scheduler.percolate(DistributionalContextSortingJob.class);
 		} else {
 			System.err.println("Unknown grammar type. No jobs scheduled.");
 		}
