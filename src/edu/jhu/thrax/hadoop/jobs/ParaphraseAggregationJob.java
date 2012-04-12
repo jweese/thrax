@@ -24,7 +24,7 @@ public class ParaphraseAggregationJob extends ThraxJob {
 	public static void addPrerequisite(Class<? extends ThraxJob> c) {
 		prereqs.add(c);
 	}
-	
+
 	public Set<Class<? extends ThraxJob>> getPrerequisites() {
 		prereqs.add(ParaphrasePivotingJob.class);
 		return prereqs;
@@ -46,8 +46,7 @@ public class ParaphraseAggregationJob extends ThraxJob {
 
 		job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
 
-		FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir")
-				+ "pivoted"));
+		FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "pivoted"));
 
 		int numReducers = conf.getInt("thrax.reducers", 4);
 		job.setNumReduceTasks(numReducers);
@@ -57,10 +56,10 @@ public class ParaphraseAggregationJob extends ThraxJob {
 
 		return job;
 	}
-	
+
 	public String getName() {
-  	return "aggregate";
-  }
+		return "aggregate";
+	}
 
 	public String getOutputSuffix() {
 		return null;

@@ -11,36 +11,56 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 
-import edu.jhu.thrax.util.FormatUtils;
+import edu.jhu.jerboa.sim.SLSH;
 
 public class DistributionalContextReducer extends
-		Reducer<Text, MapWritable, Text, NullWritable> {
+		Reducer<Text, MapWritable, SignatureWritable, NullWritable> {
 
 	private int minCount;
+	private SLSH slsh;
 
 	public void setup(Context context) throws IOException, InterruptedException {
 		Configuration conf = context.getConfiguration();
 		minCount = conf.getInt("thrax.min-phrase-count", 3);
+		
+		try {
+			slsh = new SLSH();
+			slsh.initialize(conf.getInt("thrax.lsh-num-bits", 256),
+					conf.getInt("thrax.lsh-pool-size", 100000),
+					conf.getInt("thrax.lsh-random-seed", 42));
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(1);
+		}		
 		return;
 	}
 
 	protected void reduce(Text key, Iterable<MapWritable> values, Context context)
 			throws IOException, InterruptedException {
-		HashMap<Text, Integer> feature_map = new HashMap<Text, Integer>();
-		int count = 0;
-		for (MapWritable mw : values) {
-			for (Writable fn : mw.keySet()) {
-				Integer current = feature_map.get((Text) fn);
-				if (current != null)
-					feature_map.put((Text) fn, (current + ((IntWritable) mw.get(fn)).get()));
+		HashMap<String, Integer> output_map = new HashMap<String, Integer>();
+		for (MapWritable input_map : values) {
+			for (Writable feature_text : input_map.keySet()) {
+				String feature_string = ((Text) feature_text).toString();
+				int feature_value = ((IntWritable) input_map.get(feature_text)).get();
+				Integer current_value = output_map.get(feature_string);
+				if (current_value != null)
+					output_map.put(feature_string, current_value + feature_value);
 				else
-					feature_map.put((Text) fn, ((IntWritable) mw.get(fn)).get());
+					output_map.put(feature_string, feature_value);
 			}
-			count++;
 		}
-		if (count >= minCount)
-			context.write(FormatUtils.contextPhraseToText(key, feature_map),
-					NullWritable.get());
+		
+		int count = output_map.get("count");
+		if (count >= minCount) {
+			for (String feature_name : output_map.keySet()) {
+				if (!"count".equals(feature_name))
+					slsh.update(key.toString(), feature_name,
+							output_map.get(feature_name).doubleValue());
+			}
+			slsh.buildSignatures(true);
+			context.write(new SignatureWritable(key,
+					slsh.getSignature(key.toString()), count, count), NullWritable.get());
+		}
 		
 		return;
 	}

@@ -17,6 +17,7 @@ import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
 import edu.jhu.thrax.hadoop.jobs.DistributionalContextExtractionJob;
+import edu.jhu.thrax.hadoop.jobs.DistributionalContextSortingJob;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.FeatureCollectionJob;
 import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
@@ -131,6 +132,7 @@ public class Thrax extends Configured implements Tool {
 			scheduler.percolate(ParaphraseAggregationJob.class);
 		} else if ("distributional".equals(type)) {
 			scheduler.schedule(DistributionalContextExtractionJob.class);
+			scheduler.schedule(DistributionalContextSortingJob.class);
 			scheduler.percolate(DistributionalContextExtractionJob.class);
 		} else {
 			System.err.println("Unknown grammar type. No jobs scheduled.");

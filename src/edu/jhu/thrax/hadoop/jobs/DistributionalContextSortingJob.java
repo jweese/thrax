@@ -1,29 +1,32 @@
 package edu.jhu.thrax.hadoop.jobs;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import edu.jhu.thrax.hadoop.distributional.DistributionalContextCombiner;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
-import edu.jhu.thrax.hadoop.distributional.DistributionalContextReducer;
 import edu.jhu.thrax.hadoop.distributional.SignatureWritable;
 
-public class DistributionalContextExtractionJob extends ThraxJob {
+public class DistributionalContextSortingJob extends ThraxJob {
+	
+	private static HashSet<Class<? extends ThraxJob>> prereqs = new HashSet<Class<? extends ThraxJob>>();
 	
 	public Job getJob(Configuration conf) throws IOException {
-		Job job = new Job(conf, "distributional");
+		Job job = new Job(conf, "sorting");
 		job.setJarByClass(DistributionalContextMapper.class);
-		job.setMapperClass(DistributionalContextMapper.class);
-//		job.setCombinerClass(DistributionalContextCombiner.class);
-		job.setReducerClass(DistributionalContextReducer.class);
+		job.setMapperClass(Mapper.class);
+		job.setReducerClass(Reducer.class);
 		
 		job.setMapOutputKeyClass(Text.class);
 		job.setMapOutputValueClass(MapWritable.class);
@@ -46,8 +49,13 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 	}
 	
 	public String getName() {
-  	return "distributional";
+  	return "sorting";
   }
+	
+	public Set<Class<? extends ThraxJob>> getPrerequisites() {
+		prereqs.add(DistributionalContextExtractionJob.class);
+		return prereqs;
+	}
 
 	public String getOutputSuffix() {
 		return null;
