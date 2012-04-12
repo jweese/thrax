@@ -6,12 +6,12 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.MapWritable;
-import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
@@ -24,20 +24,24 @@ public class DistributionalContextSortingJob extends ThraxJob {
 	
 	public Job getJob(Configuration conf) throws IOException {
 		Job job = new Job(conf, "sorting");
+		
 		job.setJarByClass(DistributionalContextMapper.class);
 		job.setMapperClass(Mapper.class);
 		job.setReducerClass(Reducer.class);
 		
-		job.setMapOutputKeyClass(Text.class);
-		job.setMapOutputValueClass(MapWritable.class);
-		job.setOutputKeyClass(Text.class);
-		job.setOutputValueClass(SignatureWritable.class);
+		job.setInputFormatClass(SequenceFileInputFormat.class);
+		job.setMapOutputKeyClass(SignatureWritable.class);
+		job.setMapOutputValueClass(NullWritable.class);
+		job.setOutputKeyClass(SignatureWritable.class);
+		job.setOutputValueClass(NullWritable.class);
 		job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
 		int numReducers = conf.getInt("thrax.reducers", 4);
 		job.setNumReduceTasks(numReducers);
 
-		FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));
+		String workDir = conf.get("thrax.work-dir");
+		FileInputFormat.setInputPaths(job, new Path(workDir + "signatures"));
+		
 		int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
 		if (maxSplitSize != 0)
 			FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);

@@ -39,8 +39,10 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 		if (maxSplitSize != 0)
 			FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
 		
-		String outputPath = conf.get("thrax.outputPath", "");
-    FileOutputFormat.setOutputPath(job, new Path(outputPath));
+		String workDir = conf.get("thrax.work-dir");
+		
+		String outputPath = workDir + "signatures";
+		FileOutputFormat.setOutputPath(job, new Path(outputPath));
     		
 		return job;
 	}
