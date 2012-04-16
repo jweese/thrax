@@ -25,164 +25,158 @@ import edu.jhu.thrax.util.io.LineReader;
 
 public class DeduplicatePivotedGrammar {
 
-	private static final Logger logger =
-			Logger.getLogger(DeduplicatePivotedGrammar.class.getName());
+  private static final Logger logger = Logger.getLogger(DeduplicatePivotedGrammar.class.getName());
 
-	private static final String DELIM = String.format(" %s ",
-			ThraxConfig.DELIMITER_REGEX);
+  private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
 
-	private static List<SimpleFeature> simple;
-	private static List<PivotedFeature> pivoted;
+  private static List<SimpleFeature> simple;
+  private static List<PivotedFeature> pivoted;
 
-	private static boolean sparse;
-	private static boolean labeled;
+  private static boolean sparse;
+  private static boolean labeled;
 
-	private static void writeRule(RuleWritable rule, MapWritable features) {
-		Map<Text, Writable> aggregated = new TreeMap<Text, Writable>();
-		// Copy feature values over from last rule occurrence. 
-		for (Writable label : features.keySet())
-			aggregated.put((Text) label, features.get(label));
-		// Overwrite pivoted features with aggregated values.
-		for (PivotedFeature pf : pivoted)
-			aggregated.put(pf.getFeatureLabel(), pf.finalizeAggregation());
-		// Recompute simple features.
-		for (SimpleFeature f : simple)
-			f.score(rule, aggregated);
-		// Print to output.
-		System.out.println(FormatUtils.ruleToText(rule, aggregated,
-				labeled, sparse));
-	}
+  private static void writeRule(RuleWritable rule, MapWritable features) {
+    Map<Text, Writable> aggregated = new TreeMap<Text, Writable>();
+    // Copy feature values over from last rule occurrence.
+    for (Writable label : features.keySet())
+      aggregated.put((Text) label, features.get(label));
+    // Overwrite pivoted features with aggregated values.
+    for (PivotedFeature pf : pivoted)
+      aggregated.put(pf.getFeatureLabel(), pf.finalizeAggregation());
+    // Recompute simple features.
+    for (SimpleFeature f : simple)
+      f.score(rule, aggregated);
+    // Print to output.
+    System.out.println(FormatUtils.ruleToText(rule, aggregated, labeled, sparse));
+  }
 
-	private static void writeIndex(String index_file, MapWritable features)
-			throws IOException, FileNotFoundException {
-		OutputStreamWriter out = new OutputStreamWriter(
-				new FileOutputStream(index_file), "UTF-8");
-		Map<Text, Writable> sorted_features = new TreeMap<Text, Writable>();
+  private static void writeIndex(String index_file, MapWritable features) throws IOException,
+      FileNotFoundException {
+    OutputStreamWriter out = new OutputStreamWriter(new FileOutputStream(index_file), "UTF-8");
+    Map<Text, Writable> sorted_features = new TreeMap<Text, Writable>();
 
-		// Copy feature values over from last rule occurrence. 
-		for (Writable label : features.keySet())
-			sorted_features.put((Text) label, features.get(label));
-		
-		for (PivotedFeature pf : pivoted)
-			sorted_features.put(pf.getFeatureLabel(), null);
+    // Copy feature values over from last rule occurrence.
+    for (Writable label : features.keySet())
+      sorted_features.put((Text) label, features.get(label));
 
-		RuleWritable dummy = new RuleWritable("X ||| one ||| two ||| Dummy=1");
-		for (SimpleFeature f : simple)
-			f.score(dummy, sorted_features);
+    for (PivotedFeature pf : pivoted)
+      sorted_features.put(pf.getFeatureLabel(), null);
 
-		int index = 0;
-		for (Text t : sorted_features.keySet())
-			out.write(index++ + "\t" + t + "\n");
+    RuleWritable dummy = new RuleWritable("X ||| one ||| two ||| Dummy=1");
+    for (SimpleFeature f : simple)
+      f.score(dummy, sorted_features);
 
-		out.close();
-	}
+    int index = 0;
+    for (Text t : sorted_features.keySet())
+      out.write(index++ + "\t" + t + "\n");
 
-	public static void main(String[] args) {
+    out.close();
+  }
 
-		labeled = false;
-		sparse = false;
+  public static void main(String[] args) {
 
-		String grammar_file = null;
-		String index_file = null;
-		String feature_string = null;
+    labeled = false;
+    sparse = false;
 
-		boolean index_only = false;
-		boolean index_written = false;
-		
-		for (int i = 0; i < args.length; i++) {
-			if ("-g".equals(args[i]) && (i < args.length - 1)) {
-				grammar_file = args[++i];
-			} else if ("-i".equals(args[i]) && (i < args.length - 1)) {
-				index_file = args[++i];
-			} else if ("-f".equals(args[i]) && (i < args.length - 1)) {
-				feature_string += " " + args[++i];
-			} else if ("-l".equals(args[i])) {
-				labeled = true;
-			} else if ("-s".equals(args[i])) {
-				sparse = true;
-			} else if ("-o".equals(args[i])) {
-				index_only = true;
-			}
-		}
+    String grammar_file = null;
+    String index_file = null;
+    String feature_string = null;
 
-		if (grammar_file == null) {
-			logger.severe("No grammar specified.");
-			return;
-		}
-		if (index_file == null) {
-			logger.severe("No index file specified.");
-			return;
-		}
-		if (feature_string == null) {
-			logger.severe("No features specified.");
-			return;
-		}
-		if (!labeled && sparse) {
-			logger.severe("I cannot condone grammars that are both sparse " +
-					"and unlabeled.");
-			return;
-		}
+    boolean index_only = false;
+    boolean index_written = false;
 
-		simple = SimpleFeatureFactory.getAll(feature_string);
-		pivoted = PivotedFeatureFactory.getAll(feature_string);
+    for (int i = 0; i < args.length; i++) {
+      if ("-g".equals(args[i]) && (i < args.length - 1)) {
+        grammar_file = args[++i];
+      } else if ("-i".equals(args[i]) && (i < args.length - 1)) {
+        index_file = args[++i];
+      } else if ("-f".equals(args[i]) && (i < args.length - 1)) {
+        feature_string += " " + args[++i];
+      } else if ("-l".equals(args[i])) {
+        labeled = true;
+      } else if ("-s".equals(args[i])) {
+        sparse = true;
+      } else if ("-o".equals(args[i])) {
+        index_only = true;
+      }
+    }
 
-		try {
-			MapWritable features = new MapWritable();
-			LineReader reader = new LineReader(grammar_file);
+    if (grammar_file == null) {
+      logger.severe("No grammar specified.");
+      return;
+    }
+    if (index_file == null) {
+      logger.severe("No index file specified.");
+      return;
+    }
+    if (feature_string == null) {
+      logger.severe("No features specified.");
+      return;
+    }
+    if (!labeled && sparse) {
+      logger.severe("I cannot condone grammars that are both sparse " + "and unlabeled.");
+      return;
+    }
 
-			RuleWritable rule = null;
-			RuleWritable last_rule = null;
-			
-			for (PivotedFeature pf : pivoted)
-				pf.initializeAggregation();
+    simple = SimpleFeatureFactory.getAll(feature_string);
+    pivoted = PivotedFeatureFactory.getAll(feature_string);
 
-			while (reader.hasNext()) {
-				String rule_line = reader.next().trim();
-				features.clear();
-				String[] feature_entries = rule_line.split(DELIM)[3].split("\\s+");
+    try {
+      MapWritable features = new MapWritable();
+      LineReader reader = new LineReader(grammar_file);
 
-				int i;
-				if (feature_entries.length > 0) {
-					if (!feature_entries[0].contains("=")) {
-						logger.severe("Expecting labeled features.");
-						System.exit(0);
-					}
-					for (i = 0; i < feature_entries.length; i++) {
-						String[] parts = feature_entries[i].split("=");
-						Text label = new Text(parts[0]);
-						DoubleWritable value = new DoubleWritable(
-								Double.parseDouble(parts[1]));
-						features.put(label, value);
-					}
-				}
-				rule = new RuleWritable(rule_line);
-				
-				if (!index_written) {
-					writeIndex(index_file, features);
-					index_written = true;
-					if (index_only) {
-						reader.close();
-						return;
-					}
-				}
+      RuleWritable rule = null;
+      RuleWritable last_rule = null;
 
-				if (last_rule != null && !last_rule.sameYield(rule)) {
-					writeRule(last_rule, features);
-					for (PivotedFeature pf : pivoted)
-						pf.initializeAggregation();
-				}
+      for (PivotedFeature pf : pivoted)
+        pf.initializeAggregation();
 
-				for (PivotedFeature pf : pivoted)
-					pf.aggregate(features);
+      while (reader.hasNext()) {
+        String rule_line = reader.next().trim();
+        features.clear();
+        String[] feature_entries = rule_line.split(DELIM)[3].split("\\s+");
 
-				last_rule = rule;
-			}
-			writeRule(rule, features);
+        int i;
+        if (feature_entries.length > 0) {
+          if (!feature_entries[0].contains("=")) {
+            logger.severe("Expecting labeled features.");
+            System.exit(0);
+          }
+          for (i = 0; i < feature_entries.length; i++) {
+            String[] parts = feature_entries[i].split("=");
+            Text label = new Text(parts[0]);
+            DoubleWritable value = new DoubleWritable(Double.parseDouble(parts[1]));
+            features.put(label, value);
+          }
+        }
+        rule = new RuleWritable(rule_line);
 
-			reader.close();
-		} catch (IOException e) {
-			logger.severe(e.getMessage());
-		}
-	}
+        if (!index_written) {
+          writeIndex(index_file, features);
+          index_written = true;
+          if (index_only) {
+            reader.close();
+            return;
+          }
+        }
+
+        if (last_rule != null && !last_rule.sameYield(rule)) {
+          writeRule(last_rule, features);
+          for (PivotedFeature pf : pivoted)
+            pf.initializeAggregation();
+        }
+
+        for (PivotedFeature pf : pivoted)
+          pf.aggregate(features);
+
+        last_rule = rule;
+      }
+      writeRule(rule, features);
+
+      reader.close();
+    } catch (IOException e) {
+      logger.severe(e.getMessage());
+    }
+  }
 
 }
