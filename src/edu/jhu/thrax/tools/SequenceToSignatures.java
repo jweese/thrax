@@ -23,7 +23,7 @@ public class SequenceToSignatures {
 			byte[] bytes = signature.bytes.getBytes(); 
 			for (int i = 0; i < bytes.length; i++)
 			  out.append(" " + bytes[i]);
-			System.err.println(out);
+			System.err.println(out.toString());
 		}
 		
 		reader.close();

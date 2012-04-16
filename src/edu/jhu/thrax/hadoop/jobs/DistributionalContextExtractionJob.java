@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
+import edu.jhu.thrax.hadoop.distributional.DistributionalContextCombiner;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextReducer;
 import edu.jhu.thrax.hadoop.distributional.SignatureWritable;
@@ -22,7 +23,7 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 		Job job = new Job(conf, "distributional");
 		job.setJarByClass(DistributionalContextMapper.class);
 		job.setMapperClass(DistributionalContextMapper.class);
-//		job.setCombinerClass(DistributionalContextCombiner.class);
+		job.setCombinerClass(DistributionalContextCombiner.class);
 		job.setReducerClass(DistributionalContextReducer.class);
 		
 		job.setMapOutputKeyClass(Text.class);
