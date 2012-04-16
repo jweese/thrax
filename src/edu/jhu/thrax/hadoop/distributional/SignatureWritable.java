@@ -7,7 +7,9 @@ import java.io.IOException;
 import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
+import org.apache.hadoop.mapreduce.Partitioner;
 
 import edu.jhu.jerboa.sim.Signature;
 
@@ -58,5 +60,18 @@ public class SignatureWritable implements WritableComparable<SignatureWritable> 
     cmp = strength.compareTo(that.strength);
     if (cmp != 0) return cmp;
     return bytes.compareTo(that.bytes);
+  }
+  
+  public static class SignaturePartitioner extends Partitioner<SignatureWritable, Writable>
+  {
+      public int getPartition(SignatureWritable signature, Writable value, int num_partitions)
+      {
+          int hash = 163;
+          hash = 37 * hash + signature.key.hashCode();
+          hash = 37 * hash + signature.bytes.hashCode();
+          hash = 37 * hash + signature.strength.hashCode();
+          hash = 37 * hash + signature.count.hashCode();
+          return (hash & Integer.MAX_VALUE) % num_partitions;
+      }
   }
 }

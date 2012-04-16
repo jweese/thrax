@@ -15,6 +15,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
+import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
 import edu.jhu.thrax.hadoop.distributional.SignatureWritable;
 
@@ -31,6 +32,8 @@ public class DistributionalContextSortingJob extends ThraxJob {
     job.setMapperClass(Mapper.class);
     job.setReducerClass(Reducer.class);
 
+    job.setPartitionerClass(SignatureWritable.SignaturePartitioner.class);
+    
     job.setInputFormatClass(SequenceFileInputFormat.class);
 
     job.setOutputKeyClass(SignatureWritable.class);
