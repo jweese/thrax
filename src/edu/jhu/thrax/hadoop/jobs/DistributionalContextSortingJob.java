@@ -43,7 +43,7 @@ public class DistributionalContextSortingJob extends ThraxJob {
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "signatures"));
     FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.outputPath", "")));
-    
+
     int max_split_size = conf.getInt("thrax.max-split-size", 0);
     if (max_split_size != 0) FileInputFormat.setMaxInputSplitSize(job, max_split_size);
 
