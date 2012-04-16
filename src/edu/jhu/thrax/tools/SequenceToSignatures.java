@@ -26,7 +26,7 @@ public class SequenceToSignatures {
     for (int i = 0; i < args.length; i++) {
       if ("-i".equals(args[i]) && (i < args.length - 1)) {
         input_file = args[++i];
-      } else if ("-i".equals(args[i]) && (i < args.length - 1)) {
+      } else if ("-o".equals(args[i]) && (i < args.length - 1)) {
         output_prefix = args[++i];
       } else if ("-c".equals(args[i]) && (i < args.length - 1)) {
         chunk_size = Integer.parseInt(args[++i]);
