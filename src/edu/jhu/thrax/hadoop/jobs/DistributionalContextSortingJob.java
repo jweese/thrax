@@ -32,21 +32,20 @@ public class DistributionalContextSortingJob extends ThraxJob {
     job.setReducerClass(Reducer.class);
 
     job.setInputFormatClass(SequenceFileInputFormat.class);
-    job.setMapOutputKeyClass(SignatureWritable.class);
-    job.setMapOutputValueClass(NullWritable.class);
+
     job.setOutputKeyClass(SignatureWritable.class);
     job.setOutputValueClass(NullWritable.class);
+
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
     int num_reducers = conf.getInt("thrax.reducers", 4);
     job.setNumReduceTasks(num_reducers);
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "signatures"));
-
-    int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
-    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
-
     FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.outputPath", "")));
+    
+    int max_split_size = conf.getInt("thrax.max-split-size", 0);
+    if (max_split_size != 0) FileInputFormat.setMaxInputSplitSize(job, max_split_size);
 
     return job;
   }
