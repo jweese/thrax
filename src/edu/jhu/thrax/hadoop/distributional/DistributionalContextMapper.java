@@ -17,34 +17,32 @@ import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.util.exceptions.MalformedParseException;
 import edu.jhu.thrax.util.exceptions.NotEnoughFieldsException;
 
-public class DistributionalContextMapper extends
-		Mapper<LongWritable, Text, Text, MapWritable> {
-	
-	private ContextPhraseExtractor extractor;
+public class DistributionalContextMapper extends Mapper<LongWritable, Text, Text, MapWritable> {
 
-	protected void setup(Context context) throws IOException, InterruptedException {
-		Configuration conf = context.getConfiguration();
-		extractor = new ContextPhraseExtractor(conf);
-	}
+  private ContextPhraseExtractor extractor;
 
-	protected void map(LongWritable key, Text value, Context context) throws IOException,
-			InterruptedException {
-		if (extractor == null)
-			return;
-		String line = value.toString();
-		try {
-			List<ContextPhrase> phrases = extractor.extract(line);
-			for (ContextPhrase cp : phrases)
-				context.write(cp.getPhrase(), cp.getFeatures());
-			
-		} catch (NotEnoughFieldsException e) {
-			context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
-		} catch (EmptySentenceException e) {
-			context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
-		} catch (MalformedParseException e) {
-			context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
-		} catch (MalformedInputException e) {
-			context.getCounter(MalformedInput.UNKNOWN).increment(1);
-		}
-	}
+  protected void setup(Context context) throws IOException, InterruptedException {
+    Configuration conf = context.getConfiguration();
+    extractor = new ContextPhraseExtractor(conf);
+  }
+
+  protected void map(LongWritable key, Text value, Context context) throws IOException,
+      InterruptedException {
+    if (extractor == null) return;
+    String line = value.toString();
+    try {
+      List<ContextPhrase> phrases = extractor.extract(line);
+      for (ContextPhrase cp : phrases)
+        context.write(cp.getPhrase(), cp.getFeatures());
+
+    } catch (NotEnoughFieldsException e) {
+      context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
+    } catch (EmptySentenceException e) {
+      context.getCounter(MalformedInput.EMPTY_SENTENCE).increment(1);
+    } catch (MalformedParseException e) {
+      context.getCounter(MalformedInput.MALFORMED_PARSE).increment(1);
+    } catch (MalformedInputException e) {
+      context.getCounter(MalformedInput.UNKNOWN).increment(1);
+    }
+  }
 }
