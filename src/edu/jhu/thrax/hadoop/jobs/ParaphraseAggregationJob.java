@@ -19,49 +19,50 @@ import edu.jhu.thrax.hadoop.paraphrasing.AggregationReducer;
 
 public class ParaphraseAggregationJob extends ThraxJob {
 
-	private static HashSet<Class<? extends ThraxJob>> prereqs = new HashSet<Class<? extends ThraxJob>>();
+  private static HashSet<Class<? extends ThraxJob>> prereqs =
+      new HashSet<Class<? extends ThraxJob>>();
 
-	public static void addPrerequisite(Class<? extends ThraxJob> c) {
-		prereqs.add(c);
-	}
+  public Job getJob(Configuration conf) throws IOException {
+    Job job = new Job(conf, "aggregate");
 
-	public Set<Class<? extends ThraxJob>> getPrerequisites() {
-		prereqs.add(ParaphrasePivotingJob.class);
-		return prereqs;
-	}
+    job.setJarByClass(AggregationReducer.class);
 
-	public Job getJob(Configuration conf) throws IOException {
-		Job job = new Job(conf, "aggregate");
+    job.setMapperClass(Mapper.class);
+    job.setReducerClass(AggregationReducer.class);
 
-		job.setJarByClass(AggregationReducer.class);
+    job.setInputFormatClass(SequenceFileInputFormat.class);
+    job.setMapOutputKeyClass(RuleWritable.class);
+    job.setMapOutputValueClass(MapWritable.class);
+    job.setOutputKeyClass(RuleWritable.class);
+    job.setOutputValueClass(NullWritable.class);
 
-		job.setMapperClass(Mapper.class);
-		job.setReducerClass(AggregationReducer.class);
+    job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
 
-		job.setInputFormatClass(SequenceFileInputFormat.class);
-		job.setMapOutputKeyClass(RuleWritable.class);
-		job.setMapOutputValueClass(MapWritable.class);
-		job.setOutputKeyClass(RuleWritable.class);
-		job.setOutputValueClass(NullWritable.class);
+    FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "pivoted"));
 
-		job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
+    int numReducers = conf.getInt("thrax.reducers", 4);
+    job.setNumReduceTasks(numReducers);
 
-		FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "pivoted"));
+    String outputPath = conf.get("thrax.outputPath", "");
+    FileOutputFormat.setOutputPath(job, new Path(outputPath));
 
-		int numReducers = conf.getInt("thrax.reducers", 4);
-		job.setNumReduceTasks(numReducers);
+    return job;
+  }
 
-		String outputPath = conf.get("thrax.outputPath", "");
-		FileOutputFormat.setOutputPath(job, new Path(outputPath));
+  public String getName() {
+    return "aggregate";
+  }
 
-		return job;
-	}
+  public static void addPrerequisite(Class<? extends ThraxJob> c) {
+    prereqs.add(c);
+  }
 
-	public String getName() {
-		return "aggregate";
-	}
-
-	public String getOutputSuffix() {
-		return null;
-	}
+  public Set<Class<? extends ThraxJob>> getPrerequisites() {
+    prereqs.add(ParaphrasePivotingJob.class);
+    return prereqs;
+  }
+  
+  public String getOutputSuffix() {
+    return null;
+  }
 }

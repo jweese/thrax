@@ -9,6 +9,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -27,6 +28,7 @@ public class DistributionalContextSortingJob extends ThraxJob {
     Job job = new Job(conf, "sorting");
 
     job.setJarByClass(DistributionalContextMapper.class);
+
     job.setMapperClass(Mapper.class);
     job.setReducerClass(Reducer.class);
 
@@ -37,17 +39,17 @@ public class DistributionalContextSortingJob extends ThraxJob {
     job.setOutputValueClass(NullWritable.class);
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-//    int numReducers = conf.getInt("thrax.reducers", 4);
-    job.setNumReduceTasks(1);
+    job.setPartitionerClass(Partitioner.class);
 
-    String workDir = conf.get("thrax.work-dir");
-    FileInputFormat.setInputPaths(job, new Path(workDir + "signatures"));
+    int num_reducers = conf.getInt("thrax.reducers", 4);
+    job.setNumReduceTasks(num_reducers);
+
+    FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "signatures"));
 
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
     if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
 
-    String outputPath = conf.get("thrax.outputPath", "");
-    FileOutputFormat.setOutputPath(job, new Path(outputPath));
+    FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.outputPath", "")));
 
     return job;
   }
