@@ -9,7 +9,6 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
-import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
@@ -38,8 +37,6 @@ public class DistributionalContextSortingJob extends ThraxJob {
     job.setOutputKeyClass(SignatureWritable.class);
     job.setOutputValueClass(NullWritable.class);
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
-
-    job.setPartitionerClass(Partitioner.class);
 
     int num_reducers = conf.getInt("thrax.reducers", 4);
     job.setNumReduceTasks(num_reducers);
