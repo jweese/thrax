@@ -2,6 +2,7 @@ package edu.jhu.thrax.tools;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.net.URI;
 import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
@@ -42,22 +43,29 @@ public class SequenceToSignatures {
       logger.severe("No output prefix specified.");
       System.exit(0);
     }
-    
-    logger.info("Looking for " + input_file + " on " + (local ? "local filesystem" : "HDFS") +".");
-    
+
+    logger.info("Looking for " + input_file + " on " + (local ? "local filesystem" : "HDFS") + ".");
+
     Configuration config = new Configuration();
-    Path path = new Path(input_file);
-    FileSystem file_system = (local ? FileSystem.getLocal(config) : FileSystem.get(config));
-    SequenceFile.Reader reader = new SequenceFile.Reader(file_system, path, config);
     SignatureWritable signature = new SignatureWritable();
     
+    SequenceFile.Reader reader;
+    if (local) {
+      Path path = new Path(input_file);
+      reader = new SequenceFile.Reader(FileSystem.getLocal(config), path, config);
+    } else {
+      FileSystem file_system = FileSystem.get(URI.create(input_file), config);
+      Path path = new Path(input_file);
+      reader = new SequenceFile.Reader(file_system, path, config);
+    }
+
     int chunk_id = 0;
     int key_count = 0;
-    
+
     FileOutputStream bytes_out = null;
     BufferedWriter strengths_writer = null;
     BufferedWriter keys_writer = null;
-    
+
     while (reader.next(signature)) {
       if (key_count % chunk_size == 0) {
         if (key_count != 0) {
@@ -65,7 +73,7 @@ public class SequenceToSignatures {
           bytes_out.close();
           strengths_writer.close();
         }
-        String chunk_tag = String.format("-%05d", chunk_id); 
+        String chunk_tag = String.format("-%05d", chunk_id);
         bytes_out = new FileOutputStream(output_prefix + chunk_tag + ".bytes");
         strengths_writer = FileManager.getWriter(output_prefix + chunk_tag + ".strengths.gz");
         keys_writer = FileManager.getWriter(output_prefix + chunk_tag + ".keys.gz");
