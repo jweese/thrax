@@ -15,7 +15,6 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
-import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
 import edu.jhu.thrax.hadoop.distributional.SignatureWritable;
 
@@ -32,8 +31,6 @@ public class DistributionalContextSortingJob extends ThraxJob {
     job.setMapperClass(Mapper.class);
     job.setReducerClass(Reducer.class);
 
-    job.setPartitionerClass(SignatureWritable.SignaturePartitioner.class);
-    
     job.setInputFormatClass(SequenceFileInputFormat.class);
 
     job.setOutputKeyClass(SignatureWritable.class);
@@ -41,8 +38,7 @@ public class DistributionalContextSortingJob extends ThraxJob {
 
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-    int num_reducers = conf.getInt("thrax.reducers", 4);
-    job.setNumReduceTasks(num_reducers);
+    job.setNumReduceTasks(1);
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "signatures"));
     FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.outputPath", "")));
