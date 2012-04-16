@@ -38,6 +38,7 @@ public class DistributionalContextSortingJob extends ThraxJob {
 
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
+    // TODO: Figure out how to make this workable with multiple reducers.
     job.setNumReduceTasks(1);
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "signatures"));
