@@ -15,7 +15,15 @@ public class SequenceToSignatures {
 
 		SignatureWritable signature = new SignatureWritable();
 		while (reader.next(signature)) {
-			System.err.println(signature.key.toString() + "\t" + signature.count);
+		    StringBuilder out = new StringBuilder();
+			out.append(signature.key.toString());
+			out.append("\t");
+			out.append(signature.count);
+			out.append("\t");
+			byte[] bytes = signature.bytes.getBytes(); 
+			for (int i = 0; i < bytes.length; i++)
+			  out.append(" " + bytes[i]);
+			System.err.println(out);
 		}
 		
 		reader.close();

@@ -60,6 +60,7 @@ public class DistributionalContextReducer extends
 			slsh.buildSignatures(true);
 			context.write(new SignatureWritable(key,
 					slsh.getSignature(key.toString()), count, count), NullWritable.get());
+			slsh.clear();
 		}
 		
 		return;

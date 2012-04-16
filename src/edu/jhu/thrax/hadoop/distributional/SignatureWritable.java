@@ -52,14 +52,12 @@ public class SignatureWritable implements WritableComparable<SignatureWritable> 
 	@Override
 	public int compareTo(SignatureWritable that) {
 		int cmp = count.compareTo(that.count);
-		if (cmp != 0)
-        return cmp;
+		// Flip sign for descending sort order.
+		if (cmp != 0) return -cmp;
 		cmp = key.compareTo(that.key);
-    if (cmp != 0)
-        return cmp;
-    cmp = bytes.compareTo(that.bytes);
-    if (cmp != 0)
-        return cmp;
-		return strength.compareTo(that.strength);
+    if (cmp != 0) return cmp;
+    cmp = strength.compareTo(that.strength);
+    if (cmp != 0) return cmp;
+		return bytes.compareTo(that.bytes);
 	}
 }
