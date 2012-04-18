@@ -4,7 +4,6 @@ import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
@@ -12,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
+import edu.jhu.thrax.hadoop.distributional.ContextWritable;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextCombiner;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextReducer;
@@ -29,7 +29,7 @@ public class DistributionalContextExtractionJob extends ThraxJob {
     job.setReducerClass(DistributionalContextReducer.class);
 
     job.setMapOutputKeyClass(Text.class);
-    job.setMapOutputValueClass(MapWritable.class);
+    job.setMapOutputValueClass(ContextWritable.class);
 
     job.setOutputKeyClass(SignatureWritable.class);
     job.setOutputValueClass(NullWritable.class);

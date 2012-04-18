@@ -1,20 +1,17 @@
 package edu.jhu.thrax.hadoop.distributional;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import edu.jhu.jerboa.sim.SLSH;
+import edu.jhu.jerboa.sim.Signature;
 
 public class DistributionalContextReducer
-    extends Reducer<Text, MapWritable, SignatureWritable, NullWritable> {
+    extends Reducer<Text, ContextWritable, SignatureWritable, NullWritable> {
 
   private int minCount;
   private SLSH slsh;
@@ -34,29 +31,22 @@ public class DistributionalContextReducer
     return;
   }
 
-  protected void reduce(Text key, Iterable<MapWritable> values, Context context)
+  protected void reduce(Text key, Iterable<ContextWritable> values, Context context)
       throws IOException, InterruptedException {
-    HashMap<String, Integer> output_map = new HashMap<String, Integer>();
-    for (MapWritable input_map : values) {
-      for (Writable feature_text : input_map.keySet()) {
-        String feature_string = ((Text) feature_text).toString();
-        int feature_value = ((IntWritable) input_map.get(feature_text)).get();
-        Integer current_value = output_map.get(feature_string);
-        if (current_value != null)
-          output_map.put(feature_string, current_value + feature_value);
-        else
-          output_map.put(feature_string, feature_value);
-      }
+    Signature in_signature = new Signature();
+    Signature out_signature = new Signature();
+    int strength = 0;
+    for (ContextWritable input : values) {
+      if (!input.compacted.get())
+        continue;
+      strength += input.strength.get();
+      in_signature.sums = (float[]) input.sums.get();
+      slsh.updateSignature(out_signature, in_signature);
     }
 
-    int count = output_map.get("count");
-    if (count >= minCount) {
-      for (String feature_name : output_map.keySet()) {
-        if (!"count".equals(feature_name))
-          slsh.update(key.toString(), feature_name, output_map.get(feature_name).doubleValue());
-      }
-      slsh.buildSignatures(true);
-      context.write(new SignatureWritable(key, slsh.getSignature(key.toString()), count, count),
+    if (strength >= minCount) {
+      slsh.buildSignature(out_signature, false);
+      context.write(new SignatureWritable(key, out_signature, strength),
           NullWritable.get());
       slsh.clear();
     }

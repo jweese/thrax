@@ -19,7 +19,7 @@ public class SequenceToSignatures {
 
   public static void main(String[] args) throws Exception {
 
-    boolean local = false;
+    boolean local = true;
     String input_file = null;
     int chunk_size = 500000;
     String output_prefix = null;
@@ -31,8 +31,6 @@ public class SequenceToSignatures {
         output_prefix = args[++i];
       } else if ("-c".equals(args[i]) && (i < args.length - 1)) {
         chunk_size = Integer.parseInt(args[++i]);
-      } else if ("-l".equals(args[i])) {
-        local = true;
       }
     }
     if (input_file == null) {
@@ -49,11 +47,14 @@ public class SequenceToSignatures {
     Configuration config = new Configuration();
     SignatureWritable signature = new SignatureWritable();
     
+    
     SequenceFile.Reader reader;
     if (local) {
       Path path = new Path(input_file);
       reader = new SequenceFile.Reader(FileSystem.getLocal(config), path, config);
     } else {
+      // TODO: Only works for completely specified URLs (i.e. hdfs://name-node/...), currently
+      // disabled until I figure out how to get simple paths to work in HDFS.
       FileSystem file_system = FileSystem.get(URI.create(input_file), config);
       Path path = new Path(input_file);
       reader = new SequenceFile.Reader(file_system, path, config);

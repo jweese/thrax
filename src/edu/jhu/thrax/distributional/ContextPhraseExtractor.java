@@ -126,7 +126,6 @@ public class ContextPhraseExtractor {
 					
 					addSyntaxFeatures(i, j, cp);
 					addDependencyFeatures(i, j, cp);
-					cp.addFeature("count");
 					output.add(cp);
 				}
 			}

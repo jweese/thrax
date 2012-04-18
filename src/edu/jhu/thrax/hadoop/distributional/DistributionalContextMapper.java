@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Mapper;
 
@@ -17,7 +16,7 @@ import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.util.exceptions.MalformedParseException;
 import edu.jhu.thrax.util.exceptions.NotEnoughFieldsException;
 
-public class DistributionalContextMapper extends Mapper<LongWritable, Text, Text, MapWritable> {
+public class DistributionalContextMapper extends Mapper<LongWritable, Text, Text, ContextWritable> {
 
   private ContextPhraseExtractor extractor;
 
@@ -33,7 +32,7 @@ public class DistributionalContextMapper extends Mapper<LongWritable, Text, Text
     try {
       List<ContextPhrase> phrases = extractor.extract(line);
       for (ContextPhrase cp : phrases)
-        context.write(cp.getPhrase(), cp.getFeatures());
+        context.write(cp.getPhrase(), new ContextWritable(1, cp.getFeatures()));
 
     } catch (NotEnoughFieldsException e) {
       context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
