@@ -46,14 +46,14 @@ public class DistributionalContextCombiner
         else
           output_map.put(feature_string, feature_value);
       }
-      strength++;
+      if (!input.map.keySet().isEmpty()) strength++;
     }
 
     Signature signature = new Signature();
     for (String feature_name : output_map.keySet()) {
       slsh.updateSignature(signature, feature_name, output_map.get(feature_name).doubleValue(), 1);
     }
-    context.write(key, new ContextWritable(strength, signature.sums));
+    if (strength != 0) context.write(key, new ContextWritable(strength, signature.sums));
     return;
   }
 }
