@@ -7,38 +7,37 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 
-public class PivotedLhsGivenSourcePhraseFeature extends
-		PivotedNegLogProbFeature {
+public class PivotedLhsGivenSourcePhraseFeature extends NonAggregatingPivotedFeature {
 
-	private static final Text LABEL = new Text("p(LHS|f)");
-	
-	public String getName() {
-		return "lhs_given_f";
-	}
-	
-	public Text getFeatureLabel() {
-		return LABEL;
-	}
+  private static final Text LABEL = new Text("p(LHS|f)");
 
-	public Set<String> getPrerequisites() {
-		Set<String> prereqs = new HashSet<String>();
-		prereqs.add("lhs_given_e");
-		return prereqs;
-	}
+  public String getName() {
+    return "lhs_given_f";
+  }
 
-	public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
-		return new DoubleWritable(((DoubleWritable) src.get(new Text("p(LHS|e)"))).get());
-	}
+  public Text getFeatureLabel() {
+    return LABEL;
+  }
 
-	@Override
-	public Set<Text> getLowerBoundLabels() {
-		Set<Text> lower_bound_labels = new HashSet<Text>();
-		lower_bound_labels.add(new Text("p(LHS|e)"));
-		return lower_bound_labels;
-	}
+  public Set<String> getPrerequisites() {
+    Set<String> prereqs = new HashSet<String>();
+    prereqs.add("lhs_given_e");
+    return prereqs;
+  }
 
-	@Override
-	public Set<Text> getUpperBoundLabels() {
-		return null;
-	}
+  public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
+    return new DoubleWritable(((DoubleWritable) src.get(new Text("p(LHS|e)"))).get());
+  }
+
+  @Override
+  public Set<Text> getLowerBoundLabels() {
+    Set<Text> lower_bound_labels = new HashSet<Text>();
+    lower_bound_labels.add(new Text("p(LHS|e)"));
+    return lower_bound_labels;
+  }
+
+  @Override
+  public Set<Text> getUpperBoundLabels() {
+    return null;
+  }
 }

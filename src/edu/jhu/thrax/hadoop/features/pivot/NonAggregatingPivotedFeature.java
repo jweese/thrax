@@ -7,32 +7,35 @@ import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import edu.jhu.thrax.util.NegLogMath;
+public abstract class NonAggregatingPivotedFeature implements PivotedFeature {
 
-public abstract class PivotedNegLogProbFeature implements PivotedFeature {
+  private static final DoubleWritable ZERO = new DoubleWritable(0.0);
 
-  private static final DoubleWritable ONE_PROB = new DoubleWritable(0.0);
-
-  private double aggregated;
+  private double value;
 
   public void initializeAggregation() {
-    aggregated = 64;
+    value = Double.MAX_VALUE;
   }
 
   public void aggregate(MapWritable features) {
     DoubleWritable val = (DoubleWritable) features.get(getFeatureLabel());
-    aggregated = NegLogMath.logAdd(aggregated, val.get());
+    if (value == Double.MAX_VALUE) {
+      value = val.get();
+    } else {
+      if (value != val.get())
+        throw new RuntimeException("Diverging values in pseudo-aggregation.");
+    }
   }
 
   public DoubleWritable finalizeAggregation() {
-    return new DoubleWritable(aggregated);
+    return new DoubleWritable(value);
   }
 
   public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(getFeatureLabel(), ONE_PROB);
+    map.put(getFeatureLabel(), ZERO);
   }
 
   public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(getFeatureLabel(), ONE_PROB);
+    map.put(getFeatureLabel(), ZERO);
   }
 }
