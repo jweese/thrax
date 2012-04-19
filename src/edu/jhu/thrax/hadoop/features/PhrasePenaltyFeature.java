@@ -1,31 +1,26 @@
 package edu.jhu.thrax.hadoop.features;
 
-import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.Writable;
-
 import java.util.Map;
 
-public class PhrasePenaltyFeature implements SimpleFeature
-{
-    private static final Text LABEL = new Text("PhrasePenalty");
-    private static final DoubleWritable VALUE = new DoubleWritable(2.718);
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 
-    public void score(RuleWritable r, Map<Text,Writable> map)
-    {
-        map.put(LABEL, VALUE);
-    }
+import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
-    public void unaryGlueRuleScore(Text nt, Map<Text,Writable> map)
-    {
-        map.put(LABEL, VALUE);
-    }
+public class PhrasePenaltyFeature implements SimpleFeature {
+  private static final Text LABEL = new Text("PhrasePenalty");
+  private static final IntWritable ONE = new IntWritable(1);
 
-    public void binaryGlueRuleScore(Text nt, Map<Text,Writable> map)
-    {
-        map.put(LABEL, VALUE);
-    }
+  public void score(RuleWritable r, Map<Text, Writable> map) {
+    map.put(LABEL, ONE);
+  }
+
+  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
+    map.put(LABEL, ONE);
+  }
+
+  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
+    map.put(LABEL, ONE);
+  }
 }
-
