@@ -22,8 +22,10 @@ public abstract class NonAggregatingPivotedFeature implements PivotedFeature {
     if (value == Double.MAX_VALUE) {
       value = val.get();
     } else {
-      if (value != val.get())
-        throw new RuntimeException("Diverging values in pseudo-aggregation.");
+      if (value != val.get()) {
+        throw new RuntimeException("Diverging values in pseudo-aggregation: " + value + " versus "
+            + val.get());
+      }
     }
   }
 
