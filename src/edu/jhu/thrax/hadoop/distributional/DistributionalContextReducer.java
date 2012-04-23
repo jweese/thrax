@@ -38,7 +38,7 @@ public class DistributionalContextReducer
     int strength = 0;
     for (ContextWritable input : values) {
       if (!input.compacted.get())
-        continue;
+        throw new RuntimeException("This shouldn't happen: " + key.toString());
       strength += input.strength.get();
       in_signature.sums = (float[]) input.sums.get();
       slsh.updateSignature(out_signature, in_signature);

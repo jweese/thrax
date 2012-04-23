@@ -36,7 +36,7 @@ public class DistributionalContextCombiner
     int strength = 0;
     for (ContextWritable input : values) {
       if (input.compacted.get())
-        continue;
+        throw new RuntimeException("This shouldn't happen: " + key.toString());
       for (Writable feature_text : input.map.keySet()) {
         String feature_string = ((Text) feature_text).toString();
         int feature_value = ((IntWritable) input.map.get(feature_text)).get();
