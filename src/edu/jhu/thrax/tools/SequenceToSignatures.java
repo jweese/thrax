@@ -2,6 +2,8 @@ package edu.jhu.thrax.tools;
 
 import java.io.BufferedWriter;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.logging.Logger;
 
@@ -17,8 +19,16 @@ public class SequenceToSignatures {
 
   private static final Logger logger = Logger.getLogger(SequenceToSignatures.class.getName());
 
-  public static void main(String[] args) throws Exception {
+  private static void writeConfig(String config_file, int num_bits) throws IOException {
+    ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(config_file));
+    out.writeInt(num_bits);
+    // Does not contain support.
+    out.writeBoolean(false);
+    out.flush();
+    out.close();
+  }
 
+  public static void main(String[] args) throws Exception {
     boolean local = true;
     String input_file = null;
     int chunk_size = 500000;
@@ -46,8 +56,8 @@ public class SequenceToSignatures {
 
     Configuration config = new Configuration();
     SignatureWritable signature = new SignatureWritable();
-    
-    
+
+
     SequenceFile.Reader reader;
     if (local) {
       Path path = new Path(input_file);
@@ -75,6 +85,7 @@ public class SequenceToSignatures {
           strengths_writer.close();
         }
         String chunk_tag = String.format("-%05d", chunk_id);
+        writeConfig(output_prefix + chunk_tag + ".config", signature.bytes.getBytes().length * 8);
         bytes_out = new FileOutputStream(output_prefix + chunk_tag + ".bytes");
         strengths_writer = FileManager.getWriter(output_prefix + chunk_tag + ".strengths.gz");
         keys_writer = FileManager.getWriter(output_prefix + chunk_tag + ".keys.gz");
