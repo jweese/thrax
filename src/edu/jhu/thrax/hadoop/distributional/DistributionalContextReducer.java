@@ -33,24 +33,18 @@ public class DistributionalContextReducer
 
   protected void reduce(Text key, Iterable<ContextWritable> values, Context context)
       throws IOException, InterruptedException {
-    Signature in_signature = new Signature();
-    Signature out_signature = new Signature();
-    int strength = 0;
+    ContextWritable reduced = new ContextWritable();
     for (ContextWritable input : values) {
-      if (!input.compacted.get())
-        throw new RuntimeException("This shouldn't happen: " + key.toString());
-      strength += input.strength.get();
-      in_signature.sums = (float[]) input.sums.get();
-      slsh.updateSignature(out_signature, in_signature);
+      reduced.merge(input, slsh);
     }
-
-    if (strength >= minCount) {
-      slsh.buildSignature(out_signature, false);
-      context.write(new SignatureWritable(key, out_signature, strength),
+    if (!reduced.compacted.get()) reduced.compact(slsh);
+    if (reduced.strength.get() >= minCount) {
+      Signature reduced_signature = new Signature();
+      reduced_signature.sums = (float[]) reduced.sums.get();
+      slsh.buildSignature(reduced_signature, false);
+      context.write(new SignatureWritable(key, reduced_signature, reduced.strength.get()),
           NullWritable.get());
-      slsh.clear();
     }
-
     return;
   }
 }

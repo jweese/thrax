@@ -7,8 +7,11 @@ import java.io.IOException;
 import org.apache.hadoop.io.BooleanWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import edu.jhu.jerboa.sim.SLSH;
+import edu.jhu.jerboa.sim.Signature;
 import edu.jhu.thrax.hadoop.datatypes.ArrayPrimitiveWritable;
 
 /**
@@ -26,7 +29,7 @@ public class ContextWritable implements Writable {
   public ContextWritable() {
     this(false);
   }
-  
+
   public ContextWritable(boolean compacted) {
     this.strength = new IntWritable(0);
     this.compacted = new BooleanWritable(compacted);
@@ -51,6 +54,51 @@ public class ContextWritable implements Writable {
     this.compacted = new BooleanWritable(true);
     this.map = null;
     this.sums = new ArrayPrimitiveWritable(sums);
+  }
+
+  public void merge(ContextWritable that, SLSH slsh) {
+    if (this.compacted.get()) {
+      if (!that.compacted.get()) that.compact(slsh);
+      this.mergeSums(that, slsh);
+    } else {
+      if (that.compacted.get()) {
+       this.compact(slsh);
+       this.mergeSums(that, slsh);
+      } else {
+        for (Writable feature_text : that.map.keySet()) {
+          int feature_value = ((IntWritable) that.map.get(feature_text)).get();
+          IntWritable current_value = (IntWritable) this.map.get(feature_text);
+          if (current_value != null)
+            this.map.put(feature_text, new IntWritable(current_value.get() + feature_value));
+          else
+            this.map.put(feature_text, new IntWritable(feature_value));
+        }
+      }
+    }
+    this.strength = new IntWritable(this.strength.get() + that.strength.get());
+  }
+  
+  private void mergeSums(ContextWritable that, SLSH slsh) {
+    if (!that.compacted.get()) {
+      throw new RuntimeException("Trying to merge sums on un-compacted ContextWritable.");
+    }
+    Signature this_signature = new Signature();
+    Signature that_signature = new Signature();
+    this_signature.sums = (float[]) this.sums.get();
+    that_signature.sums = (float[]) that.sums.get();
+    slsh.updateSignature(this_signature, that_signature);
+  }
+
+  public void compact(SLSH slsh) {
+    Signature signature = new Signature();
+    slsh.initializeSignature(signature);
+    for (Writable feature_name : map.keySet()) {
+      slsh.updateSignature(signature, ((Text) feature_name).toString(),
+          ((IntWritable) map.get(feature_name)).get(), 1);
+    }
+    compacted.set(true);
+    map = null;
+    sums = new ArrayPrimitiveWritable(signature.sums);
   }
 
   @Override

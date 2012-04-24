@@ -1,16 +1,12 @@
 package edu.jhu.thrax.hadoop.distributional;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import edu.jhu.jerboa.sim.SLSH;
-import edu.jhu.jerboa.sim.Signature;
 
 public class DistributionalContextCombiner
     extends Reducer<Text, ContextWritable, Text, ContextWritable> {
@@ -32,28 +28,12 @@ public class DistributionalContextCombiner
 
   protected void reduce(Text key, Iterable<ContextWritable> values, Context context)
       throws IOException, InterruptedException {
-    HashMap<String, Integer> output_map = new HashMap<String, Integer>();
-    int strength = 0;
+    ContextWritable combined = new ContextWritable();
     for (ContextWritable input : values) {
-      if (input.compacted.get())
-        throw new RuntimeException("This shouldn't happen: " + key.toString());
-      for (Writable feature_text : input.map.keySet()) {
-        String feature_string = ((Text) feature_text).toString();
-        int feature_value = ((IntWritable) input.map.get(feature_text)).get();
-        Integer current_value = output_map.get(feature_string);
-        if (current_value != null)
-          output_map.put(feature_string, current_value + feature_value);
-        else
-          output_map.put(feature_string, feature_value);
-      }
-      if (!input.map.keySet().isEmpty()) strength++;
+      combined.merge(input, slsh);
     }
-
-    Signature signature = new Signature();
-    for (String feature_name : output_map.keySet()) {
-      slsh.updateSignature(signature, feature_name, output_map.get(feature_name).doubleValue(), 1);
-    }
-    if (strength != 0) context.write(key, new ContextWritable(strength, signature.sums));
+    if (!combined.compacted.get()) combined.compact(slsh);
+    context.write(key, combined);
     return;
   }
 }
