@@ -34,7 +34,6 @@ public class DistributionalContextMapper extends Mapper<LongWritable, Text, Text
       for (ContextPhrase cp : phrases) {
         context.write(cp.getPhrase(), new ContextWritable(1, cp.getFeatures()));
       }
-
     } catch (NotEnoughFieldsException e) {
       context.getCounter(MalformedInput.NOT_ENOUGH_FIELDS).increment(1);
     } catch (EmptySentenceException e) {
