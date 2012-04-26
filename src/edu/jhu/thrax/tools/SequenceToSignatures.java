@@ -85,7 +85,8 @@ public class SequenceToSignatures {
           strengths_writer.close();
         }
         String chunk_tag = String.format("-%05d", chunk_id);
-        writeConfig(output_prefix + chunk_tag + ".config", signature.bytes.getBytes().length * 8);
+        writeConfig(output_prefix + chunk_tag + ".config",
+            ((byte[]) signature.bytes.get()).length * 8);
         bytes_out = new FileOutputStream(output_prefix + chunk_tag + ".bytes");
         strengths_writer = FileManager.getWriter(output_prefix + chunk_tag + ".strengths.gz");
         keys_writer = FileManager.getWriter(output_prefix + chunk_tag + ".keys.gz");
@@ -93,7 +94,7 @@ public class SequenceToSignatures {
       }
       keys_writer.write(signature.key.toString());
       keys_writer.newLine();
-      bytes_out.write(signature.bytes.getBytes());
+      bytes_out.write((byte[]) signature.bytes.get());
       strengths_writer.write("" + signature.strength.get());
       strengths_writer.newLine();
       key_count++;

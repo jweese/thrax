@@ -4,7 +4,6 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 
-import org.apache.hadoop.io.BytesWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -12,22 +11,22 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 import edu.jhu.jerboa.sim.Signature;
+import edu.jhu.thrax.hadoop.datatypes.ArrayPrimitiveWritable;
 
 public class SignatureWritable implements WritableComparable<SignatureWritable> {
   public Text key;
-  public BytesWritable bytes;
+  public ArrayPrimitiveWritable bytes;
   public IntWritable strength;
-
 
   public SignatureWritable() {
     this.key = new Text();
-    this.bytes = new BytesWritable();
+    this.bytes = new ArrayPrimitiveWritable(byte.class);
     this.strength = new IntWritable();
   }
 
   public SignatureWritable(Text key, Signature signature, int strength) {
     this.key = new Text(key);
-    this.bytes = new BytesWritable(signature.bytes);
+    this.bytes = new ArrayPrimitiveWritable(signature.bytes);
     this.strength = new IntWritable(strength);
   }
 
@@ -50,9 +49,7 @@ public class SignatureWritable implements WritableComparable<SignatureWritable> 
     int cmp = strength.compareTo(that.strength);
     // Flip sign for descending sort order.
     if (cmp != 0) return -cmp;
-    cmp = key.compareTo(that.key);
-    if (cmp != 0) return cmp;
-    return bytes.compareTo(that.bytes);
+    return key.compareTo(that.key);
   }
 
   public static class SignaturePartitioner extends Partitioner<SignatureWritable, Writable> {

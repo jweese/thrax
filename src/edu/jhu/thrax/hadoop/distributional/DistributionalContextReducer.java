@@ -19,16 +19,7 @@ public class DistributionalContextReducer
   public void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
     minCount = conf.getInt("thrax.min-phrase-count", 3);
-
-    try {
-      slsh = new SLSH();
-      slsh.initialize(conf.getInt("thrax.lsh-num-bits", 256),
-          conf.getInt("thrax.lsh-pool-size", 100000), conf.getInt("thrax.lsh-random-seed", 42));
-    } catch (Exception e) {
-      e.printStackTrace();
-      System.exit(1);
-    }
-    return;
+    slsh = CommonLSH.getSLSH(conf);
   }
 
   protected void reduce(Text key, Iterable<ContextWritable> values, Context context)
