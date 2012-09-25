@@ -257,7 +257,7 @@ public class Rule {
     public String toString()
     {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("[%s]", Vocabulary.getWord(lhs)));
+        sb.append(String.format("[%s]", Vocabulary.word(lhs)));
         sb.append(String.format( " %s", ThraxConfig.DELIMITER));
         int last = -1;
         for (int i = rhs.sourceStart; i < rhs.sourceEnd; i++) {
@@ -265,9 +265,9 @@ public class Rule {
             if (x < 0)
                 continue;
             if (x == 0)
-                sb.append(String.format(" %s", Vocabulary.getWord(source[i])));
+                sb.append(String.format(" %s", Vocabulary.word(source[i])));
             else if (x != last) {
-                sb.append(String.format(" [%s,%d]", Vocabulary.getWord(nts[x-1]), x));
+                sb.append(String.format(" [%s,%d]", Vocabulary.word(nts[x-1]), x));
                 last = x;
             }
         }
@@ -279,9 +279,9 @@ public class Rule {
             if (x < 0)
                 continue;
             if (x == 0)
-                sb.append(String.format(" %s", Vocabulary.getWord(target[i])));
+                sb.append(String.format(" %s", Vocabulary.word(target[i])));
             else if (x != last) {
-                sb.append(String.format(" [%s,%d]", Vocabulary.getWord(nts[x-1]), x));
+                sb.append(String.format(" [%s,%d]", Vocabulary.word(nts[x-1]), x));
                 last = x;
             }
         }

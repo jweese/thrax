@@ -172,11 +172,11 @@ public class ContextPhraseExtractor {
   private void addSyntaxFeatures(int from, int to, ContextPhrase cp) {
     Collection<Integer> constituents = parse.getConstituentLabels(from, to);
     for (int c : constituents)
-      cp.addFeature(C + SYN + "span" + G + Vocabulary.getWord(c));
+      cp.addFeature(C + SYN + "span" + G + Vocabulary.word(c));
 
     Collection<Integer> ccg = parse.getCcgLabels(from, to);
     for (int c : ccg) {
-      String label = Vocabulary.getWord(c);
+      String label = Vocabulary.word(c);
       if (label.contains("/")) {
         String[] parts = label.split("/");
         cp.addFeature(R + SYN + "pref" + G + parts[0]);

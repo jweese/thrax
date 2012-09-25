@@ -80,7 +80,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 	}
 
 	public String getTerminal(int i) {
-		return Vocabulary.getWord(terminals.get(i));
+		return Vocabulary.word(terminals.get(i));
 	}
 	
 	public String[] getTerminals() {
@@ -90,19 +90,19 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 	public String[] getTerminals(int from, int to) {
 		String[] span = new String[to - from];
 		for (int i = from; i < to; i++)
-			span[i - from] = Vocabulary.getWord(terminals.get(i));
+			span[i - from] = Vocabulary.word(terminals.get(i));
 		return span;
 	}
 
 	public String getTerminalPhrase(int from, int to) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = from; i < to; i++)
-			sb.append(Vocabulary.getWord(terminals.get(i)) + " ");
+			sb.append(Vocabulary.word(terminals.get(i)) + " ");
 		return sb.substring(0, sb.length() - 1);
 	}
 	
 	public String getPOS(int i) {
-		return Vocabulary.getWord(pre_terminals.get(i));
+		return Vocabulary.word(pre_terminals.get(i));
 	}
 	
 	public String[] getPOS() {
@@ -112,14 +112,14 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 	public String[] getPOS(int from, int to) {
 		String[] span = new String[to - from];
 		for (int i = from; i < to; i++)
-			span[i - from] = Vocabulary.getWord(pre_terminals.get(i));
+			span[i - from] = Vocabulary.word(pre_terminals.get(i));
 		return span;
 	}
 	
 	public String getPOSPhrase(int from, int to) {
 		StringBuilder sb = new StringBuilder();
 		for (int i = from; i < to; i++)
-			sb.append(Vocabulary.getWord(pre_terminals.get(i)) + " ");
+			sb.append(Vocabulary.word(pre_terminals.get(i)) + " ");
 		return sb.substring(0, sb.length() - 1);
 	}
 
@@ -159,7 +159,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 			return stack.pop();
 		StringBuilder sb = new StringBuilder();
 		while (!stack.isEmpty()) {
-			String w = Vocabulary.getWord(stack.pop());
+			String w = Vocabulary.word(stack.pop());
 			if (sb.length() != 0)
 				sb.append(":");
 			sb.append(w);
@@ -176,7 +176,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 			int y = getOneConstituent(midpt, to);
 			if (y < 0)
 				continue;
-			String label = Vocabulary.getWord(x) + "+" + Vocabulary.getWord(y);
+			String label = Vocabulary.word(x) + "+" + Vocabulary.word(y);
 			return Vocabulary.getId(label);
 		}
 		return -1;
@@ -194,8 +194,8 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 				int z = getOneConstituent(b, to);
 				if (z < 0)
 					continue;
-				String label = Vocabulary.getWord(x) + "+" + Vocabulary.getWord(y) + "+"
-						+ Vocabulary.getWord(z);
+				String label = Vocabulary.word(x) + "+" + Vocabulary.word(y) + "+"
+						+ Vocabulary.word(z);
 				return Vocabulary.getId(label);
 			}
 		}
@@ -210,7 +210,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 			int y = getOneConstituent(to, end);
 			if (y < 0)
 				continue;
-			String label = Vocabulary.getWord(x) + "/" + Vocabulary.getWord(y);
+			String label = Vocabulary.word(x) + "/" + Vocabulary.word(y);
 			return Vocabulary.getId(label);
 		}
 		return -1;
@@ -224,7 +224,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 			int y = getOneConstituent(start, from);
 			if (y < 0)
 				continue;
-			String label = Vocabulary.getWord(y) + "\\" + Vocabulary.getWord(x);
+			String label = Vocabulary.word(y) + "\\" + Vocabulary.word(x);
 			return Vocabulary.getId(label);
 		}
 		return -1;
@@ -271,8 +271,8 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 					break;
 
 				// create and look up concatenated label
-				int concatenated_nt = Vocabulary.getId(Vocabulary.getWord(nt) + "+"
-						+ Vocabulary.getWord(forwardLattice.get(i)));
+				int concatenated_nt = Vocabulary.getId(Vocabulary.word(nt) + "+"
+						+ Vocabulary.word(forwardLattice.get(i)));
 				if (current_span < remaining_span) {
 					nt_stack.push(concatenated_nt);
 					pos_stack.push(pos + current_span);
@@ -312,8 +312,8 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 				Set<Integer> main_set = main_constituents.get(to + forwardLattice.get(i + 1));
 				if (main_set != null) {
 					for (int main : main_set)
-						labels.add(Vocabulary.getId(Vocabulary.getWord(main) + "/"
-								+ Vocabulary.getWord(forwardLattice.get(i))));
+						labels.add(Vocabulary.getId(Vocabulary.word(main) + "/"
+								+ Vocabulary.word(forwardLattice.get(i))));
 				}
 			}
 		}
@@ -345,8 +345,8 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 					Set<Integer> main_set = main_constituents.get(from - backwardLattice.get(i + 1));
 					if (main_set != null) {
 						for (int main : main_set)
-							labels.add(Vocabulary.getId(Vocabulary.getWord(main) + "\\"
-									+ Vocabulary.getWord(backwardLattice.get(i))));
+							labels.add(Vocabulary.getId(Vocabulary.word(main) + "\\"
+									+ Vocabulary.word(backwardLattice.get(i))));
 					}
 				}
 			} else {
@@ -402,7 +402,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 			sb.append("FI[" + i + "] =\t" + forwardIndex.get(i) + "\n");
 		sb.append("\n");
 		for (int i = 0; i < forwardLattice.size(); i += 2)
-			sb.append("F[" + i + "] =\t" + Vocabulary.getWord(forwardLattice.get(i)) + " , "
+			sb.append("F[" + i + "] =\t" + Vocabulary.word(forwardLattice.get(i)) + " , "
 					+ forwardLattice.get(i + 1) + "\n");
 
 		if (this.useBackwardLattice) {
@@ -411,7 +411,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 				sb.append("BI[" + i + "] =\t" + backwardIndex.get(i) + "\n");
 			sb.append("\n");
 			for (int i = 0; i < backwardLattice.size(); i += 2)
-				sb.append("B[" + i + "] =\t" + Vocabulary.getWord(backwardLattice.get(i)) + " , "
+				sb.append("B[" + i + "] =\t" + Vocabulary.word(backwardLattice.get(i)) + " , "
 						+ backwardLattice.get(i + 1) + "\n");
 		}
 		return sb.toString();
@@ -507,15 +507,15 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 				Collection<Integer> labels;
 				labels = la.getConstituentLabels(from, to);
 				for (int l : labels)
-					System.err.println(Vocabulary.getWord(l));
+					System.err.println(Vocabulary.word(l));
 
 				labels = la.getConcatenatedLabels(from, to);
 				for (int l : labels)
-					System.err.println(Vocabulary.getWord(l));
+					System.err.println(Vocabulary.word(l));
 
 				labels = la.getCcgLabels(from, to);
 				for (int l : labels)
-					System.err.println(Vocabulary.getWord(l));
+					System.err.println(Vocabulary.word(l));
 			}
 		} catch (IOException e) {
 			e.printStackTrace();

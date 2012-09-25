@@ -30,6 +30,10 @@ public class Vocabulary {
         return ret;
     }
 
+    public synchronized static String word(int id) {
+      return getWord(id);
+    }
+    
     public synchronized static String getWord(int id)
     {
         if (id2word.containsKey(id)) {

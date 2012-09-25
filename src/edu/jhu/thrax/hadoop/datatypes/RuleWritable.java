@@ -113,13 +113,13 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         int idx = 0;
         for (int i = r.rhs.sourceStart; i < r.rhs.sourceEnd; i++) {
             if (r.sourceLex[i] == 0) {
-                Text src = new Text(Vocabulary.getWord(r.source[i]));
+                Text src = new Text(Vocabulary.word(r.source[i]));
                 if (r.alignment.sourceIsAligned(i)) {
                     result[idx] = new Text[r.alignment.f2e[i].length + 1];
                     result[idx][0] = src;
                     int j = 1;
                     for (int x : r.alignment.f2e[i]) {
-                        result[idx][j++] = new Text(Vocabulary.getWord(r.target[x]));
+                        result[idx][j++] = new Text(Vocabulary.word(r.target[x]));
                     }
                 }
                 else {
@@ -145,13 +145,13 @@ public class RuleWritable implements WritableComparable<RuleWritable>
         int idx = 0;
         for (int i = r.rhs.targetStart; i < r.rhs.targetEnd; i++) {
             if (r.targetLex[i] == 0) {
-                Text tgt = new Text(Vocabulary.getWord(r.target[i]));
+                Text tgt = new Text(Vocabulary.word(r.target[i]));
                 if (r.alignment.targetIsAligned(i)) {
                     result[idx] = new Text[r.alignment.e2f[i].length + 1];
                     result[idx][0] = tgt;
                     int j = 1;
                     for (int x : r.alignment.e2f[i]) {
-                        result[idx][j++] = new Text(Vocabulary.getWord(r.source[x]));
+                        result[idx][j++] = new Text(Vocabulary.word(r.source[x]));
                     }
                 }
                 else {
