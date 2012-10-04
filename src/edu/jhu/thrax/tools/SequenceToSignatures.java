@@ -27,6 +27,14 @@ public class SequenceToSignatures {
     out.flush();
     out.close();
   }
+  
+  private static void usage() {
+    System.err.println("Usage: java edu.jhu.thrax.tools.SequenceToSignature");
+    System.err.println("\t -i sequence_file \t Sequence file from Thrax signature extraction.");
+    System.err.println("\t -o prefix \t\t Prefix for signature files: <prefix>.0001.keyz.gz.");
+    System.err.println("\t -c chunk_size \t\t Number of keys per signature chunk.");
+    System.err.println();
+  }
 
   public static void main(String[] args) throws Exception {
     boolean local = true;
@@ -34,6 +42,10 @@ public class SequenceToSignatures {
     int chunk_size = 500000;
     String output_prefix = null;
 
+    if (args.length < 4 || args[0].toLowerCase().equals("-h")) {
+      usage();
+      System.exit(0);
+    }    
     for (int i = 0; i < args.length; i++) {
       if ("-i".equals(args[i]) && (i < args.length - 1)) {
         input_file = args[++i];
@@ -45,10 +57,12 @@ public class SequenceToSignatures {
     }
     if (input_file == null) {
       logger.severe("No input file specified.");
+      usage();
       System.exit(0);
     }
     if (output_prefix == null) {
       logger.severe("No output prefix specified.");
+      usage();
       System.exit(0);
     }
 
