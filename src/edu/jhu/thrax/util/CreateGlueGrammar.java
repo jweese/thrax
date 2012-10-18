@@ -34,14 +34,11 @@ public class CreateGlueGrammar
 
     public static void main(String [] argv) throws IOException
     {
-        if (argv.length < 1) {
-            System.err.println("usage: CreateGlueGrammar <conf file>");
-            return;
-        }
-
-        Map<String,String> opts = ConfFileParser.parse(argv[0]);
-        if (opts.containsKey("goal-symbol"))
+        if (argv.length > 0) {
+          Map<String,String> opts = ConfFileParser.parse(argv[0]);
+          if (opts.containsKey("goal-symbol"))
             GOAL = opts.get("goal-symbol");
+        }
 
         Scanner scanner = new Scanner(System.in, "UTF-8");
         nts = new HashSet<String>();
