@@ -37,7 +37,7 @@ public class TestSetFilter
 	private String lastSourceSide;
 	private boolean acceptedLastSourceSide;
 
-    private final String NT_REGEX = "\\[[^\\]]+?\\]";
+  private final String NT_REGEX = "\\[[^\\]]+?\\]";
 
 	public int cached = 0;
     public int RULE_LENGTH = 12;
@@ -222,7 +222,8 @@ public class TestSetFilter
 
 		for (String chunk : source.split(NT_REGEX)) {
 			chunk = chunk.trim();
-			if (!ngrams.contains(chunk))
+      /* Important: you need to make sure the string isn't empty. */
+			if (! chunk.equals("") && ! ngrams.contains(chunk))
 				return false;
 		}
 		return true;
