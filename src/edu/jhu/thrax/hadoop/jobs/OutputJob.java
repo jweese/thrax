@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.fs.FileSystem;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.output.*;
@@ -52,8 +53,17 @@ public class OutputJob extends ThraxJob
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
             }
         }
-        if (FileInputFormat.getInputPaths(job).length == 0)
+        if (FileInputFormat.getInputPaths(job).length == 0) {
             FileInputFormat.addInputPath(job, new Path(workDir + "rules"));
+		} else {
+			// We have at least one feature to aggregate, so we don't need
+			// the rules subdirectory at all at this point.
+			// We delete it to save disk space.
+			final FileSystem fs = FileSystem.get(conf);
+			final Path rulesPath = new Path(workDir + "rules");
+			final boolean recursive = true;
+			fs.delete(rulesPath, recursive);
+		}
 
         String outputPath = conf.get("thrax.outputPath", "");
         FileOutputFormat.setOutputPath(job, new Path(outputPath));

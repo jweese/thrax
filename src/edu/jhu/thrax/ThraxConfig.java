@@ -155,6 +155,10 @@ public class ThraxConfig {
      */
     public static boolean ALLOW_FULL_SENTENCE_RULES = true;
     /**
+     * Minimum distance of right-hand-side spans.
+     */
+    public static int RULE_SPAN_MINIMUM = 0;
+    /**
      * Limit to the span of right hand sides of rules.
      */
     public static int RULE_SPAN_LIMIT = 12;
@@ -273,6 +277,9 @@ public class ThraxConfig {
             }
             else if ("rule-span-limit".equals(key)) {
                 RULE_SPAN_LIMIT = Integer.parseInt(value);
+            }
+            else if ("rule-span-minimum".equals(key)) {
+                RULE_SPAN_MINIMUM = Integer.parseInt(value);
             }
             else if ("source-is-parsed".equals(key)) {
                 SOURCE_IS_PARSED = Boolean.parseBoolean(value);

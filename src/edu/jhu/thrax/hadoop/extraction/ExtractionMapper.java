@@ -46,6 +46,8 @@ public class ExtractionMapper extends Mapper<LongWritable, Text,
 
     protected void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException
     {
+		context.progress();
+
         if (extractor == null)
             return;
         String line = value.toString();
