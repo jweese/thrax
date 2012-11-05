@@ -66,9 +66,8 @@ public abstract class MapReduceFeature extends ThraxJob
         job.setOutputValueClass(NullWritable.class);
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-        // TODO: Fix this dirty balancing hack.
         int num_reducers = conf.getInt("thrax.reducers", 4);
-        job.setNumReduceTasks(num_reducers / 4);
+        job.setNumReduceTasks(num_reducers);
 
         FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "rules"));
         FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + name));

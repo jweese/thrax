@@ -21,7 +21,7 @@ public class PivotedLhsGivenTargetPhraseFeature extends NonAggregatingPivotedFea
 
   public Set<String> getPrerequisites() {
     Set<String> prereqs = new HashSet<String>();
-    prereqs.add("lhs_given_e");
+    prereqs.add("lhs_given_e_inv");
     return prereqs;
   }
 

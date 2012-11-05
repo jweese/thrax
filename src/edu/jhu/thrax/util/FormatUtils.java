@@ -39,6 +39,35 @@ public class FormatUtils {
 	public static String markup(String nt, int index) {
 		return "[" + nt + "," + index + "]";
 	}
+	
+	
+	public static String zeroNonterminalIndices(String input) {
+	  return input.replaceAll(",[12]\\]", ",0]");
+	}
+	
+	public static boolean isMonotonic(String input) {
+	  int one_pos = input.indexOf(",1]");
+	  int two_pos = input.indexOf(",2]");
+	  if (two_pos == -1 || one_pos == -1)
+	    return true;
+	  return (one_pos < two_pos);
+	}
+	
+	public static String applyIndices(String input, boolean monotonic) {
+	  int first_nt = input.indexOf(",0]");
+	  if (first_nt == -1)
+	    return input;
+	  
+	  StringBuilder output = new StringBuilder(input);
+	  int second_nt = input.indexOf(",0]", first_nt + 1);
+	  if (second_nt == -1)
+	    output.setCharAt(first_nt + 1, '1');
+	  else {
+	    output.setCharAt(first_nt + 1, (monotonic ? '1' : '2'));
+	    output.setCharAt(second_nt + 1, (monotonic ? '2' : '1'));
+	  }
+	  return output.toString();
+    }
 
 	public static Text ruleToText(RuleWritable r, Map<Text, Writable> fs,
 			boolean label, boolean sparse) {
