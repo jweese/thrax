@@ -26,13 +26,13 @@ public class PivotedLhsGivenSourcePhraseFeature extends NonAggregatingPivotedFea
   }
 
   public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
-    return new DoubleWritable(((DoubleWritable) src.get(new Text("p(LHS|e)"))).get());
+    return new DoubleWritable(((DoubleWritable) src.get(new Text("p(LHS|e_inv)"))).get());
   }
 
   @Override
   public Set<Text> getLowerBoundLabels() {
     Set<Text> lower_bound_labels = new HashSet<Text>();
-    lower_bound_labels.add(new Text("p(LHS|e)"));
+    lower_bound_labels.add(new Text("p(LHS|e_inv)"));
     return lower_bound_labels;
   }
 
