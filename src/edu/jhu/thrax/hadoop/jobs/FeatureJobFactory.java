@@ -24,9 +24,9 @@ public class FeatureJobFactory {
     else if (name.equals("lhs_given_e"))
       return new LhsGivenTargetPhraseFeature();
     else if (name.equals("e_inv_given_lhs"))
-      return new TargetPhraseGivenLHSFeature();
+      return new InvariantTargetPhraseGivenLHSFeature();
     else if (name.equals("lhs_given_e_inv"))
-      return new LhsGivenTargetPhraseFeature();
+      return new InvariantLhsGivenTargetPhraseFeature();
     else if (name.equals("e_given_f_and_lhs")) return new TargetPhraseGivenSourceandLHSFeature();
 
     return null;
