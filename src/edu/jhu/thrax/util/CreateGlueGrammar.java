@@ -1,8 +1,5 @@
 package edu.jhu.thrax.util;
 
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
-
 import java.util.Scanner;
 import java.util.HashSet;
 import java.util.Map;
@@ -10,17 +7,9 @@ import java.util.TreeMap;
 
 import java.io.IOException;
 
-import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
-import edu.jhu.thrax.hadoop.features.SimpleFeature;
-import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
-import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
-
 public class CreateGlueGrammar
 {
     private static HashSet<String> nts;
-
-    private static TreeMap<Text,Writable> unaryFeatures;
-    private static TreeMap<Text,Writable> binaryFeatures;
 
     // [GOAL] ||| <s> ||| <s> ||| 0
     // [GOAL] ||| [GOAL,1] [X,2] ||| [GOAL,1] [X,2] ||| -1
@@ -55,10 +44,8 @@ public class CreateGlueGrammar
         }
         System.out.println(String.format(RULE_START, GOAL));
         for (String nt : nts) {
-            Text n = new Text(nt);
-            System.out.println(String.format(RULE_TWO, GOAL, n));
+          System.out.println(String.format(RULE_TWO, GOAL, nt));
         }
         System.out.println(String.format(RULE_END, GOAL));
     }
-
 }
