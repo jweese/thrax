@@ -39,23 +39,24 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
   }
 
   private static class Map extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable> {
+
     protected void map(RuleWritable key, IntWritable value, Context context) throws IOException,
         InterruptedException {
       RuleWritable lhs_marginal = new RuleWritable(key);
       RuleWritable marginal = new RuleWritable(key);
       RuleWritable modified_key = new RuleWritable(key);
-      
+
       String zeroed = FormatUtils.zeroNonterminalIndices(key.target.toString());
       boolean monotonic = FormatUtils.isMonotonic(key.target.toString());
-      
+
       lhs_marginal.source.set(TextMarginalComparator.MARGINAL);
       lhs_marginal.target.set(TextMarginalComparator.MARGINAL);
-      
+
       marginal.source.set(TextMarginalComparator.MARGINAL);
       marginal.target.set(zeroed);
-      
+
       modified_key.target.set(zeroed);
-      
+
       context.write(modified_key, new IntWritable(monotonic ? 1 : 2));
       context.write(marginal, value);
       context.write(lhs_marginal, value);
