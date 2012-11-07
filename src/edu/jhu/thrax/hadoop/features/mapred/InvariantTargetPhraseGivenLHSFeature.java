@@ -41,15 +41,24 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
   private static class Map extends Mapper<RuleWritable, IntWritable, RuleWritable, IntWritable> {
     protected void map(RuleWritable key, IntWritable value, Context context) throws IOException,
         InterruptedException {
-      RuleWritable lhsMarginal = new RuleWritable(key);
+      RuleWritable lhs_marginal = new RuleWritable(key);
       RuleWritable marginal = new RuleWritable(key);
-      lhsMarginal.source.set(TextMarginalComparator.MARGINAL);
-      lhsMarginal.target.set(TextMarginalComparator.MARGINAL);
+      RuleWritable modified_key = new RuleWritable(key);
+      
+      String zeroed = FormatUtils.zeroNonterminalIndices(key.target.toString());
+      boolean monotonic = FormatUtils.isMonotonic(key.target.toString());
+      
+      lhs_marginal.source.set(TextMarginalComparator.MARGINAL);
+      lhs_marginal.target.set(TextMarginalComparator.MARGINAL);
+      
       marginal.source.set(TextMarginalComparator.MARGINAL);
-      marginal.target.set(FormatUtils.zeroNonterminalIndices(key.target.toString()));
-      context.write(key, value);
+      marginal.target.set(zeroed);
+      
+      modified_key.target.set(zeroed);
+      
+      context.write(modified_key, new IntWritable(monotonic ? 1 : 2));
       context.write(marginal, value);
-      context.write(lhsMarginal, value);
+      context.write(lhs_marginal, value);
     }
   }
 
@@ -81,7 +90,19 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
       }
       key.featureLabel.set(NAME);
       key.featureScore.set(prob);
-      context.write(key, NullWritable.get());
+      
+      
+      for (IntWritable x : values) {
+        int signal = x.get();
+        if (signal == 1 || signal == 3) {
+          key.target.set((FormatUtils.applyIndices(key.target.toString(), true)));
+          context.write(key, NullWritable.get());
+        }
+        if (signal == 2 || signal == 3) {
+          key.target.set((FormatUtils.applyIndices(key.target.toString(), false)));
+          context.write(key, NullWritable.get());
+        }
+      }
     }
 
   }
