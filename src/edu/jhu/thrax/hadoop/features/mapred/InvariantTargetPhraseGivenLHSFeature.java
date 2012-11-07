@@ -88,23 +88,21 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
         prob = -Math.log(count / (double) marginal);
         return;
       }
-      key.featureLabel.set(NAME);
-      key.featureScore.set(prob);
-      
-      
+      RuleWritable result = new RuleWritable(key);
+      result.featureLabel.set(NAME);
+      result.featureScore.set(prob);
       for (IntWritable x : values) {
         int signal = x.get();
         if (signal == 1 || signal == 3) {
-          key.target.set((FormatUtils.applyIndices(key.target.toString(), true)));
-          context.write(key, NullWritable.get());
+          result.target.set((FormatUtils.applyIndices(key.target.toString(), true)));
+          context.write(result, NullWritable.get());
         }
         if (signal == 2 || signal == 3) {
-          key.target.set((FormatUtils.applyIndices(key.target.toString(), false)));
-          context.write(key, NullWritable.get());
+          result.target.set((FormatUtils.applyIndices(key.target.toString(), false)));
+          context.write(result, NullWritable.get());
         }
       }
     }
-
   }
 
   public static class Comparator extends WritableComparator {
