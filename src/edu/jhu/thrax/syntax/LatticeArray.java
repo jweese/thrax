@@ -224,7 +224,7 @@ public class LatticeArray implements ParseLattice, Externalizable, Externalizabl
 			int y = getOneConstituent(start, from);
 			if (y < 0)
 				continue;
-			String label = Vocabulary.word(y) + "-" + Vocabulary.word(x);
+			String label = Vocabulary.word(y) + "\\" + Vocabulary.word(x);
 			return Vocabulary.getId(label);
 		}
 		return -1;
