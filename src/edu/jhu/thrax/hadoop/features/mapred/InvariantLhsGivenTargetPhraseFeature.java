@@ -96,12 +96,15 @@ public class InvariantLhsGivenTargetPhraseFeature extends MapReduceFeature {
       key.featureScore.set(prob);
       
       for (IntWritable x : values) {
-        if (x.get() == 1) key.target.set((FormatUtils.applyIndices(key.target.toString(), true)));
-        if (x.get() == 2) key.target.set((FormatUtils.applyIndices(key.target.toString(), false)));
-        
-        if (x.get() == 3) throw new RuntimeException("Found a 3!");
-        
-        context.write(key, NullWritable.get());
+        int signal = x.get();
+        if (signal == 1 || signal == 3) {
+          key.target.set((FormatUtils.applyIndices(key.target.toString(), true)));
+          context.write(key, NullWritable.get());
+        }
+        if (signal == 2 || signal == 3) {
+          key.target.set((FormatUtils.applyIndices(key.target.toString(), false)));
+          context.write(key, NullWritable.get());
+        }
       }
     }
 
