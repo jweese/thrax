@@ -98,20 +98,13 @@ public class InvariantLhsGivenTargetPhraseFeature extends MapReduceFeature {
       result.featureScore.set(prob);
       for (IntWritable x : values) {
         int signal = x.get();
-        boolean written = false;
         if (signal % 60000 >= 1) {
           result.target.set((FormatUtils.applyIndices(key.target.toString(), true)));
           context.write(result, NullWritable.get());
-          written = true;
         }
         if (signal / 60000 >= 1) {
           result.target.set((FormatUtils.applyIndices(key.target.toString(), false)));
           context.write(result, NullWritable.get());
-          written = true;
-        }
-        if (!written) {
-          throw new RuntimeException("Strange signal.\n"
-              + FormatUtils.ruleToText(key, new HashMap<Text, Writable>(), true, true) + "\n" + signal);
         }
       }
     }
