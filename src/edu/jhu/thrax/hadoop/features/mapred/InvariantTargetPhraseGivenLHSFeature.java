@@ -57,7 +57,7 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
 
       modified_key.target.set(zeroed);
 
-      context.write(modified_key, new IntWritable(monotonic ? 1 : 2));
+      context.write(modified_key, new IntWritable(monotonic ? 1 : 60000));
       context.write(marginal, value);
       context.write(lhs_marginal, value);
     }
@@ -94,11 +94,11 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
       result.featureScore.set(prob);
       for (IntWritable x : values) {
         int signal = x.get();
-        if (signal == 1 || signal == 3) {
+        if (signal % 60000 >= 1) {
           result.target.set((FormatUtils.applyIndices(key.target.toString(), true)));
           context.write(result, NullWritable.get());
         }
-        if (signal == 2 || signal == 3) {
+        if (signal / 60000 >= 1) {
           result.target.set((FormatUtils.applyIndices(key.target.toString(), false)));
           context.write(result, NullWritable.get());
         }
