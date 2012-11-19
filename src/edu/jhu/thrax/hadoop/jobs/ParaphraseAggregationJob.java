@@ -8,6 +8,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -45,6 +46,8 @@ public class ParaphraseAggregationJob extends ThraxJob {
 
     String outputPath = conf.get("thrax.outputPath", "");
     FileOutputFormat.setOutputPath(job, new Path(outputPath));
+    FileOutputFormat.setCompressOutput(job, true);
+    FileOutputFormat.setOutputCompressorClass(job, GzipCodec.class);
 
     return job;
   }
@@ -61,7 +64,7 @@ public class ParaphraseAggregationJob extends ThraxJob {
     prereqs.add(ParaphrasePivotingJob.class);
     return prereqs;
   }
-  
+
   public String getOutputSuffix() {
     return null;
   }
