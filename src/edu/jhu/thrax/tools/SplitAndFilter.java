@@ -73,6 +73,11 @@ public class SplitAndFilter {
       BufferedWriter lex_writer = FileManager.getWriter(output_prefix + ".lexical.gz");
       BufferedWriter phr_writer = FileManager.getWriter(output_prefix + ".phrasal.gz");
       BufferedWriter syn_writer = FileManager.getWriter(output_prefix + ".syntax.gz");
+
+      BufferedWriter lex_self_writer = FileManager.getWriter(output_prefix + ".lexical-self.gz");
+      BufferedWriter phr_self_writer = FileManager.getWriter(output_prefix + ".phrasal-self.gz");
+      BufferedWriter syn_self_writer = FileManager.getWriter(output_prefix + ".syntax-self.gz");
+
       BufferedWriter stop_writer = FileManager.getWriter(output_prefix + ".stop.gz");
       BufferedWriter stats_writer = FileManager.getWriter(output_prefix + ".stats.txt");
 
@@ -88,6 +93,8 @@ public class SplitAndFilter {
         String[] source = fields[1].split("\\s+");
         String[] target = fields[2].split("\\s+");
 
+        boolean self = fields[1].equals(fields[2]);
+
         source_words.clear();
         target_words.clear();
         for (String word : source) {
@@ -99,22 +106,26 @@ public class SplitAndFilter {
         for (String word : target)
           if (!word.startsWith("[")) target_words.add(word);
 
-        HashSet<String> source_added = (HashSet<String>) source_words.clone();
-        HashSet<String> target_added = (HashSet<String>) target_words.clone();
+        if (!self) {
+          HashSet<String> source_added = (HashSet<String>) source_words.clone();
+          HashSet<String> target_added = (HashSet<String>) target_words.clone();
 
-        source_added.removeAll(target_words);
-        target_added.removeAll(source_words);
+          source_added.removeAll(target_words);
+          target_added.removeAll(source_words);
 
-        for (String word : source_added)
-          if (!filter.contains(word))
-            drop = false;
-          else
-            stop_count.put(word, stop_count.get(word) + 1);
-        for (String word : target_added)
-          if (!filter.contains(word))
-            drop = false;
-          else
-            stop_count.put(word, stop_count.get(word) + 1);
+          for (String word : source_added)
+            if (!filter.contains(word))
+              drop = false;
+            else
+              stop_count.put(word, stop_count.get(word) + 1);
+          for (String word : target_added)
+            if (!filter.contains(word))
+              drop = false;
+            else
+              stop_count.put(word, stop_count.get(word) + 1);
+        } else {
+          drop = false;
+        }
 
         // Dropped rule.
         if (drop) {
@@ -124,27 +135,47 @@ public class SplitAndFilter {
           continue;
         }
 
-        // Lexical rules;
-        if (source.length == 1 && target.length == 1 && !source[0].startsWith("[")) {
-          lex_writer.write(rule_line);
-          lex_writer.newLine();
+        // Lexical rule.
+        if (phrasal && source.length == 1 && target.length == 1) {
+          if (self) {
+            lex_self_writer.write(rule_line);
+            lex_self_writer.newLine();
+          } else {
+            lex_writer.write(rule_line);
+            lex_writer.newLine();
+          }
           lex_count++;
           continue;
         }
 
-        // Syntactic or phrasal rule.
-        (phrasal ? phr_writer : syn_writer).write(rule_line);
-        (phrasal ? phr_writer : syn_writer).newLine();
-        if (phrasal)
+        // Phrasal rule.
+        if (phrasal) {
+          if (self) {
+            phr_self_writer.write(rule_line);
+            phr_self_writer.newLine();
+          } else {
+            phr_writer.write(rule_line);
+            phr_writer.newLine();
+          }
           phr_count++;
-        else
-          syn_count++;
+          continue;
+        }
+
+        // Syntactic rule.
+        if (self) {
+          syn_self_writer.write(rule_line);
+          syn_self_writer.newLine();
+        } else {
+          syn_writer.write(rule_line);
+          syn_writer.newLine();
+        }
+        syn_count++;
       }
       reader.close();
 
       for (String word : stop_count.keySet())
         stats_writer.write(word + "\t" + stop_count.get(word) + "\n");
-      
+
       System.err.println("Total:  \t" + (lex_count + phr_count + syn_count + drop_count));
       System.out.println("Dropped:\t" + drop_count);
       System.out.println("Lexical:\t" + lex_count);
@@ -155,6 +186,9 @@ public class SplitAndFilter {
       phr_writer.close();
       syn_writer.close();
       stop_writer.close();
+      lex_self_writer.close();
+      phr_self_writer.close();
+      syn_self_writer.close();
       stats_writer.close();
     } catch (IOException e) {
       logger.severe(e.getMessage());
