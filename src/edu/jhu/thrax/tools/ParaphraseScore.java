@@ -16,7 +16,7 @@ public class ParaphraseScore {
   private static final Logger logger = Logger.getLogger(ParaphraseScore.class.getName());
 
   private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
-  
+
   private static int unknown_source;
   private static int total;
   private static int correct;
@@ -28,6 +28,7 @@ public class ParaphraseScore {
     String reference_file = null;
     String weight_file = null;
     String output_file = null;
+    String relevant_file = null;
 
     boolean labeled = true;
     boolean sparse = true;
@@ -37,6 +38,8 @@ public class ParaphraseScore {
         grammar_file = args[++i];
       } else if ("-r".equals(args[i]) && (i < args.length - 1)) {
         reference_file = args[++i];
+      } else if ("-v".equals(args[i]) && (i < args.length - 1)) {
+        relevant_file = args[++i];
       } else if ("-w".equals(args[i]) && (i < args.length - 1)) {
         weight_file = args[++i];
       } else if ("-o".equals(args[i]) && (i < args.length - 1)) {
@@ -77,7 +80,7 @@ public class ParaphraseScore {
         String[] fields = line.split(DELIM);
         if (reference_pairs.containsKey(line))
           reference_pairs.put(line, reference_pairs.get(line) + 1);
-        else 
+        else
           reference_pairs.put(line, 1);
         sources.add(fields[0]);
       }
@@ -92,8 +95,11 @@ public class ParaphraseScore {
       }
       weights_reader.close();
 
-      PriorityQueue<Entry> entries = new PriorityQueue<Entry>();
-      
+      HashMap<String, Double> candidates = new HashMap<String, Double>();
+
+      BufferedWriter rel_writer = null;
+      if (relevant_file != null) rel_writer = FileManager.getWriter(relevant_file);
+
       LineReader reader = new LineReader(grammar_file);
       System.err.print("[");
       int count = 0;
@@ -131,7 +137,9 @@ public class ParaphraseScore {
           unknown_source++;
           continue;
         }
-        
+
+        if (rel_writer != null) rel_writer.write(rule_line + "\n");
+
         double score = 0;
         String[] features = fields[3].split("\\s+");
         for (String f : features) {
@@ -139,36 +147,44 @@ public class ParaphraseScore {
           if (weights.containsKey(parts[0]))
             score += weights.get(parts[0]) * Double.parseDouble(parts[1]);
         }
-        
-        if (++count % 10000 == 0)
-          System.err.print("-");
-        
-        entries.add(new Entry(source + " ||| " + target, score));
+
+        if (++count % 10000 == 0) System.err.print("-");
+
+        String pair = source + " ||| " + target;
+
+        if (!candidates.containsKey(pair)) {
+          candidates.put(pair, score);
+        } else {
+          double previous = candidates.get(pair);
+          candidates.put(pair, Math.max(score, previous));
+        }
       }
       System.err.println("]");
       reader.close();
+      if (rel_writer != null) rel_writer.close();
 
       total = 0;
       found = 0;
       correct = 0;
-      for (int c: reference_pairs.values())
+      for (int c : reference_pairs.values())
         correct += c;
-      
-      for (Entry e : entries) {
-        if (reference_pairs.containsKey(e.pair)) {
-          found += reference_pairs.get(e.pair);
-          total += reference_pairs.get(e.pair);
-        }
-        else {
+
+      PriorityQueue<Entry> entries = new PriorityQueue<Entry>();
+      for (String p : candidates.keySet()) {
+        if (reference_pairs.containsKey(p)) {
+          found += reference_pairs.get(p);
+          total += reference_pairs.get(p);
+        } else {
           total++;
         }
+        entries.add(new Entry(p, candidates.get(p)));
       }
-      
+
       System.err.println("Total: " + total);
       System.err.println("Found: " + found);
       System.err.println("Correct: " + correct);
       System.err.println("Not matching: " + unknown_source);
-      
+
       BufferedWriter score_writer = FileManager.getWriter(output_file);
       while (!entries.isEmpty()) {
         Entry e = entries.poll();
@@ -176,12 +192,11 @@ public class ParaphraseScore {
           score_writer.write((found / (double) correct) + "\t" + (found / (double) total) + "\n");
           found -= reference_pairs.get(e.pair);
           total -= reference_pairs.get(e.pair);
-        }
-        else {
+        } else {
           total--;
         }
       }
-      
+
       score_writer.close();
     } catch (IOException e) {
       logger.severe(e.getMessage());
