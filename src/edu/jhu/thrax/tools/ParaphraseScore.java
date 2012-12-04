@@ -148,15 +148,20 @@ public class ParaphraseScore {
       System.err.println("]");
       reader.close();
 
-      total = entries.size();
+      total = 0;
       found = 0;
       correct = 0;
       for (int c: reference_pairs.values())
         correct += c;
       
       for (Entry e : entries) {
-        if (reference_pairs.containsKey(e.pair))
+        if (reference_pairs.containsKey(e.pair)) {
           found += reference_pairs.get(e.pair);
+          total += reference_pairs.get(e.pair);
+        }
+        else {
+          total++;
+        }
       }
       
       System.err.println("Total: " + total);
@@ -170,8 +175,11 @@ public class ParaphraseScore {
         if (reference_pairs.containsKey(e.pair)) {
           score_writer.write((found / (double) correct) + "\t" + (found / (double) total) + "\n");
           found -= reference_pairs.get(e.pair);
+          total -= reference_pairs.get(e.pair);
         }
-        total--;
+        else {
+          total--;
+        }
       }
       
       score_writer.close();
