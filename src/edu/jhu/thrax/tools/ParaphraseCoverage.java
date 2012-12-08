@@ -2,8 +2,10 @@ package edu.jhu.thrax.tools;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
@@ -11,16 +13,11 @@ import edu.jhu.jerboa.util.FileManager;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.io.LineReader;
 
-public class ParaphraseScore {
+public class ParaphraseCoverage {
 
-  private static final Logger logger = Logger.getLogger(ParaphraseScore.class.getName());
+  private static final Logger logger = Logger.getLogger(ParaphraseCoverage.class.getName());
 
   private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
-
-  private static int unknown_source;
-  private static int total;
-  private static int correct;
-  private static int found;
 
   public static void main(String[] args) {
 
@@ -29,7 +26,7 @@ public class ParaphraseScore {
     String weight_file = null;
     String output_file = null;
     String relevant_file = null;
-    
+
     for (int i = 0; i < args.length; i++) {
       if ("-g".equals(args[i]) && (i < args.length - 1)) {
         grammar_file = args[++i];
@@ -43,7 +40,7 @@ public class ParaphraseScore {
         output_file = args[++i];
       }
     }
-    
+
     if (grammar_file == null) {
       logger.severe("No grammar specified.");
       return;
@@ -61,21 +58,28 @@ public class ParaphraseScore {
       return;
     }
 
-    unknown_source = 0;
+    int unknown_source = 0;
 
-    HashMap<String, Integer> reference_pairs = new HashMap<String, Integer>();
-    HashSet<String> sources = new HashSet<String>();
+    HashMap<String, List<Integer>> reference_pairs = new HashMap<String, List<Integer>>();
+    HashMap<Integer, Integer> coverage_counts = new HashMap<Integer, Integer>();
+    HashSet<String> items = new HashSet<String>();
+
     HashMap<String, Double> weights = new HashMap<String, Double>();
+
     try {
       LineReader reference_reader = new LineReader(reference_file);
       while (reference_reader.hasNext()) {
         String line = reference_reader.next().trim();
         String[] fields = line.split(DELIM);
-        if (reference_pairs.containsKey(line))
-          reference_pairs.put(line, reference_pairs.get(line) + 1);
-        else
-          reference_pairs.put(line, 1);
-        sources.add(fields[0]);
+
+        int id = Integer.parseInt(fields[0]);
+        String item = fields[1] + " ||| " + fields[2];
+
+        items.add(item);
+        if (!reference_pairs.containsKey(item))
+          reference_pairs.put(item, new ArrayList<Integer>());
+        reference_pairs.get(item).add(id);
+        coverage_counts.put(id, 0);
       }
       reference_reader.close();
 
@@ -101,36 +105,14 @@ public class ParaphraseScore {
 
         String[] fields = rule_line.split(DELIM);
 
-        if (!fields[1].startsWith("[") || !fields[1].endsWith("]") || !fields[2].startsWith("[")
-            || !fields[2].endsWith("]")) continue;
+        String lhs = fields[0];
+        String source = fields[1];
+        String cand = lhs + " ||| " + source;
 
-        String[] source_words = fields[1].split("\\s+");
-        String[] target_words = fields[2].split("\\s+");
-
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < source_words.length; ++i) {
-          if (source_words[i].endsWith(",1]"))
-            source_words[i] = "[1]";
-          else if (source_words[i].endsWith(",2]")) source_words[i] = "[2]";
-          if (i > 0) builder.append(" ");
-          builder.append(source_words[i]);
-        }
-        String source = builder.toString();
-        builder = new StringBuilder();
-        for (int i = 0; i < target_words.length; ++i) {
-          if (target_words[i].endsWith(",1]"))
-            target_words[i] = "[1]";
-          else if (target_words[i].endsWith(",2]")) target_words[i] = "[2]";
-          if (i > 0) builder.append(" ");
-          builder.append(target_words[i]);
-        }
-        String target = builder.toString();
-
-        if (!sources.contains(source)) {
+        if (!items.contains(cand)) {
           unknown_source++;
           continue;
         }
-
         if (rel_writer != null) rel_writer.write(rule_line + "\n");
 
         double score = 0;
@@ -143,51 +125,61 @@ public class ParaphraseScore {
 
         if (++count % 10000 == 0) System.err.print("-");
 
-        String pair = source + " ||| " + target;
-
-        if (!candidates.containsKey(pair)) {
-          candidates.put(pair, score);
+        if (!candidates.containsKey(cand)) {
+          candidates.put(cand, score);
         } else {
-          double previous = candidates.get(pair);
-          candidates.put(pair, Math.max(score, previous));
+          double previous = candidates.get(cand);
+          candidates.put(cand, Math.max(score, previous));
         }
       }
       System.err.println("]");
       reader.close();
       if (rel_writer != null) rel_writer.close();
 
-      total = 0;
-      found = 0;
-      correct = 0;
-      for (int c : reference_pairs.values())
-        correct += c;
-
+      int total = 0;
+      int found = 0;
+      int correct = coverage_counts.keySet().size();
+      
       PriorityQueue<ScoredEntry> entries = new PriorityQueue<ScoredEntry>();
-      for (String p : candidates.keySet()) {
-        if (reference_pairs.containsKey(p)) {
-          found += reference_pairs.get(p);
-          total += reference_pairs.get(p);
-        } else {
-          total++;
+      for (String cand : candidates.keySet()) {
+        if (reference_pairs.containsKey(cand)) {
+          for (int item : reference_pairs.get(cand)) {
+            int coverage = coverage_counts.get(item);
+            if (coverage == 0) found++;
+            coverage_counts.put(item, coverage + 1);
+          }
         }
-        entries.add(new ScoredEntry(p, candidates.get(p)));
+        total++;
+        entries.add(new ScoredEntry(cand, candidates.get(cand)));
       }
 
-      System.err.println("Total: " + total);
-      System.err.println("Found: " + found);
-      System.err.println("Correct: " + correct);
-      System.err.println("Not matching: " + unknown_source);
+      int paraphrases = 0;
+      for (int c : coverage_counts.keySet()) {
+        paraphrases += coverage_counts.get(c);
+        System.err.println(coverage_counts.get(c));
+      }
+      System.err.println(paraphrases);
+      
+      System.err.println("Total:      " + total);
+      System.err.println("Found:      " + found);
+      System.err.println("Correct:    " + correct);
+      System.err.println("Irrelevant: " + unknown_source);
 
       BufferedWriter score_writer = FileManager.getWriter(output_file);
       while (!entries.isEmpty()) {
         ScoredEntry e = entries.poll();
         if (reference_pairs.containsKey(e.pair)) {
-          score_writer.write((found / (double) correct) + "\t" + (found / (double) total) + "\n");
-          found -= reference_pairs.get(e.pair);
-          total -= reference_pairs.get(e.pair);
-        } else {
-          total--;
+          score_writer.write(e.score + "\t" + (found / (double) correct) + "\t"
+              + (paraphrases / (double) found) + "\n");
+          for (int item : reference_pairs.get(e.pair)) {
+            int coverage = coverage_counts.get(item);
+            coverage--;
+            coverage_counts.put(item, coverage);
+            if (coverage == 0) found--;
+            paraphrases--;
+          }
         }
+        total--;
       }
 
       score_writer.close();
