@@ -110,7 +110,7 @@ public class ParaphraseOverlap {
       double[] matched = new double[rule_count];
       int i = 0;
       for (Double s : rule_to_score.values())
-        if (s != null) matched[i] = s;
+        if (s != null) matched[i++] = s;
       rule_to_score = null;
 
       i = 0;
