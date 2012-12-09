@@ -75,7 +75,7 @@ public class ParaphraseOverlap {
       weights_reader.close();
 
       ArrayList<Double> missed = new ArrayList<Double>();
-      
+
       LineReader reader = new LineReader(grammar_file);
       System.err.print("[");
       int rule_count = 0;
@@ -92,10 +92,10 @@ public class ParaphraseOverlap {
           if (weights.containsKey(parts[0]))
             score += weights.get(parts[0]) * Double.parseDouble(parts[1]);
         }
-        
+
         if (!rule_to_score.containsKey(rule)) {
           if (++rule_count % 10000 == 0) System.err.print("-");
-          
+
           if (rule_to_score.get(rule) == null)
             rule_to_score.put(rule, score);
           else
@@ -112,26 +112,30 @@ public class ParaphraseOverlap {
       for (Double s : rule_to_score.values())
         if (s != null) matched[i] = s;
       rule_to_score = null;
-      
+
       i = 0;
       double[] unmatched = new double[missed.size()];
       for (double s : missed)
         unmatched[i++] = s;
       missed = null;
-      
-      Arrays.sort(matched);
-      Arrays.sort(unmatched);
-      
+
       int num_correct = matched.length;
       int num_paraphrases = matched.length + unmatched.length;
+
+      System.err.println("Matched: " + num_correct);
+      System.err.println("Unmatched: " + (num_references - num_correct));
+      System.err.println("Nonmatching: " + unmatched.length);
+
+      Arrays.sort(matched);
+      Arrays.sort(unmatched);
 
       int m = 0, u = 0;
       BufferedWriter score_writer = FileManager.getWriter(output_file);
       while (m < matched.length && u < unmatched.length) {
-        if (m % 200 == 0)
-          score_writer.write(matched[m] + "\t" + (num_correct / (double) num_references) + "\t"
-              + (num_correct / (double) num_paraphrases) + "\n");
         if (matched[m] < unmatched[u]) {
+          if (m % 200 == 0)
+            score_writer.write(matched[m] + "\t" + (num_correct / (double) num_references) + "\t"
+                + (num_correct / (double) num_paraphrases) + "\n");
           m++;
           num_correct--;
         } else {
