@@ -2,10 +2,8 @@ package edu.jhu.thrax.tools;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
@@ -13,9 +11,9 @@ import edu.jhu.jerboa.util.FileManager;
 import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.io.LineReader;
 
-public class ParaphraseCoverage {
+public class ParaphraseWordNet {
 
-  private static final Logger logger = Logger.getLogger(ParaphraseCoverage.class.getName());
+  private static final Logger logger = Logger.getLogger(ParaphraseWordNet.class.getName());
 
   private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
 
@@ -58,26 +56,16 @@ public class ParaphraseCoverage {
       return;
     }
 
-    HashMap<String, List<Integer>> phrase_to_item = new HashMap<String, List<Integer>>();
-    HashMap<Integer, Integer> item_counts = new HashMap<Integer, Integer>();
-    HashSet<String> phrases = new HashSet<String>();
-
+    HashSet<String> reference_pairs = new HashSet<String>();
+    HashSet<String> sources = new HashSet<String>();
     HashMap<String, Double> weights = new HashMap<String, Double>();
-
     try {
       LineReader reference_reader = new LineReader(reference_file);
       while (reference_reader.hasNext()) {
         String line = reference_reader.next().trim();
         String[] fields = line.split(DELIM);
-
-        int item = Integer.parseInt(fields[0]);
-        String phrase = fields[1] + " ||| " + fields[2];
-
-        phrases.add(phrase);
-        if (!phrase_to_item.containsKey(phrase))
-          phrase_to_item.put(phrase, new ArrayList<Integer>());
-        phrase_to_item.get(phrase).add(item);
-        item_counts.put(item, 0);
+        reference_pairs.add(line);
+        sources.add(fields[1]);
       }
       reference_reader.close();
 
@@ -90,22 +78,34 @@ public class ParaphraseCoverage {
       }
       weights_reader.close();
 
-      PriorityQueue<ScoredParaphrase> paraphrases = new PriorityQueue<ScoredParaphrase>();
+      HashMap<String, Double> candidates = new HashMap<String, Double>();
 
       BufferedWriter rel_writer = null;
       if (relevant_file != null) rel_writer = FileManager.getWriter(relevant_file);
 
       LineReader reader = new LineReader(grammar_file);
       System.err.print("[");
-      int rule_count = 0;
+      int count = 0;
       while (reader.hasNext()) {
         String rule_line = reader.next().trim();
 
         String[] fields = rule_line.split(DELIM);
-        String candidate_phrase = fields[0] + " ||| " + fields[1];
 
-        if (!phrases.contains(candidate_phrase))
-          continue;
+        if (!fields[0].startsWith("[VB") && !fields[0].startsWith("[NN")
+            && !fields[0].startsWith("[JJ") && !fields[0].startsWith("[RB")
+            && (!fields[1].contains(",1]"))) continue;
+
+        String lhs = "[V]";
+        if (fields[0].startsWith("[NN")) lhs = "[N]";
+        if (fields[0].startsWith("[JJ")) lhs = "[A]";
+        // Questionable tag, but the synsets don't seem to contain any adverbs anyway.
+        if (fields[0].startsWith("[RB")) lhs = "[A]";
+
+        String source = fields[1];
+        String target = fields[2];
+
+        if (!sources.contains(source)) continue;
+
         if (rel_writer != null) rel_writer.write(rule_line + "\n");
 
         double score = 0;
@@ -116,70 +116,49 @@ public class ParaphraseCoverage {
             score += weights.get(parts[0]) * Double.parseDouble(parts[1]);
         }
 
-        if (++rule_count % 10000 == 0) System.err.print("-");
+        if (++count % 10000 == 0) System.err.print("-");
 
-        paraphrases.add(new ScoredParaphrase(candidate_phrase, fields[2], score));
+        String candidate = lhs + " ||| " + source + " ||| " + target;
+
+        if (!candidates.containsKey(candidate)) {
+          candidates.put(candidate, score);
+        } else {
+          double previous = candidates.get(candidate);
+          candidates.put(candidate, Math.max(score, previous));
+        }
       }
       System.err.println("]");
       reader.close();
       if (rel_writer != null) rel_writer.close();
 
-      int num_items = item_counts.keySet().size();
-      int num_covered = 0;
       int num_paraphrases = 0;
+      int num_correct = 0;
+      int num_references = reference_pairs.size();
 
-      for (ScoredParaphrase sp : paraphrases) {
-        for (int item : phrase_to_item.get(sp.key)) {
-          int count = item_counts.get(item);
-          if (count == 0) num_covered++;
-          item_counts.put(item, count + 1);
-          num_paraphrases++;
-        }
+      PriorityQueue<ScoredEntry> entries = new PriorityQueue<ScoredEntry>();
+      for (String p : candidates.keySet()) {
+        if (reference_pairs.contains(p)) num_correct++;
+        num_paraphrases++;
+        entries.add(new ScoredEntry(p, candidates.get(p)));
       }
 
-      System.err.println("Items:       " + num_items);
-      System.err.println("Covered:     " + num_covered);
+      System.err.println("References : " + num_references);
       System.err.println("Paraphrases: " + num_paraphrases);
+      System.err.println("Correct:     " + num_correct);
 
       BufferedWriter score_writer = FileManager.getWriter(output_file);
-      while (!paraphrases.isEmpty()) {
-        ScoredParaphrase sp = paraphrases.poll();
-        boolean print = false;
-        for (int item : phrase_to_item.get(sp.key)) {
-          int count = item_counts.get(item);
-          count--;
-          item_counts.put(item, count);
-          if (count == 0) {
-            num_covered--;
-            print = true;
-          }
+      while (!entries.isEmpty()) {
+        ScoredEntry e = entries.poll();
+        if (reference_pairs.contains(e.pair)) {
+          score_writer.write((num_correct / (double) num_references) + "\t"
+              + (num_correct / (double) num_paraphrases) + "\n");
+          num_correct--;
         }
-        if (print)
-          score_writer.write(sp.score + "\t" + (num_covered / (double) num_items) + "\t"
-              + (num_paraphrases / (double) num_covered) + "\n");
-        num_paraphrases -= phrase_to_item.get(sp.key).size();
+        num_paraphrases--;
       }
       score_writer.close();
     } catch (IOException e) {
       logger.severe(e.getMessage());
     }
-  }
-}
-
-
-class ScoredParaphrase implements Comparable<ScoredParaphrase> {
-  String key;
-  String paraphrase;
-  double score;
-
-  public ScoredParaphrase(String k, String p, double s) {
-    key = k;
-    paraphrase = p;
-    score = s;
-  }
-
-  @Override
-  public int compareTo(ScoredParaphrase that) {
-    return Double.compare(this.score, that.score);
   }
 }
