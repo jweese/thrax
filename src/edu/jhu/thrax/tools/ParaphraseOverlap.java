@@ -93,7 +93,7 @@ public class ParaphraseOverlap {
             score += weights.get(parts[0]) * Double.parseDouble(parts[1]);
         }
 
-        if (!rule_to_score.containsKey(rule)) {
+        if (rule_to_score.containsKey(rule)) {
           if (++rule_count % 10000 == 0) System.err.print("-");
 
           if (rule_to_score.get(rule) == null)
@@ -122,8 +122,9 @@ public class ParaphraseOverlap {
       int num_correct = matched.length;
       int num_paraphrases = matched.length + unmatched.length;
 
-      System.err.println("Matched: " + num_correct);
-      System.err.println("Unmatched: " + (num_references - num_correct));
+      System.err.println("References:  " + num_references);
+      System.err.println("Matched:     " + num_correct);
+      System.err.println("Unmatched:   " + (num_references - num_correct));
       System.err.println("Nonmatching: " + unmatched.length);
 
       Arrays.sort(matched);
