@@ -148,8 +148,7 @@ public class ParaphraseCoverage {
       BufferedWriter cand_writer = null;
       int bin_id = 0;
       if (judge) cand_writer = FileManager.getWriter(judgment_prefix + ".cand");
-//      double[] bins = {-25.0, -20.0, -15.0, -10.0, -5.0};
-      double[] bins = {-19.0, -15.0, -12.0, -8.0, -3.0};
+      double[] bins = {-24.0, -18.0, -10.0, -8.0, -5.0};
       double last_score = Double.NEGATIVE_INFINITY;
       Random rand = new Random();
 
