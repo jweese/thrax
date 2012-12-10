@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import edu.jhu.jerboa.util.FileManager;
@@ -26,6 +27,7 @@ public class ParaphraseCoverage {
     String weight_file = null;
     String output_file = null;
     String relevant_file = null;
+    String judgment_prefix = null;
 
     for (int i = 0; i < args.length; i++) {
       if ("-g".equals(args[i]) && (i < args.length - 1)) {
@@ -34,6 +36,8 @@ public class ParaphraseCoverage {
         reference_file = args[++i];
       } else if ("-v".equals(args[i]) && (i < args.length - 1)) {
         relevant_file = args[++i];
+      } else if ("-j".equals(args[i]) && (i < args.length - 1)) {
+        judgment_prefix = args[++i];
       } else if ("-w".equals(args[i]) && (i < args.length - 1)) {
         weight_file = args[++i];
       } else if ("-o".equals(args[i]) && (i < args.length - 1)) {
@@ -104,8 +108,7 @@ public class ParaphraseCoverage {
         String[] fields = rule_line.split(DELIM);
         String candidate_phrase = fields[0] + " ||| " + fields[1];
 
-        if (!phrases.contains(candidate_phrase))
-          continue;
+        if (!phrases.contains(candidate_phrase)) continue;
         if (rel_writer != null) rel_writer.write(rule_line + "\n");
 
         double score = 0;
@@ -141,6 +144,15 @@ public class ParaphraseCoverage {
       System.err.println("Covered:     " + num_covered);
       System.err.println("Paraphrases: " + num_paraphrases);
 
+      boolean judge = (judgment_prefix != null);
+      BufferedWriter cand_writer = null;
+      int bin_id = 0;
+      if (judge) cand_writer = FileManager.getWriter(judgment_prefix + ".cand");
+//      double[] bins = {-25.0, -20.0, -15.0, -10.0, -5.0};
+      double[] bins = {-19.0, -15.0, -12.0, -8.0, -3.0};
+      double last_score = Double.NEGATIVE_INFINITY;
+      Random rand = new Random();
+
       BufferedWriter score_writer = FileManager.getWriter(output_file);
       while (!paraphrases.isEmpty()) {
         ScoredParaphrase sp = paraphrases.poll();
@@ -154,11 +166,24 @@ public class ParaphraseCoverage {
             print = true;
           }
         }
+        if (judge && bin_id < bins.length && last_score < bins[bin_id] && sp.score >= bins[bin_id]) {
+          bin_id++;
+          logger.info("Sampling bin :" + bin_id);
+          
+          Object[] pps = paraphrases.toArray();
+          for (int i = 0; i < 200; i++) {
+            int cand = rand.nextInt(paraphrases.size());
+            cand_writer.write(((ScoredParaphrase) pps[cand]).key + " ||| "
+                + ((ScoredParaphrase) pps[cand]).paraphrase + "\n");
+          }
+        }
+        last_score = sp.score;
         if (print)
           score_writer.write(sp.score + "\t" + (num_covered / (double) num_items) + "\t"
               + (num_paraphrases / (double) num_covered) + "\n");
         num_paraphrases -= phrase_to_item.get(sp.key).size();
       }
+      if (judge) cand_writer.close();
       score_writer.close();
     } catch (IOException e) {
       logger.severe(e.getMessage());
