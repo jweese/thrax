@@ -89,87 +89,93 @@ public class SplitAndFilter {
         boolean phrasal = true;
         boolean drop = true;
 
-        String[] fields = rule_line.split(DELIM);
-        String[] source = fields[1].split("\\s+");
-        String[] target = fields[2].split("\\s+");
+        try {
+          String[] fields = rule_line.split(DELIM);
+          String[] source = fields[1].split("\\s+");
+          String[] target = fields[2].split("\\s+");
 
-        boolean self = fields[1].equals(fields[2]);
+          boolean self = fields[1].equals(fields[2]);
 
-        source_words.clear();
-        target_words.clear();
-        for (String word : source) {
-          if (word.startsWith("["))
-            phrasal = false;
-          else
-            source_words.add(word);
-        }
-        for (String word : target)
-          if (!word.startsWith("[")) target_words.add(word);
-
-        if (!self) {
-          HashSet<String> source_added = (HashSet<String>) source_words.clone();
-          HashSet<String> target_added = (HashSet<String>) target_words.clone();
-
-          source_added.removeAll(target_words);
-          target_added.removeAll(source_words);
-
-          for (String word : source_added)
-            if (!filter.contains(word))
-              drop = false;
+          source_words.clear();
+          target_words.clear();
+          for (String word : source) {
+            if (word.startsWith("["))
+              phrasal = false;
             else
-              stop_count.put(word, stop_count.get(word) + 1);
-          for (String word : target_added)
-            if (!filter.contains(word))
-              drop = false;
-            else
-              stop_count.put(word, stop_count.get(word) + 1);
-        } else {
-          drop = false;
-        }
-
-        // Dropped rule.
-        if (drop) {
-          stop_writer.write(rule_line);
-          stop_writer.newLine();
-          drop_count++;
-          continue;
-        }
-
-        // Lexical rule.
-        if (phrasal && source.length == 1 && target.length == 1) {
-          if (self) {
-            lex_self_writer.write(rule_line);
-            lex_self_writer.newLine();
-          } else {
-            lex_writer.write(rule_line);
-            lex_writer.newLine();
+              source_words.add(word);
           }
-          lex_count++;
-          continue;
-        }
+          for (String word : target)
+            if (!word.startsWith("[")) target_words.add(word);
 
-        // Phrasal rule.
-        if (phrasal) {
-          if (self) {
-            phr_self_writer.write(rule_line);
-            phr_self_writer.newLine();
+          if (!self) {
+            HashSet<String> source_added = (HashSet<String>) source_words.clone();
+            HashSet<String> target_added = (HashSet<String>) target_words.clone();
+
+            source_added.removeAll(target_words);
+            target_added.removeAll(source_words);
+
+            for (String word : source_added)
+              if (!filter.contains(word))
+                drop = false;
+              else
+                stop_count.put(word, stop_count.get(word) + 1);
+            for (String word : target_added)
+              if (!filter.contains(word))
+                drop = false;
+              else
+                stop_count.put(word, stop_count.get(word) + 1);
           } else {
-            phr_writer.write(rule_line);
-            phr_writer.newLine();
+            drop = false;
           }
-          phr_count++;
+
+          // Dropped rule.
+          if (drop) {
+            stop_writer.write(rule_line);
+            stop_writer.newLine();
+            drop_count++;
+            continue;
+          }
+
+          // Lexical rule.
+          if (phrasal && source.length == 1 && target.length == 1) {
+            if (self) {
+              lex_self_writer.write(rule_line);
+              lex_self_writer.newLine();
+            } else {
+              lex_writer.write(rule_line);
+              lex_writer.newLine();
+            }
+            lex_count++;
+            continue;
+          }
+
+          // Phrasal rule.
+          if (phrasal) {
+            if (self) {
+              phr_self_writer.write(rule_line);
+              phr_self_writer.newLine();
+            } else {
+              phr_writer.write(rule_line);
+              phr_writer.newLine();
+            }
+            phr_count++;
+            continue;
+          }
+
+          // Syntactic rule.
+          if (self) {
+            syn_self_writer.write(rule_line);
+            syn_self_writer.newLine();
+          } else {
+            syn_writer.write(rule_line);
+            syn_writer.newLine();
+          }
+          syn_count++;
+        } catch (Exception e) {
+          logger.warning(e.getMessage());
+          logger.warning(rule_line);
           continue;
         }
-
-        // Syntactic rule.
-        if (self) {
-          syn_self_writer.write(rule_line);
-          syn_self_writer.newLine();
-        } else {
-          syn_writer.write(rule_line);
-          syn_writer.newLine();
-        }
-        syn_count++;
       }
       reader.close();
 
