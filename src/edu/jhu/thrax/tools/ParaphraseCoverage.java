@@ -26,6 +26,9 @@ public class ParaphraseCoverage {
     String reference_file = null;
     String weight_file = null;
     String output_file = null;
+    
+    String score_file = null;
+    
     String relevant_file = null;
     String judgment_prefix = null;
 
@@ -36,6 +39,8 @@ public class ParaphraseCoverage {
         reference_file = args[++i];
       } else if ("-v".equals(args[i]) && (i < args.length - 1)) {
         relevant_file = args[++i];
+      } else if ("-s".equals(args[i]) && (i < args.length - 1)) {
+        score_file = args[++i];
       } else if ("-j".equals(args[i]) && (i < args.length - 1)) {
         judgment_prefix = args[++i];
       } else if ("-w".equals(args[i]) && (i < args.length - 1)) {
@@ -63,6 +68,7 @@ public class ParaphraseCoverage {
     }
 
     HashMap<String, List<Integer>> phrase_to_item = new HashMap<String, List<Integer>>();
+    HashMap<String, Double> cand_to_score = new HashMap<String, Double>();
     HashMap<Integer, Integer> item_counts = new HashMap<Integer, Integer>();
     HashSet<String> phrases = new HashSet<String>();
 
@@ -85,6 +91,34 @@ public class ParaphraseCoverage {
       }
       reference_reader.close();
 
+      LineReader score_reader = new LineReader(score_file);
+      HashMap<String, List<Integer>> cand_scores = new HashMap<String, List<Integer>>();
+      while (score_reader.hasNext()) {
+        String line = score_reader.next().trim();
+        String[] fields = line.split("\t");
+
+        int score = -1;
+        try {
+          score = Integer.parseInt(fields[0]);
+        } catch (Exception e) {
+          continue;
+        }
+        if (score < 1 || score > 5)
+          continue;
+        String candidate = fields[1];
+        if (!cand_scores.containsKey(candidate))
+          cand_scores.put(candidate, new ArrayList<Integer>());
+        cand_scores.get(candidate).add(score);
+      }
+      score_reader.close();
+      for (String candidate : cand_scores.keySet()) {
+        double sum = 0;
+        for (int s : cand_scores.get(candidate))
+          sum += s;
+        sum /= cand_scores.get(candidate).size();
+        cand_to_score.put(candidate, sum);
+      }
+      
       LineReader weights_reader = new LineReader(weight_file);
       while (weights_reader.hasNext()) {
         String line = weights_reader.next().trim();
@@ -131,7 +165,15 @@ public class ParaphraseCoverage {
       int num_covered = 0;
       int num_paraphrases = 0;
 
+      int score_sum = 0;
+      int score_count = 0;
+      
       for (ScoredParaphrase sp : paraphrases) {
+        if (cand_to_score.containsKey(sp.key + " ||| " + sp.paraphrase)) {
+          score_count++;
+          score_sum += cand_to_score.get(sp.key + " ||| " + sp.paraphrase); 
+        }
+          
         for (int item : phrase_to_item.get(sp.key)) {
           int count = item_counts.get(item);
           if (count == 0) num_covered++;
@@ -148,12 +190,13 @@ public class ParaphraseCoverage {
       BufferedWriter cand_writer = null;
       int bin_id = 0;
       if (judge) cand_writer = FileManager.getWriter(judgment_prefix + ".cand");
-      double[] bins = {-24.0, -18.0, -10.0, -8.0, -5.0};
+      double[] bins = {-24.0, -18.0, -12.0, -10.0, -7.0};
       double last_score = Double.NEGATIVE_INFINITY;
       Random rand = new Random();
 
       BufferedWriter score_writer = FileManager.getWriter(output_file);
       while (!paraphrases.isEmpty()) {
+        // Drop next paraphrase from consideration.
         ScoredParaphrase sp = paraphrases.poll();
         boolean print = false;
         for (int item : phrase_to_item.get(sp.key)) {
@@ -165,6 +208,13 @@ public class ParaphraseCoverage {
             print = true;
           }
         }
+        // Update average scores.
+        if (cand_to_score.containsKey(sp.key + " ||| " + sp.paraphrase)) {
+          score_count--;
+          score_sum -= cand_to_score.get(sp.key + " ||| " + sp.paraphrase);
+        }
+
+        // Sample paraphrases for judgements.
         if (judge && bin_id < bins.length && last_score < bins[bin_id] && sp.score >= bins[bin_id]) {
           bin_id++;
           logger.info("Sampling bin :" + bin_id);
@@ -177,9 +227,12 @@ public class ParaphraseCoverage {
           }
         }
         last_score = sp.score;
+        
+        // Print state for plotter.
         if (print)
           score_writer.write(sp.score + "\t" + (num_covered / (double) num_items) + "\t"
-              + (num_paraphrases / (double) num_covered) + "\n");
+              + (num_paraphrases / (double) num_covered) + 
+              (score_sum > 0 ? "\t" + (score_sum / (double) score_count) : "") + "\n");
         num_paraphrases -= phrase_to_item.get(sp.key).size();
       }
       if (judge) cand_writer.close();
