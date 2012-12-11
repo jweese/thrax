@@ -197,11 +197,14 @@ public class ParaphraseCoverage {
       boolean judge = (judgment_prefix != null);
       BufferedWriter cand_writer = null;
       int bin_id = 0;
-      if (judge) cand_writer = FileManager.getWriter(judgment_prefix + ".cand");
-      String[] points = sampling_points.split(":");
-      double[] bins = new double[points.length];
-      for (int i = 0; i < points.length; ++i)
-        bins[i] = Double.parseDouble(points[i]);
+      double[] bins = null;
+      if (judge) {
+        cand_writer = FileManager.getWriter(judgment_prefix + ".cand");
+        String[] points = sampling_points.split(":");
+        bins = new double[points.length];
+        for (int i = 0; i < points.length; ++i)
+          bins[i] = Double.parseDouble(points[i]);
+      }
       double last_score = Double.NEGATIVE_INFINITY;
       Random rand = new Random();
 
