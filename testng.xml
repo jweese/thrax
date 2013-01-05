@@ -7,6 +7,7 @@
     <test name="Datatypes">
         <packages>
             <package name="edu.jhu.thrax.datatypes"/>
+			<package name="edu.jhu.thrax.syntax"/>
         </packages>
     </test>
 
@@ -15,6 +16,12 @@
             <package name="edu.jhu.thrax.util.io"/>
         </packages>
     </test>
+
+	<test name="Extraction">
+		<packages>
+			<package name="edu.jhu.thrax.extraction"/>
+		</packages>
+	</test>
 
 </suite>
 

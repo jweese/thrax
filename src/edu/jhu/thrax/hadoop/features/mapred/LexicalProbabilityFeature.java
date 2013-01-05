@@ -69,7 +69,9 @@ public class LexicalProbabilityFeature extends MapReduceFeature
             String f2epath = workDir + "lexprobsf2e/part-*";
 
             TrieLexprobTable e2f = new TrieLexprobTable(conf, e2fpath);
+			context.progress();
             TrieLexprobTable f2e = new TrieLexprobTable(conf, f2epath);
+			context.progress();
 			table = new DoubleTrieTable(e2f, f2e);
         }
 
@@ -79,6 +81,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 current = new RuleWritable(key);
                 maxe2f = sourceGivenTarget(key);
                 maxf2e = targetGivenSource(key);
+				context.progress();
                 return;
             }
             if (!key.sameYield(current)) {
@@ -91,6 +94,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 current.set(key);
                 maxe2f = sourceGivenTarget(key);
                 maxf2e = targetGivenSource(key);
+				context.progress();
             }
 
             double sgt = sourceGivenTarget(key);
@@ -99,6 +103,7 @@ public class LexicalProbabilityFeature extends MapReduceFeature
                 maxe2f = sgt;
             if (tgs > maxf2e)
                 maxf2e = tgs;
+			context.progress();
         }
 
         protected void cleanup(Context context) throws IOException, InterruptedException

@@ -20,7 +20,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.File;
 
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 
 import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.io.LongWritable;
@@ -179,7 +179,7 @@ public class TestSetFilter
 
     public Pattern getPattern(String rule)
     {
-        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        String [] parts = rule.split(FormatUtils.DELIMITER_REGEX);
         if (parts.length != 4) {
             return null;
         }
@@ -196,7 +196,7 @@ public class TestSetFilter
 	 */
     public boolean inTestSet(String rule)
     {
-        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        String [] parts = rule.split(FormatUtils.DELIMITER_REGEX);
         if (parts.length != 4)
 			return false;
 
@@ -217,7 +217,7 @@ public class TestSetFilter
 
 	private boolean inTestSetFast(String rule) {
 
-		String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+		String [] parts = rule.split(FormatUtils.DELIMITER_REGEX);
 		String source = parts[1];
 
 		for (String chunk : source.split(NT_REGEX)) {
@@ -255,7 +255,7 @@ public class TestSetFilter
 
     private Set<Integer> getSentencesForRule(Map<String,Set<Integer>> sentencesByWord, String rule)
     {
-        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        String [] parts = rule.split(FormatUtils.DELIMITER_REGEX);
         if (parts.length != 4)
             return Collections.emptySet();
         String source = parts[1].trim();
@@ -280,7 +280,7 @@ public class TestSetFilter
 	 */
     private int hasAbstractSource(String rule)
     {
-        String [] parts = rule.split(ThraxConfig.DELIMITER_REGEX);
+        String [] parts = rule.split(FormatUtils.DELIMITER_REGEX);
         if (parts.length != 4)
             return 0;
         String source = parts[1].trim();

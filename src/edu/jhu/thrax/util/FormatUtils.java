@@ -7,13 +7,20 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 public class FormatUtils {
 
-	private static final String DELIM = String.format(" %s ",
-			ThraxConfig.DELIMITER);
+    /**
+     * Field delimiter.
+     */
+    public static final String DELIMITER = "|||";
+    /**
+     * Regular expression for the field delimiter.
+     */
+    public static final String DELIMITER_REGEX = "\\|\\|\\|";
+
+	private static final String DELIM = String.format(" %s ", DELIMITER);
 
 	public static boolean isNonterminal(String token) {
 		return (token.charAt(0) == '[')
@@ -91,10 +98,8 @@ public class FormatUtils {
 				throw new RuntimeException("Expecting either double or integer " +
 						"feature values.");
 			}
-			if (score.equals("0.00000") || score.equals("0")) {
-				if (sparse)
-					continue;
-				score = "0";
+			if (sparse && (score.equals("0") || score.equals("0.00000"))) {
+				continue;
 			}
 			if (label)
 				sb.append(String.format("%s=%s ", t, score));

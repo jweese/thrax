@@ -8,12 +8,12 @@ public class IntPair implements Comparable<IntPair> {
     /**
      * The first integer of the pair ("car").
      */
-    public int fst;
+    public final int fst;
 
     /**
      * The second integer of the pair ("cdr").
      */
-    public int snd;
+    public final int snd;
 
     /**
      * Constructor that sets the two ints of the pair.
@@ -28,15 +28,12 @@ public class IntPair implements Comparable<IntPair> {
     }
 
     /**
-     * Reverses this pair; that is, puts the second int first and the first
-     * int second.
+     * Create a new IntPair that is the reverse of this pair; that is, puts 
+	 * the second int first and the first int second.
      */
-    public void reverse()
+    public IntPair reverse()
     {
-        int tmp = fst;
-        fst = snd;
-        snd = tmp;
-        return;
+        return new IntPair(snd, fst);
     }
 
     /**
@@ -47,11 +44,10 @@ public class IntPair implements Comparable<IntPair> {
      * @param s a string in Berkeley aligner format
      * @return a new IntPair representing that string
      */
-    public static IntPair alignmentFormat(String s)
+    public static IntPair fromHyphenatedString(String s)
     {
         String [] nums = s.split("-");
         if (nums.length != 2) {
-            // throw an exception?
             return null;
         }
         return new IntPair(Integer.parseInt(nums[0]), Integer.parseInt(nums[1]));
@@ -79,10 +75,9 @@ public class IntPair implements Comparable<IntPair> {
         return this.fst - ip.fst;
     }
 
-    private static int PRIME = 37;
     public int hashCode()
     {
-        return fst * PRIME + snd;
+        return fst * 37 + snd;
     }
 
 }

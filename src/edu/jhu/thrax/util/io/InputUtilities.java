@@ -3,6 +3,11 @@ package edu.jhu.thrax.util.io;
 import java.util.ArrayList;
 import edu.jhu.thrax.util.exceptions.*;
 
+import edu.jhu.thrax.datatypes.Alignment;
+import edu.jhu.thrax.datatypes.ArrayAlignment;
+import edu.jhu.thrax.datatypes.AlignedSentencePair;
+import edu.jhu.thrax.util.FormatUtils;
+
 /**
  * Methods for validating user input. These should be used everywher user
  * input is received.
@@ -14,9 +19,9 @@ public class InputUtilities
      *
      * @param parse a representation of a parse tree (Penn treebank style)
      * @return an array of String giving the labels of the tree's leaves
-     * @throws MalformedParseException if the parse tree is not well-formed
+     * @throws MalformedInputException if the parse tree is not well-formed
      */
-    public static String [] parseYield(String parse) throws MalformedParseException
+    public static String [] parseYield(String parse) throws MalformedInputException
     {
         String trimmed = parse.trim();
         if (trimmed.equals(""))
@@ -34,7 +39,7 @@ public class InputUtilities
             }
             if (")".equals(t)) {
                 if (level == 0)
-                    throw new MalformedParseException(parse);
+                    throw new MalformedInputException("malformed parse");
                 level--;
             }
             else if (!expectNT)
@@ -42,7 +47,7 @@ public class InputUtilities
             expectNT = false;
         }
         if (level != 0)
-            throw new MalformedParseException(parse);
+            throw new MalformedInputException("malformed parse");
         return result.toArray(new String[result.size()]);
     }
 
@@ -66,5 +71,32 @@ public class InputUtilities
             return parseYield(trimmed);
         return trimmed.split("\\s+");
     }
+
+	public static AlignedSentencePair alignedSentencePair(String source, boolean sourceIsParsed, String target, boolean targetIsParsed, String al, boolean reverse) throws MalformedInputException
+	{
+		String [] sourceWords = getWords(source, sourceIsParsed);
+		String [] targetWords = getWords(target, targetIsParsed);
+		if (sourceWords.length == 0 || targetWords.length == 0)
+			throw new MalformedInputException("empty sentence");
+		Alignment alignment = ArrayAlignment.fromString(al.trim(), reverse);
+		if (reverse) {
+			if (!alignment.consistentWith(targetWords.length, sourceWords.length))
+				throw new MalformedInputException("inconsistent alignment");
+			return new AlignedSentencePair(targetWords, sourceWords, alignment);
+		}
+		else {
+			if (!alignment.consistentWith(sourceWords.length, targetWords.length))
+				throw new MalformedInputException("inconsistent alignment");
+			return new AlignedSentencePair(sourceWords, targetWords, alignment);
+		}
+	}
+
+	public static AlignedSentencePair alignedSentencePair(String line, boolean sourceIsParsed, boolean targetIsParsed, boolean reverse) throws MalformedInputException
+	{
+		String [] parts = line.split(FormatUtils.DELIMITER_REGEX);
+		if (parts.length < 3)
+			throw new MalformedInputException("not enough fields");
+		return alignedSentencePair(parts[0], sourceIsParsed, parts[1], targetIsParsed, parts[2], reverse);
+	}
 }
 
