@@ -230,13 +230,16 @@ public class TestSetFilter
   }
 
   private boolean inTestSetExact(String rule) {
-    Pattern pattern = getPattern(rule);
-    for (int i : getSentencesForRule(sentencesByWord, rule)) {
-      if (pattern.matcher(testSentences.get(i)).find()) {
-        return true;
+    if (inTestSetFast(rule)) {
+      Pattern pattern = getPattern(rule);
+      for (int i : getSentencesForRule(sentencesByWord, rule)) {
+        if (pattern.matcher(testSentences.get(i)).find()) {
+          return true;
+        }
       }
-    }
-    return hasAbstractSource(rule) > 1;
+      return hasAbstractSource(rule) > 1;
+    } 
+    return false;
   }
 
   private void addSentenceToWordHash(Map<String,Set<Integer>> sentencesByWord, String sentence, int index)
