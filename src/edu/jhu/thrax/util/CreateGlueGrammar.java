@@ -11,12 +11,16 @@ public class CreateGlueGrammar
 {
     private static HashSet<String> nts;
 
-    // [GOAL] ||| <s> ||| <s> ||| 0
     // [GOAL] ||| [GOAL,1] [X,2] ||| [GOAL,1] [X,2] ||| -1
     // [GOAL] ||| [GOAL,1] </s> ||| [GOAL,1] </s> ||| 0
+    // [GOAL] ||| <s> ||| <s> ||| 0
     private static final String RULE_START = "[%1$s] ||| <s> ||| <s> ||| 0";
     private static final String RULE_TWO = "[%1$s] ||| [%1$s,1] [%2$s,2] ||| [%1$s,1] [%2$s,2] ||| -1";
     private static final String RULE_END = "[%1$s] ||| [%1$s,1] </s> ||| [%1$s,1] </s> ||| 0";
+
+    // [GOAL] ||| <s> [X,1] </s> ||| <s> [X,1] </s> ||| 0
+    private static final String RULE_TOP = "[%1$s] ||| <s> [%2$s,1] </s> ||| <s> [%2$s,1] </s> ||| 0";
+
     private static String GOAL = "GOAL";
     private static boolean LABEL = false;
     private static String [] FEATURES;
@@ -43,9 +47,10 @@ public class CreateGlueGrammar
             nts.add(lhs);
         }
         System.out.println(String.format(RULE_START, GOAL));
-        for (String nt : nts) {
+        for (String nt : nts)
           System.out.println(String.format(RULE_TWO, GOAL, nt));
-        }
         System.out.println(String.format(RULE_END, GOAL));
+        for (String nt: nts) 
+          System.out.println(String.format(RULE_TOP, GOAL, nt));
     }
 }
