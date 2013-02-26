@@ -29,6 +29,7 @@ import edu.jhu.thrax.hadoop.jobs.Scheduler;
 import edu.jhu.thrax.hadoop.jobs.SchedulerException;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 import edu.jhu.thrax.util.ConfFileParser;
+import edu.jhu.thrax.util.FormatUtils;
 
 public class Thrax extends Configured implements Tool {
 	private Scheduler scheduler;
@@ -82,8 +83,8 @@ public class Thrax extends Configured implements Tool {
 	}
 
 	// Schedule all the jobs required for grammar extraction. We
-	// currently distinguish two grammar types: translation and
-	// paraphrasing.
+	// currently distinguish three modes: translation grammar extraction, 
+	// paraphrase grammar extraction, and collection of distributional signatures.
 	private synchronized void scheduleJobs() throws SchedulerException {
 		scheduler = new Scheduler(conf);
 
@@ -95,7 +96,7 @@ public class Thrax extends Configured implements Tool {
 			// Schedule rule extraction job.
 			scheduler.schedule(ExtractionJob.class);
 			// Extracting a translation grammar.
-			for (String feature : conf.get("thrax.features", "").split("\\s+")) {
+			for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
 				MapReduceFeature f = FeatureJobFactory.get(feature);
 				if (f != null) {
 					scheduler.schedule(f.getClass());

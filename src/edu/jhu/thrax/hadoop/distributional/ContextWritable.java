@@ -12,7 +12,7 @@ import org.apache.hadoop.io.Writable;
 
 import edu.jhu.jerboa.sim.SLSH;
 import edu.jhu.jerboa.sim.Signature;
-import edu.jhu.thrax.hadoop.datatypes.ArrayPrimitiveWritable;
+import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
 
 /**
  * A union-like writable that contains a set of context features.
@@ -24,7 +24,7 @@ public class ContextWritable implements Writable {
   public IntWritable strength;
   public BooleanWritable compacted;
   public MapWritable map;
-  public ArrayPrimitiveWritable sums;
+  public float[] sums;
 
   public ContextWritable() {
     this(false);
@@ -34,8 +34,9 @@ public class ContextWritable implements Writable {
     this.strength = new IntWritable(0);
     this.compacted = new BooleanWritable(compacted);
     if (compacted) {
+      // TODO: stupid initialization, double-check.
       this.map = null;
-      this.sums = new ArrayPrimitiveWritable(float.class);
+      this.sums = null;
     } else {
       this.map = new MapWritable();
       this.sums = null;
@@ -53,7 +54,7 @@ public class ContextWritable implements Writable {
     this.strength = new IntWritable(strength);
     this.compacted = new BooleanWritable(true);
     this.map = null;
-    this.sums = new ArrayPrimitiveWritable(sums);
+    this.sums = sums;
   }
 
   public void merge(ContextWritable that, SLSH slsh) {
@@ -84,8 +85,9 @@ public class ContextWritable implements Writable {
     }
     Signature this_signature = new Signature();
     Signature that_signature = new Signature();
-    this_signature.sums = (float[]) this.sums.get();
-    that_signature.sums = (float[]) that.sums.get();
+    // TODO: probably needs deep copy.
+    this_signature.sums = sums;
+    that_signature.sums = sums;
     slsh.updateSignature(this_signature, that_signature);
   }
 
@@ -98,7 +100,7 @@ public class ContextWritable implements Writable {
     }
     compacted.set(true);
     map = null;
-    sums = new ArrayPrimitiveWritable(signature.sums);
+    sums = signature.sums;
   }
 
   @Override
@@ -107,8 +109,7 @@ public class ContextWritable implements Writable {
     compacted.readFields(in);
     if (compacted.get()) {
       map = null;
-      if (sums == null) sums = new ArrayPrimitiveWritable(float.class);
-      sums.readFields(in);
+      sums = PrimitiveUtils.readFloatArray(in);
     } else {
       if (map == null) map = new MapWritable();
       map.readFields(in);
@@ -121,7 +122,7 @@ public class ContextWritable implements Writable {
     strength.write(out);
     compacted.write(out);
     if (compacted.get()) {
-      sums.write(out);
+      PrimitiveUtils.writeFloatArray(out, sums);
     } else {
       map.write(out);
     }

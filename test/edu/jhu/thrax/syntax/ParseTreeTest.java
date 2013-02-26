@@ -1,10 +1,10 @@
 package edu.jhu.thrax.syntax;
 
-import org.testng.annotations.Test;
-import org.testng.Assert;
-
 import java.util.Iterator;
 import java.util.List;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 public class ParseTreeTest
 {

@@ -1,12 +1,11 @@
 package edu.jhu.thrax.hadoop.jobs;
 
-import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.conf.Configuration;
-
-import java.util.Set;
-import java.util.HashSet;
-
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.mapreduce.Job;
 
 public abstract class ThraxJob {
 	public Job getJob(Configuration conf) throws IOException {

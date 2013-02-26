@@ -8,14 +8,12 @@ import java.util.HashMap;
 import java.util.logging.Logger;
 
 import edu.jhu.jerboa.util.FileManager;
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.io.LineReader;
 
 public class ParaphraseOverlap {
 
   private static final Logger logger = Logger.getLogger(ParaphraseOverlap.class.getName());
-
-  private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
 
   public static void main(String[] args) {
 
@@ -69,7 +67,7 @@ public class ParaphraseOverlap {
       while (weights_reader.hasNext()) {
         String line = weights_reader.next().trim();
         if (line.isEmpty()) continue;
-        String[] fields = line.split("\\s+");
+        String[] fields = FormatUtils.P_SPACE.split(line);
         weights.put(fields[0], Double.parseDouble(fields[1]));
       }
       weights_reader.close();
@@ -82,13 +80,13 @@ public class ParaphraseOverlap {
       while (reader.hasNext()) {
         String rule_line = reader.next().trim();
 
-        String[] fields = rule_line.split(DELIM);
+        String[] fields = FormatUtils.P_DELIM.split(rule_line);
         String rule = fields[0] + " ||| " + fields[1] + " ||| " + fields[2];
 
         double score = 0;
-        String[] features = fields[3].split("\\s+");
+        String[] features = FormatUtils.P_SPACE.split(fields[3]);
         for (String f : features) {
-          String[] parts = f.split("=");
+          String[] parts = FormatUtils.P_EQUAL.split(f);
           if (weights.containsKey(parts[0]))
             score += weights.get(parts[0]) * Double.parseDouble(parts[1]);
         }

@@ -1,13 +1,13 @@
 package edu.jhu.thrax.hadoop.features;
 
-import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import java.util.Map;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import java.util.Map;
+import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 public class WordCompressionRatioFeature implements SimpleFeature {
 	private static final Text LABEL = new Text("WordLogCR");

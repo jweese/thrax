@@ -7,19 +7,14 @@ import java.util.HashSet;
 import java.util.logging.Logger;
 
 import edu.jhu.jerboa.util.FileManager;
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.io.LineReader;
 
 public class SplitAndFilter {
 
   private static final Logger logger = Logger.getLogger(SplitAndFilter.class.getName());
 
-  private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
-
   public static void main(String[] args) {
-
-    boolean labeled = false;
-    boolean sparse = false;
 
     String grammar_file = null;
     String filter_file = null;
@@ -32,10 +27,6 @@ public class SplitAndFilter {
         filter_file = args[++i];
       } else if ("-o".equals(args[i]) && (i < args.length - 1)) {
         output_prefix = args[++i];
-      } else if ("-l".equals(args[i])) {
-        labeled = true;
-      } else if ("-s".equals(args[i])) {
-        sparse = true;
       }
     }
 
@@ -90,9 +81,9 @@ public class SplitAndFilter {
         boolean drop = true;
 
         try {
-          String[] fields = rule_line.split(DELIM);
-          String[] source = fields[1].split("\\s+");
-          String[] target = fields[2].split("\\s+");
+          String[] fields = FormatUtils.P_DELIM.split(rule_line);
+          String[] source = FormatUtils.P_SPACE.split(fields[1]);
+          String[] target = FormatUtils.P_SPACE.split(fields[2]);
 
           boolean self = fields[1].equals(fields[2]);
 

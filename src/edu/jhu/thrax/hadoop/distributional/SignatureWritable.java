@@ -11,36 +11,37 @@ import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.mapreduce.Partitioner;
 
 import edu.jhu.jerboa.sim.Signature;
-import edu.jhu.thrax.hadoop.datatypes.ArrayPrimitiveWritable;
+import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
 
 public class SignatureWritable implements WritableComparable<SignatureWritable> {
   public Text key;
-  public ArrayPrimitiveWritable bytes;
+  public byte[] bytes;
   public IntWritable strength;
 
   public SignatureWritable() {
     this.key = new Text();
-    this.bytes = new ArrayPrimitiveWritable(byte.class);
+    this.bytes = null;
     this.strength = new IntWritable();
   }
 
   public SignatureWritable(Text key, Signature signature, int strength) {
     this.key = new Text(key);
-    this.bytes = new ArrayPrimitiveWritable(signature.bytes);
+    // TODO: deep copy?
+    this.bytes = signature.bytes;
     this.strength = new IntWritable(strength);
   }
 
   @Override
   public void readFields(DataInput in) throws IOException {
     key.readFields(in);
-    bytes.readFields(in);
+    bytes = PrimitiveUtils.readByteArray(in);
     strength.readFields(in);
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
     key.write(out);
-    bytes.write(out);
+    PrimitiveUtils.writeByteArray(out, bytes);
     strength.write(out);
   }
 

@@ -6,14 +6,11 @@ import java.util.Scanner;
 import java.util.logging.Logger;
 
 import edu.jhu.jerboa.util.FileManager;
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.util.io.LineReader;
 
 public class JudgeParaphrases {
 
   private static final Logger logger = Logger.getLogger(JudgeParaphrases.class.getName());
-
-  private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
 
   public static void main(String[] args) {
 

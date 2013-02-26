@@ -1,6 +1,18 @@
 package edu.jhu.thrax.hadoop.jobs;
 
-import edu.jhu.thrax.hadoop.features.mapred.*;
+import edu.jhu.thrax.hadoop.features.mapred.InvariantLhsGivenTargetPhraseFeature;
+import edu.jhu.thrax.hadoop.features.mapred.InvariantTargetPhraseGivenLHSFeature;
+import edu.jhu.thrax.hadoop.features.mapred.LexicalProbabilityFeature;
+import edu.jhu.thrax.hadoop.features.mapred.LhsGivenSourcePhraseFeature;
+import edu.jhu.thrax.hadoop.features.mapred.LhsGivenTargetPhraseFeature;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.features.mapred.RarityPenaltyFeature;
+import edu.jhu.thrax.hadoop.features.mapred.SourcePhraseGivenLHSFeature;
+import edu.jhu.thrax.hadoop.features.mapred.SourcePhraseGivenTargetFeature;
+import edu.jhu.thrax.hadoop.features.mapred.SourcePhraseGivenTargetandLHSFeature;
+import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenLHSFeature;
+import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenSourceFeature;
+import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenSourceandLHSFeature;
 
 public class FeatureJobFactory {
 

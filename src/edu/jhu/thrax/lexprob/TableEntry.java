@@ -1,19 +1,18 @@
 package edu.jhu.thrax.lexprob;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.Text;
-import edu.jhu.thrax.hadoop.datatypes.TextPair;
+import org.apache.hadoop.io.LongWritable;
 
 public class TableEntry
 {
-    public final Text car;
-    public final Text cdr;
+    public final int car;
+    public final int cdr;
     public final double probability;
 
-    public TableEntry(TextPair tp, DoubleWritable d)
+    public TableEntry(LongWritable pair, DoubleWritable d)
     {
-        car = new Text(tp.fst);
-        cdr = new Text(tp.snd);
+        car = (int) (pair.get() >> 32);
+        cdr = (int) pair.get();
         probability = d.get();
     }
 
@@ -29,8 +28,8 @@ public class TableEntry
         if (!(o instanceof TableEntry))
             return false;
         TableEntry te = (TableEntry) o;
-        return car.equals(te.car)
-            && cdr.equals(te.cdr)
+        return car == te.car
+            && cdr == te.cdr
             && probability == te.probability;
     }
 }

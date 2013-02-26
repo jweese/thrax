@@ -8,14 +8,12 @@ import java.util.PriorityQueue;
 import java.util.logging.Logger;
 
 import edu.jhu.jerboa.util.FileManager;
-import edu.jhu.thrax.ThraxConfig;
+import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.io.LineReader;
 
 public class ParaphraseScore {
 
   private static final Logger logger = Logger.getLogger(ParaphraseScore.class.getName());
-
-  private static final String DELIM = String.format(" %s ", ThraxConfig.DELIMITER_REGEX);
 
   private static int unknown_source;
   private static int total;
@@ -70,7 +68,7 @@ public class ParaphraseScore {
       LineReader reference_reader = new LineReader(reference_file);
       while (reference_reader.hasNext()) {
         String line = reference_reader.next().trim();
-        String[] fields = line.split(DELIM);
+        String[] fields = FormatUtils.P_DELIM.split(line);
         if (reference_pairs.containsKey(line))
           reference_pairs.put(line, reference_pairs.get(line) + 1);
         else
@@ -83,7 +81,7 @@ public class ParaphraseScore {
       while (weights_reader.hasNext()) {
         String line = weights_reader.next().trim();
         if (line.isEmpty()) continue;
-        String[] fields = line.split("\\s+");
+        String[] fields = FormatUtils.P_SPACE.split(line);
         weights.put(fields[0], Double.parseDouble(fields[1]));
       }
       weights_reader.close();
@@ -99,13 +97,13 @@ public class ParaphraseScore {
       while (reader.hasNext()) {
         String rule_line = reader.next().trim();
 
-        String[] fields = rule_line.split(DELIM);
+        String[] fields = FormatUtils.P_DELIM.split(rule_line);
 
         if (!fields[1].startsWith("[") || !fields[1].endsWith("]") || !fields[2].startsWith("[")
             || !fields[2].endsWith("]")) continue;
 
-        String[] source_words = fields[1].split("\\s+");
-        String[] target_words = fields[2].split("\\s+");
+        String[] source_words = FormatUtils.P_SPACE.split(fields[1]);
+        String[] target_words = FormatUtils.P_SPACE.split(fields[2]);
 
         StringBuilder builder = new StringBuilder();
         for (int i = 0; i < source_words.length; ++i) {
@@ -134,7 +132,7 @@ public class ParaphraseScore {
         if (rel_writer != null) rel_writer.write(rule_line + "\n");
 
         double score = 0;
-        String[] features = fields[3].split("\\s+");
+        String[] features = FormatUtils.P_SPACE.split(fields[3]);
         for (String f : features) {
           String[] parts = f.split("=");
           if (weights.containsKey(parts[0]))

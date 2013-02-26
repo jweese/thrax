@@ -3,302 +3,174 @@ package edu.jhu.thrax.hadoop.datatypes;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.Arrays;
 
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.Partitioner;
 
+import edu.jhu.thrax.hadoop.comparators.FieldComparator;
+import edu.jhu.thrax.hadoop.comparators.PrimitiveArrayMarginalComparator;
+import edu.jhu.thrax.util.ArrayUtils;
 import edu.jhu.thrax.util.FormatUtils;
-import edu.jhu.thrax.hadoop.comparators.TextFieldComparator;
-import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
+import edu.jhu.thrax.util.Vocabulary;
 
-public class RuleWritable implements WritableComparable<RuleWritable>
-{
-    private static final String DELIM = String.format(" %s ", FormatUtils.DELIMITER);
-    public Text lhs;
-    public Text source;
-    public Text target;
-    public AlignmentArray f2e;
-    public AlignmentArray e2f;
-    public Text featureLabel;
-    public DoubleWritable featureScore;
+public class RuleWritable implements WritableComparable<RuleWritable> {
 
-    public RuleWritable()
-    {
-        lhs = new Text();
-        source = new Text();
-        target = new Text();
-        f2e = new AlignmentArray();
-        e2f = new AlignmentArray();
-        featureLabel = new Text();
-        featureScore = new DoubleWritable();
+  // TODO: make sure target stores NT ids, not just indices.
+  public int lhs;
+  public int[] source;
+  public int[] target;
+  public boolean monotone;
+
+  public RuleWritable() {
+    source = null;
+    target = null;
+  }
+
+  // TODO: this is broken.
+  @Deprecated
+  public RuleWritable(String r) {
+    String[] fields = FormatUtils.P_DELIM.split(r);
+    lhs = Vocabulary.id(fields[0]);
+    source = Vocabulary.addAll(fields[1]);
+    target = Vocabulary.addAll(fields[2]);
+    monotone = true;
+  }
+  
+  public RuleWritable(RuleWritable r) {
+    this.set(r);
+  }
+
+  public RuleWritable(int left, int[] src, int[] tgt, boolean m) {
+    lhs = left;
+    source = src;
+    target = tgt;
+    monotone = m;
+  }
+
+  public void set(RuleWritable r) {
+    // TODO: need to worry about these being changed?
+    lhs = r.lhs;
+    source = r.source;
+    target = r.target;
+    monotone = r.monotone;
+  }
+
+  public void write(DataOutput out) throws IOException {
+    out.writeBoolean(monotone);
+    WritableUtils.writeVInt(out, lhs);
+    PrimitiveUtils.writeIntArray(out, source);
+    PrimitiveUtils.writeIntArray(out, target);
+  }
+
+  public void readFields(DataInput in) throws IOException {
+    monotone = in.readBoolean();
+    lhs = WritableUtils.readVInt(in);
+    source = PrimitiveUtils.readIntArray(in);
+    target = PrimitiveUtils.readIntArray(in);
+  }
+
+  public boolean sameYield(RuleWritable r) {
+    return monotone == r.monotone && lhs == r.lhs && Arrays.equals(source, r.source)
+        && Arrays.equals(target, r.target);
+  }
+
+  public boolean equals(Object o) {
+    if (o instanceof RuleWritable) return sameYield((RuleWritable) o);
+    return false;
+  }
+
+  public int hashCode() {
+    int result = 163;
+    result = 37 * result + lhs;
+    result = 37 * result + (monotone ? 1 : 0);
+    result = 37 * result + Arrays.hashCode(source);
+    result = 37 * result + Arrays.hashCode(target);
+    return result;
+  }
+
+  public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(Vocabulary.word(lhs));
+    sb.append(FormatUtils.DELIM);
+    sb.append(Vocabulary.getWords(source));
+    sb.append(FormatUtils.DELIM);
+    // TODO: encode monotone.
+    sb.append(Vocabulary.getWords(target));
+    return sb.toString();
+  }
+
+  public int compareTo(RuleWritable that) {
+    int cmp = ArrayUtils.compareIntArrays(this.source, that.source);
+    if (cmp != 0) return cmp;
+    cmp = Integer.compare(this.lhs, that.lhs);
+    if (cmp != 0) return cmp;
+    cmp = ArrayUtils.compareIntArrays(this.target, that.target);
+    if (cmp != 0) return cmp;
+    cmp = Boolean.compare(this.monotone, that.monotone);
+    return cmp;
+  }
+
+  public static class YieldPartitioner extends Partitioner<RuleWritable, Writable> {
+    public int getPartition(RuleWritable key, Writable value, int numPartitions) {
+      return (hashCode() & Integer.MAX_VALUE) % numPartitions;
+    }
+  }
+
+  static {
+    WritableComparator.define(RuleWritable.class, new YieldComparator());
+  }
+
+  public static class YieldComparator extends WritableComparator {
+    private static final WritableComparator PARRAY_COMP = new PrimitiveArrayMarginalComparator();
+    private static final FieldComparator SOURCE_COMP = new FieldComparator(0, PARRAY_COMP);
+    private static final FieldComparator TARGET_COMP = new FieldComparator(1, PARRAY_COMP);
+
+    public YieldComparator() {
+      super(RuleWritable.class);
     }
 
-    public RuleWritable(RuleWritable r)
-    {
-        lhs = new Text(r.lhs);
-        source = new Text(r.source);
-        target = new Text(r.target);
-        f2e = new AlignmentArray(r.f2e.get());
-        e2f = new AlignmentArray(r.e2f.get());
-        featureLabel = new Text(r.featureLabel);
-        featureScore = new DoubleWritable(r.featureScore.get());
+    public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) {
+      try {
+        int h1 = WritableUtils.decodeVIntSize(b1[s1 + 1]) + 1;
+        int h2 = WritableUtils.decodeVIntSize(b2[s2 + 1]) + 1;
+        int cmp = SOURCE_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
+        if (cmp != 0) return cmp;
+
+        int lhs1 = WritableComparator.readVInt(b1, s1 + 1);
+        int lhs2 = WritableComparator.readVInt(b2, s2 + 1);
+        cmp = Integer.compare(lhs1, lhs2);
+        if (cmp != 0) return cmp;
+
+        cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
+        if (cmp != 0) return cmp;
+        
+        // Comparing encoded monotone flag. 
+        return Byte.compare(b1[s1], b2[s2]);
+      } catch (IOException e) {
+        throw new IllegalArgumentException(e);
+      }
     }
+  }
 
-    public RuleWritable(String rule_string)
-    {
-        String [] parts = rule_string.split(FormatUtils.DELIMITER_REGEX);
-        lhs = new Text(parts[0].trim());
-        source = new Text(parts[1].trim());
-        target = new Text(parts[2].trim());
-        f2e = new AlignmentArray();
-        e2f = new AlignmentArray();
-        featureLabel = new Text();
-        featureScore = new DoubleWritable();
+  public static class LHSPartitioner extends Partitioner<RuleWritable, Writable> {
+    public int getPartition(RuleWritable key, Writable value, int numPartitions) {
+      return (key.lhs & Integer.MAX_VALUE) % numPartitions;
     }
+  }
 
-    public RuleWritable(Text left, Text src, Text tgt, AlignmentArray sa, AlignmentArray ta)
-    {
-        lhs = left;
-        source = src;
-        target = tgt;
-        f2e = sa;
-        e2f = ta;
-        featureLabel = new Text();
-        featureScore = new DoubleWritable();
+  public static class SourcePartitioner extends Partitioner<RuleWritable, Writable> {
+    public int getPartition(RuleWritable key, Writable value, int numPartitions) {
+      return (Arrays.hashCode(key.source) & Integer.MAX_VALUE) % numPartitions;
     }
+  }
 
-    public void set(RuleWritable r)
-    {
-        lhs.set(r.lhs);
-        source.set(r.source);
-        target.set(r.target);
-        f2e.set(r.f2e.get());
-        e2f.set(r.e2f.get());
+  public static class TargetPartitioner extends Partitioner<RuleWritable, Writable> {
+    public int getPartition(RuleWritable key, Writable value, int numPartitions) {
+      return (Arrays.hashCode(key.target) & Integer.MAX_VALUE) % numPartitions;
     }
-
-    public void write(DataOutput out) throws IOException
-    {
-        lhs.write(out);
-        source.write(out);
-        target.write(out);
-        f2e.write(out);
-        e2f.write(out);
-        featureLabel.write(out);
-        featureScore.write(out);
-    }
-
-    public void readFields(DataInput in) throws IOException
-    {
-        lhs.readFields(in);
-        source.readFields(in);
-        target.readFields(in);
-        f2e.readFields(in);
-        e2f.readFields(in);
-        featureLabel.readFields(in);
-        featureScore.readFields(in);
-    }
-
-    public boolean sameYield(RuleWritable r)
-    {
-        return lhs.equals(r.lhs) &&
-               source.equals(r.source) &&
-               target.equals(r.target);
-    }
-
-    public boolean equals(Object o)
-    {
-        if (o instanceof RuleWritable) {
-            RuleWritable that = (RuleWritable) o;
-            return lhs.equals(that.lhs) &&
-                   source.equals(that.source) &&
-                   target.equals(that.target) &&
-                   f2e.equals(that.f2e) &&
-                   e2f.equals(that.e2f) &&
-                   featureLabel.equals(that.featureLabel) &&
-                   featureScore.equals(that.featureScore);
-        }
-        return false;
-    }
-
-    public int hashCode()
-    {
-        int result = 163;
-        result = 37 * result + lhs.hashCode();
-        result = 37 * result + source.hashCode();
-        result = 37 * result + target.hashCode();
-        result = 37 * result + f2e.hashCode();
-        result = 37 * result + e2f.hashCode();
-        result = 37 * result + featureLabel.hashCode();
-        result = 37 * result + featureScore.hashCode();
-        return result;
-    }
-
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-        sb.append(lhs.toString());
-        sb.append(DELIM);
-        sb.append(source.toString());
-        sb.append(DELIM);
-        sb.append(target.toString());
-        return sb.toString();
-    }
-
-    public int compareTo(RuleWritable that)
-    {
-        int cmp = lhs.compareTo(that.lhs);
-        if (cmp != 0)
-            return cmp;
-        cmp = source.compareTo(that.source);
-        if (cmp != 0)
-            return cmp;
-        cmp = target.compareTo(that.target);
-        if (cmp != 0)
-            return cmp;
-        cmp = f2e.compareTo(that.f2e);
-        if (cmp != 0)
-            return cmp;
-        cmp = e2f.compareTo(that.e2f);
-        if (cmp != 0)
-            return cmp;
-        cmp = featureLabel.compareTo(that.featureLabel);
-        if (cmp != 0)
-            return cmp;
-        return featureScore.compareTo(that.featureScore);
-    }
-
-    public static class YieldAndAlignmentComparator extends WritableComparator
-    {
-        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
-        private static final AlignmentArray.Comparator AA_COMPARATOR = new AlignmentArray.Comparator();
-        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
-        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
-        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, TEXT_COMPARATOR);
-
-        public YieldAndAlignmentComparator()
-        {
-            super(RuleWritable.class);
-        }
-
-        public int compare(byte [] b1, int s1, int l1,
-                           byte [] b2, int s2, int l2)
-        {
-            try {
-                int cmp = LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                cmp = TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                int start1 = TARGET_COMPARATOR.fieldEndIndex(b1, s1);
-                int start2 = TARGET_COMPARATOR.fieldEndIndex(b2, s2);
-                int len1 = AA_COMPARATOR.encodedLength(b1, start1);
-                int len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                if (cmp != 0)
-                    return cmp;
-                start1 += len1;
-                start2 += len2;
-                len1 = AA_COMPARATOR.encodedLength(b1, start1);
-                len2 = AA_COMPARATOR.encodedLength(b2, start2);
-                cmp = AA_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-                if (cmp != 0)
-                    return cmp;
-                start1 += len1;
-                start2 += len2;
-                len1 = WritableUtils.decodeVIntSize(b1[start1]) + readVInt(b1, start1);
-                len2 = WritableUtils.decodeVIntSize(b2[start2]) + readVInt(b2, start2);
-                return TEXT_COMPARATOR.compare(b1, start1, len1, b2, start2, len2);
-
-            }
-            catch (IOException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-    }
-
-    public static class YieldPartitioner extends Partitioner<RuleWritable, Writable>
-    {
-        public int getPartition(RuleWritable key, Writable value, int numPartitions)
-        {
-            int hash = 163;
-            hash = 37 * hash + key.lhs.hashCode();
-            hash = 37 * hash + key.source.hashCode();
-            hash = 37 * hash + key.target.hashCode();
-            return (hash & Integer.MAX_VALUE) % numPartitions;
-        }
-    }
-
-    static {
-        WritableComparator.define(RuleWritable.class, new YieldAndAlignmentComparator());
-    }
-
-    public static class YieldComparator extends WritableComparator
-    {
-        private static final Text.Comparator TEXT_COMPARATOR = new Text.Comparator();
-        private static final TextFieldComparator LHS_COMPARATOR = new TextFieldComparator(0, TEXT_COMPARATOR);
-        private static final TextFieldComparator SOURCE_COMPARATOR = new TextFieldComparator(1, TEXT_COMPARATOR);
-        private static final TextFieldComparator TARGET_COMPARATOR = new TextFieldComparator(2, TEXT_COMPARATOR);
-
-        public YieldComparator()
-        {
-            super(RuleWritable.class);
-        }
-
-        public int compare(byte [] b1, int s1, int l1,
-                           byte [] b2, int s2, int l2)
-        {
-            try {
-                int cmp = LHS_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                cmp = SOURCE_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-                if (cmp != 0) {
-                    return cmp;
-                }
-                return TARGET_COMPARATOR.compare(b1, s1, l1, b2, s2, l2);
-            }
-            catch (IOException e) {
-                throw new IllegalArgumentException(e);
-            }
-        }
-    }
-
-    public static class LHSPartitioner extends Partitioner<RuleWritable, Writable>
-    {
-        public int getPartition(RuleWritable key, Writable value, int numPartitions)
-        {
-            return (key.lhs.hashCode() & Integer.MAX_VALUE) % numPartitions;
-        }
-    }
-
-
-    public static class SourcePartitioner extends Partitioner<RuleWritable, Writable>
-    {
-        public int getPartition(RuleWritable key, Writable value, int numPartitions)
-        {
-            return (key.source.hashCode() & Integer.MAX_VALUE) % numPartitions;
-        }
-    }
-
-    public static class TargetPartitioner extends Partitioner<RuleWritable, Writable>
-    {
-        public int getPartition(RuleWritable key, Writable value, int numPartitions)
-        {
-            return (key.target.hashCode() & Integer.MAX_VALUE) % numPartitions;
-        }
-    }
+  }
 }
-

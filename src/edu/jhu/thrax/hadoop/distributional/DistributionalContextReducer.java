@@ -31,7 +31,8 @@ public class DistributionalContextReducer
     if (!reduced.compacted.get()) reduced.compact(slsh);
     if (reduced.strength.get() >= minCount) {
       Signature reduced_signature = new Signature();
-      reduced_signature.sums = (float[]) reduced.sums.get();
+      // TODO: double-check need for deep copy?
+      reduced_signature.sums = reduced.sums;
       slsh.buildSignature(reduced_signature, false);
       context.write(new SignatureWritable(key, reduced_signature, reduced.strength.get()),
           NullWritable.get());

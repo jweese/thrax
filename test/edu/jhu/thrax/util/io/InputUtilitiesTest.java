@@ -1,10 +1,10 @@
 package edu.jhu.thrax.util.io;
 
-import org.testng.annotations.Test;
 import org.testng.Assert;
-import edu.jhu.thrax.util.exceptions.MalformedInputException;
+import org.testng.annotations.Test;
 
 import edu.jhu.thrax.datatypes.AlignedSentencePair;
+import edu.jhu.thrax.util.exceptions.MalformedInputException;
 
 public class InputUtilitiesTest
 {

@@ -2,18 +2,18 @@ package edu.jhu.thrax.extraction;
 
 public class ManualSpanLabeler implements SpanLabeler
 {
-    private final String [] labels;
-	private final String defaultLabel;
+    private final int [] labels;
+	private final int defaultLabel;
     private final int sentenceLength;
 
-    public ManualSpanLabeler(String [] ls, String def)
+    public ManualSpanLabeler(int[] ls, int def)
     {
 		labels = ls;
 		defaultLabel = def;
 		sentenceLength = getSentenceLength(labels.length);
     }
 
-    public String getLabel(int from, int to)
+    public int getLabel(int from, int to)
     {
         int idx = getLabelIndex(from, to, sentenceLength);
         if (idx >= labels.length || idx < 0) {
@@ -31,7 +31,7 @@ public class ManualSpanLabeler implements SpanLabeler
         // 0 labels => sentence length 0
         // 1 label => 1
         // 3 labels => 2
-        // T_n labels => n, where T_n is the nth traingle number
+        // T_n labels => n, where T_n is the nth triangle number
         int result = 0;
         int triangle = 0;
         while (triangle != numLabels) {

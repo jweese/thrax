@@ -11,7 +11,6 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-import edu.jhu.thrax.ThraxConfig;
 import edu.jhu.thrax.syntax.LatticeArray;
 import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.Vocabulary;
@@ -139,21 +138,21 @@ public class ContextPhraseExtractor {
     try {
       input = StringEscapeUtils.unescapeXml(input);
 
-      String[] inputs = input.split(ThraxConfig.DELIMITER_REGEX);
+      String[] inputs = FormatUtils.P_DELIM.split(input);
       if (inputs.length < 6) throw new NotEnoughFieldsException();
 
       parse = new LatticeArray(inputs[0].trim(), true);
-      lemma = inputs[1].trim().toLowerCase().split("\\s+");
+      lemma = FormatUtils.P_SPACE.split(inputs[1].trim().toLowerCase());
 
       size = lemma.length;
       if (size != parse.size()) throw new MalformedInputException();
 
-      String[] ner_entries = inputs[2].trim().toLowerCase().split("\\s+");
+      String[] ner_entries = FormatUtils.P_SPACE.split(inputs[2].trim().toLowerCase());
       ner = new String[ner_entries.length];
       if (ner.length != size)
         throw new MalformedInputException("NER: " + ner.length + " vs. Size: " + size);
       for (int i = 0; i < ner_entries.length; ++i)
-        ner[i] = ner_entries[i].split("/")[1];
+        ner[i] = FormatUtils.P_SLASH.split(ner_entries[i])[1];
 
       generateAllGramFeatures();
 
@@ -251,11 +250,11 @@ public class ContextPhraseExtractor {
     for (int c : ccg) {
       String label = Vocabulary.word(c);
       if (label.contains("/")) {
-        String[] parts = label.split("/");
+        String[] parts = FormatUtils.P_SLASH.split(label);
         cp.addFeature(R + SYN + "pref" + G + parts[0]);
         cp.addFeature(R + SYN + "miss" + G + parts[1]);
       } else {
-        String[] parts = label.split("\\\\");
+        String[] parts = FormatUtils.P_BSLASH.split(label);
         cp.addFeature(L + SYN + "suff" + G + parts[0]);
         cp.addFeature(L + SYN + "miss" + G + parts[1]);
       }
@@ -267,7 +266,7 @@ public class ContextPhraseExtractor {
     for (int i = 0; i < size; i++)
       gov[i] = new ArrayList<Dependency>();
 
-    String[] entries = input.trim().split("\\s+");
+    String[] entries = FormatUtils.P_SPACE.split(input.trim());
     for (String entry : entries) {
       Dependency d = new Dependency(entry, use_lex, use_lem, use_pos, use_ner);
       if (d.gov >= 0) gov[d.gov].add(d);
@@ -342,7 +341,7 @@ public class ContextPhraseExtractor {
 
     public Dependency(String entry, boolean use_lex, boolean use_lem, boolean use_pos,
         boolean use_ner) {
-      String[] fields = entry.split("-");
+      String[] fields = FormatUtils.P_DASH.split(entry);
       gov = Integer.parseInt(fields[1]) - 1;
       dep = Integer.parseInt(fields[0]) - 1;
       type = fields[2];

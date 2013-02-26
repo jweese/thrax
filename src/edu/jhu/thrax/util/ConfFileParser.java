@@ -1,10 +1,9 @@
 package edu.jhu.thrax.util;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Scanner;
-
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
 
 import edu.jhu.thrax.util.amazon.AmazonConfigFileLoader;
 
@@ -46,6 +45,7 @@ public class ConfFileParser {
             if (keyVal.length > 1)
                 opts.put(keyVal[0].trim(), keyVal[1].trim());
         }
+        scanner.close();
         return opts;
     }
 }

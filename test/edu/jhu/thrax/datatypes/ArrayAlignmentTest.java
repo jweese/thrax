@@ -1,10 +1,9 @@
 package edu.jhu.thrax.datatypes;
 
-import org.testng.annotations.Test;
-import org.testng.annotations.Parameters;
-import org.testng.Assert;
-
 import java.util.Iterator;
+
+import org.testng.Assert;
+import org.testng.annotations.Test;
 
 public class ArrayAlignmentTest
 {

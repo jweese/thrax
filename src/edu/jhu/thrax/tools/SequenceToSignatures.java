@@ -27,7 +27,7 @@ public class SequenceToSignatures {
     out.flush();
     out.close();
   }
-  
+
   private static void usage() {
     System.err.println("Usage: java edu.jhu.thrax.tools.SequenceToSignature");
     System.err.println("\t -i sequence_file \t Sequence file from Thrax signature extraction.");
@@ -45,7 +45,7 @@ public class SequenceToSignatures {
     if (args.length < 4 || args[0].toLowerCase().equals("-h")) {
       usage();
       System.exit(0);
-    }    
+    }
     for (int i = 0; i < args.length; i++) {
       if ("-i".equals(args[i]) && (i < args.length - 1)) {
         input_file = args[++i];
@@ -99,8 +99,7 @@ public class SequenceToSignatures {
           strengths_writer.close();
         }
         String chunk_tag = String.format("-%05d", chunk_id);
-        writeConfig(output_prefix + chunk_tag + ".config",
-            ((byte[]) signature.bytes.get()).length * 8);
+        writeConfig(output_prefix + chunk_tag + ".config", signature.bytes.length * 8);
         bytes_out = new FileOutputStream(output_prefix + chunk_tag + ".bytes");
         strengths_writer = FileManager.getWriter(output_prefix + chunk_tag + ".strengths.gz");
         keys_writer = FileManager.getWriter(output_prefix + chunk_tag + ".keys.gz");
@@ -108,7 +107,7 @@ public class SequenceToSignatures {
       }
       keys_writer.write(signature.key.toString());
       keys_writer.newLine();
-      bytes_out.write((byte[]) signature.bytes.get());
+      bytes_out.write(signature.bytes);
       strengths_writer.write("" + signature.strength.get());
       strengths_writer.newLine();
       key_count++;

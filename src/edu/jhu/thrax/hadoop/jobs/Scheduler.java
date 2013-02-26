@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 
+import edu.jhu.thrax.util.FormatUtils;
+
 public class Scheduler
 {
 		private HashSet<String> faked;
@@ -18,7 +20,7 @@ public class Scheduler
     		
     		String faked_line = config.get("thrax.fake");
     		if (faked_line != null) {
-    			String[] faked_jobs = faked_line.split("\\s+");
+    			String[] faked_jobs = FormatUtils.P_SPACE.split(faked_line);
     			for (String faked_job : faked_jobs)
     				faked.add(faked_job);
     		}

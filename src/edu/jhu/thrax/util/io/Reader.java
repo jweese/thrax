@@ -17,8 +17,8 @@
  */
 package edu.jhu.thrax.util.io;
 
-import java.util.Iterator;
 import java.io.IOException;
+import java.util.Iterator;
 
 /**
  * Common interface for Reader type objects.

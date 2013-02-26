@@ -1,22 +1,23 @@
 package edu.jhu.thrax.hadoop.jobs;
 
 import java.io.IOException;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
-import org.apache.hadoop.io.NullWritable;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.FileSystem;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.hadoop.output.*;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.output.OutputReducer;
+import edu.jhu.thrax.util.FormatUtils;
 
 public class OutputJob extends ThraxJob
 {
@@ -48,7 +49,7 @@ public class OutputJob extends ThraxJob
         int numReducers = conf.getInt("thrax.reducers", 4);
         job.setNumReduceTasks(numReducers);
 
-        for (String feature : conf.get("thrax.features", "").split("\\s+")) {
+        for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
             if (FeatureJobFactory.get(feature) instanceof MapReduceFeature) {
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
             }

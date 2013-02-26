@@ -3,6 +3,8 @@ package edu.jhu.thrax.hadoop.features;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.jhu.thrax.util.FormatUtils;
+
 public class SimpleFeatureFactory {
 
 	public static SimpleFeature get(String name) {
@@ -22,8 +24,6 @@ public class SimpleFeatureFactory {
 			return new SourceWordCounterFeature();
 		else if (name.equals("target-word-count"))
 			return new TargetWordCounterFeature();
-		else if (name.equals("unaligned-count"))
-			return new UnalignedWordCounterFeature();
 		else if (name.equals("source-terminals-without-target"))
 			return new ConsumeSourceTerminalsFeature();
 		else if (name.equals("target-terminals-without-source"))
@@ -47,7 +47,7 @@ public class SimpleFeatureFactory {
 	}
 
 	public static List<SimpleFeature> getAll(String names) {
-		String[] feature_names = names.split("\\s+|,");
+		String[] feature_names = FormatUtils.P_COMMA_OR_SPACE.split(names);
 		List<SimpleFeature> features = new ArrayList<SimpleFeature>();
 
 		for (String feature_name : feature_names) {

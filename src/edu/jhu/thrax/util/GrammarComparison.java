@@ -1,16 +1,15 @@
 package edu.jhu.thrax.util;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Scanner;
-import java.util.zip.GZIPInputStream;
-
-import java.io.PrintStream;
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.zip.GZIPInputStream;
 
 
 public class GrammarComparison {
@@ -81,6 +80,7 @@ public class GrammarComparison {
             String rule = line.substring(0, line.lastIndexOf(SEPARATOR));
             ret.add(rule);
         }
+        scanner.close();
         return ret;
     }
 }

@@ -1,5 +1,7 @@
 package edu.jhu.thrax.datatypes;
 
+import edu.jhu.thrax.util.FormatUtils;
+
 /**
  * A class that represents a pair of integers.
  */
@@ -46,7 +48,7 @@ public class IntPair implements Comparable<IntPair> {
      */
     public static IntPair fromHyphenatedString(String s)
     {
-        String [] nums = s.split("-");
+        String [] nums = FormatUtils.P_DASH.split(s);
         if (nums.length != 2) {
             return null;
         }

@@ -173,7 +173,7 @@ public class PhrasePair
         return result;
     }
 
-	public String getLabel(SpanLabeler labeler, boolean useSource)
+	public int getLabel(SpanLabeler labeler, boolean useSource)
 	{
 		if (useSource)
 			return labeler.getLabel(sourceStart, sourceEnd);
