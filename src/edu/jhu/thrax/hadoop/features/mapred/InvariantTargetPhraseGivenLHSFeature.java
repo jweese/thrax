@@ -16,6 +16,7 @@ import edu.jhu.thrax.hadoop.comparators.FieldComparator;
 import edu.jhu.thrax.hadoop.comparators.PrimitiveArrayMarginalComparator;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
+import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.FormatUtils;
 
@@ -135,7 +136,7 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
 
         int lhs1 = WritableComparator.readVInt(b1, s1 + 1);
         int lhs2 = WritableComparator.readVInt(b2, s2 + 1);
-        int cmp = Integer.compare(lhs1, lhs2);
+        int cmp = PrimitiveUtils.compare(lhs1, lhs2);
         if (cmp != 0) return cmp;
 
         cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);

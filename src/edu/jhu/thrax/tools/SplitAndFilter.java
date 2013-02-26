@@ -14,6 +14,7 @@ public class SplitAndFilter {
 
   private static final Logger logger = Logger.getLogger(SplitAndFilter.class.getName());
 
+  @SuppressWarnings("unchecked")
   public static void main(String[] args) {
 
     String grammar_file = null;

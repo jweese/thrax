@@ -10,6 +10,7 @@ import java.util.Queue;
 import java.util.logging.Logger;
 
 import edu.jhu.jerboa.util.FileManager;
+import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
 import edu.jhu.thrax.syntax.LatticeArray;
 import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.util.exceptions.MalformedParseException;
@@ -162,7 +163,7 @@ class Span implements Comparable<Span> {
 
   @Override
   public int compareTo(Span that) {
-    return Integer.compare(this.f, that.f);
+    return PrimitiveUtils.compare(this.f, that.f);
   }
 
   public boolean suffix(Span that) {

@@ -106,11 +106,11 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
   public int compareTo(RuleWritable that) {
     int cmp = ArrayUtils.compareIntArrays(this.source, that.source);
     if (cmp != 0) return cmp;
-    cmp = Integer.compare(this.lhs, that.lhs);
+    cmp = PrimitiveUtils.compare(this.lhs, that.lhs);
     if (cmp != 0) return cmp;
     cmp = ArrayUtils.compareIntArrays(this.target, that.target);
     if (cmp != 0) return cmp;
-    cmp = Boolean.compare(this.monotone, that.monotone);
+    cmp = PrimitiveUtils.compare(this.monotone, that.monotone);
     return cmp;
   }
 
@@ -142,14 +142,14 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
 
         int lhs1 = WritableComparator.readVInt(b1, s1 + 1);
         int lhs2 = WritableComparator.readVInt(b2, s2 + 1);
-        cmp = Integer.compare(lhs1, lhs2);
+        cmp = PrimitiveUtils.compare(lhs1, lhs2);
         if (cmp != 0) return cmp;
 
         cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
         if (cmp != 0) return cmp;
         
         // Comparing encoded monotone flag. 
-        return Byte.compare(b1[s1], b2[s2]);
+        return PrimitiveUtils.compare(b1[s1], b2[s2]);
       } catch (IOException e) {
         throw new IllegalArgumentException(e);
       }

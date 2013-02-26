@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
  * @version 1.0.2
  * 
  */
+@SuppressWarnings("fallthrough")
 public final class MurmurHash {
 
   private final static String ENCODING = "UTF-16";

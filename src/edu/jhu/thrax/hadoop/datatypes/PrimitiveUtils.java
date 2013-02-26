@@ -13,11 +13,23 @@ import org.apache.hadoop.io.WritableUtils;
  * read/write calls.
  */
 public final class PrimitiveUtils {
-  
+
   // TODO: use vint write method instead of new object
   // TODO: re-add variable-length stuff
-  
+
   public static final int MARGINAL_ID = 0;
+
+  public static final int compare(byte a, byte b) {
+    return a - b;
+  }
+
+  public static final int compare(int a, int b) {
+    return a - b;
+  }
+  
+  public static final int compare(boolean a, boolean b) {
+    return (a == b ? 0 : (a ? 1 : -1));
+  }
 
   public static final void writeBooleanArray(DataOutput out, boolean[] array) throws IOException {
     WritableUtils.writeVInt(out, array.length);
