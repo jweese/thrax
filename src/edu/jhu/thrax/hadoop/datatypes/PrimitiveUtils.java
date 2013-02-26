@@ -14,7 +14,6 @@ import org.apache.hadoop.io.WritableUtils;
  */
 public final class PrimitiveUtils {
 
-  // TODO: use vint write method instead of new object
   // TODO: re-add variable-length stuff
 
   public static final int MARGINAL_ID = 0;
