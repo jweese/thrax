@@ -8,15 +8,16 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.mapreduce.Job;
 
 public abstract class ThraxJob {
-	public Job getJob(Configuration conf) throws IOException {
-		return new Job(conf);
-	}
 
-	public Set<Class<? extends ThraxJob>> getPrerequisites() {
-		return new HashSet<Class<? extends ThraxJob>>();
-	}
+  public Job getJob(Configuration conf) throws IOException {
+    return new Job(conf);
+  }
 
-	public abstract String getName();
+  public Set<Class<? extends ThraxJob>> getPrerequisites() {
+    return new HashSet<Class<? extends ThraxJob>>();
+  }
 
-	public abstract String getOutputSuffix();
+  public abstract String getName();
+
+  public abstract String getOutputSuffix();
 }

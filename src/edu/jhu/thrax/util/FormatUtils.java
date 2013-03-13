@@ -54,12 +54,7 @@ public class FormatUtils {
   }
 
   public static String markup(String nt, int index) {
-    return "[" + nt + "," + index + "]";
-  }
-
-
-  public static String zeroNonterminalIndices(String input) {
-    return input.replaceAll(",[12]\\]", ",0]");
+    return nt.substring(0, nt.length() - 1) + "," + index + "]";
   }
 
   public static boolean isMonotonic(String input) {
@@ -105,23 +100,39 @@ public class FormatUtils {
     StringBuilder sb = new StringBuilder();
     sb.append(Vocabulary.word(r.lhs));
     sb.append(DELIM);
-    sb.append(Vocabulary.getWords(r.source));
+    int n = 1;
+    for (int i = 0; i < r.source.length; ++i) {
+      if (i != 0) sb.append(" ");
+      if (Vocabulary.nt(r.source[i])) 
+         sb.append(markup(Vocabulary.word(r.source[i]), n++));
+      else
+        sb.append(Vocabulary.word(r.source[i]));
+    }
     sb.append(DELIM);
-    sb.append(Vocabulary.getWords(r.target));
+    n = (r.monotone ? 1 : 2);
+    for (int i = 0; i < r.target.length; ++i) {
+      if (i != 0) sb.append(" ");
+      if (Vocabulary.nt(r.target[i])) 
+         sb.append(markup(Vocabulary.word(r.target[i]), (r.monotone ? n++ : n--)));
+      else
+        sb.append(Vocabulary.word(r.target[i]));
+    }
+
     sb.append(DELIM);
     for (Text t : fs.keySet()) {
       String score;
-      if (fs.get(t) instanceof DoubleWritable) {
+      Writable val = fs.get(t);
+      if (val instanceof DoubleWritable) {
         score = String.format("%.5f", ((DoubleWritable) fs.get(t)).get());
-      } else if (fs.get(t) instanceof IntWritable) {
+        if (sparse && Double.parseDouble(score) == 0) continue;
+      } else if (val instanceof IntWritable) {
         score = String.format("%d", ((IntWritable) fs.get(t)).get());
-      } else if (fs.get(t) instanceof Text) {
+        if (sparse && Integer.parseInt(score) == 0) continue;
+      } else if (val instanceof Text) {
         score = ((Text) fs.get(t)).toString();
       } else {
         throw new RuntimeException("Expecting double, integer, or string feature values.");
       }
-      if (sparse && (score.equals("0") || score.equals("0.00000"))) continue;
-
       if (label)
         sb.append(String.format("%s=%s ", t, score));
       else

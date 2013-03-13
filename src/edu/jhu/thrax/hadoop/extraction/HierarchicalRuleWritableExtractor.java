@@ -46,7 +46,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     reverse = conf.getBoolean("thrax.reverse", false);
     // TODO: this configuration key needs a more general name now
     sourceLabels = !conf.getBoolean("thrax.target-is-samt-syntax", true);
-    defaultLabel = Vocabulary.id(conf.get("thrax.default-nt", "X"));
+    defaultLabel = Vocabulary.id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
     allowDefaultLHSOnNonlexicalRules = conf.getBoolean("thrax.allow-nonlexical-x", true);
     extractor = getExtractor(conf);
   }
@@ -86,9 +86,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     for (HierarchicalRule r : rules) {
       RuleWritable rule = toRuleWritable(r, labeler, source, target);
       Annotation annotation = annotateRule(r, labeler, source, target, alignment);
-      if (rule != null) {
-        result.add(new AnnotatedRule(rule, annotation));
-      }
+      if (rule != null) result.add(new AnnotatedRule(rule, annotation));
     }
     return result;
   }
@@ -99,17 +97,16 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     int[] src = r.sourceSide(source, spanLabeler, sourceLabels);
     int[] tgt = r.targetSide(target, spanLabeler, sourceLabels);
     if (!isValidLabeling(lhs, src, tgt)) return null;
-    return new RuleWritable(lhs, src, tgt, r.monotonic());
+    RuleWritable rw = new RuleWritable(lhs, src, tgt, r.monotonic());
+    return rw;
   }
 
-  @SuppressWarnings("static-method")
-  private Annotation annotateRule(HierarchicalRule r, SpanLabeler spanLabeler, int[] source,
+  private static Annotation annotateRule(HierarchicalRule r, SpanLabeler spanLabeler, int[] source,
       int[] target, Alignment alignment) {
-    // TODO: this should be handling extraction-time features.
+    // TODO: this should be handling extraction-time annotation features.
     Annotation annotation =
-        new Annotation(new AlignmentWritable(r.compactTargetAlignment(alignment)),
-            new AlignmentWritable(r.compactSourceAlignment(alignment)));
-
+        new Annotation(new AlignmentWritable(r.compactSourceAlignment(alignment)),
+            new AlignmentWritable(r.compactTargetAlignment(alignment)));
     return annotation;
   }
 

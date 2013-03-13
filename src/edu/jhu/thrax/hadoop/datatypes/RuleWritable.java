@@ -19,7 +19,6 @@ import edu.jhu.thrax.util.Vocabulary;
 
 public class RuleWritable implements WritableComparable<RuleWritable> {
 
-  // TODO: make sure target stores NT ids, not just indices.
   public int lhs;
   public int[] source;
   public int[] target;
@@ -39,7 +38,7 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
     target = Vocabulary.addAll(fields[2]);
     monotone = true;
   }
-  
+
   public RuleWritable(RuleWritable r) {
     this.set(r);
   }
@@ -52,10 +51,9 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
   }
 
   public void set(RuleWritable r) {
-    // TODO: need to worry about these being changed?
     lhs = r.lhs;
-    source = r.source;
-    target = r.target;
+    source = Arrays.copyOf(r.source, r.source.length);
+    target = Arrays.copyOf(r.target, r.target.length);
     monotone = r.monotone;
   }
 
@@ -96,10 +94,23 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
     StringBuilder sb = new StringBuilder();
     sb.append(Vocabulary.word(lhs));
     sb.append(FormatUtils.DELIM);
-    sb.append(Vocabulary.getWords(source));
+    int n = 1;
+    for (int i = 0; i < source.length; ++i) {
+      if (i != 0) sb.append(" ");
+      if (Vocabulary.nt(source[i]))
+        sb.append(FormatUtils.markup(Vocabulary.word(source[i]), n++));
+      else
+        sb.append(Vocabulary.word(source[i]));
+    }
     sb.append(FormatUtils.DELIM);
-    // TODO: encode monotone.
-    sb.append(Vocabulary.getWords(target));
+    n = (monotone ? 1 : 2);
+    for (int i = 0; i < target.length; ++i) {
+      if (i != 0) sb.append(" ");
+      if (Vocabulary.nt(target[i]))
+        sb.append(FormatUtils.markup(Vocabulary.word(target[i]), (monotone ? n++ : n--)));
+      else
+        sb.append(Vocabulary.word(target[i]));
+    }
     return sb.toString();
   }
 
@@ -137,6 +148,7 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
       try {
         int h1 = WritableUtils.decodeVIntSize(b1[s1 + 1]) + 1;
         int h2 = WritableUtils.decodeVIntSize(b2[s2 + 1]) + 1;
+
         int cmp = SOURCE_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
         if (cmp != 0) return cmp;
 
@@ -147,8 +159,8 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
 
         cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
         if (cmp != 0) return cmp;
-        
-        // Comparing encoded monotone flag. 
+
+        // Comparing encoded monotone flag.
         return PrimitiveUtils.compare(b1[s1], b2[s2]);
       } catch (IOException e) {
         throw new IllegalArgumentException(e);
@@ -168,6 +180,7 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
     }
   }
 
+  // TODO: ensure that monotone doesn't need to be factored in here. (it does.)
   public static class TargetPartitioner extends Partitioner<RuleWritable, Writable> {
     public int getPartition(RuleWritable key, Writable value, int numPartitions) {
       return (Arrays.hashCode(key.target) & Integer.MAX_VALUE) % numPartitions;

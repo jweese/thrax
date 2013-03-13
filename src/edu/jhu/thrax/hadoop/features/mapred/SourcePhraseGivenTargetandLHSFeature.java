@@ -15,7 +15,6 @@ import org.apache.hadoop.mapreduce.Reducer;
 
 import edu.jhu.thrax.hadoop.comparators.FieldComparator;
 import edu.jhu.thrax.hadoop.comparators.PrimitiveArrayMarginalComparator;
-import edu.jhu.thrax.hadoop.comparators.TextMarginalComparator;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
@@ -57,13 +56,13 @@ public class SourcePhraseGivenTargetandLHSFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private static final Text NAME = new Text("p(f|e,LHS)");
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      if (key.source.equals(TextMarginalComparator.MARGINAL)) {
+      if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // we only get here if it is the very first time we saw the LHS
         // and target combination
         marginal = 0;
@@ -78,7 +77,7 @@ public class SourcePhraseGivenTargetandLHSFeature extends MapReduceFeature {
         count += x.get();
       }
       DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
-      context.write(key, new FeaturePair<DoubleWritable>(NAME, prob));
+      context.write(key, new FeaturePair(NAME, prob));
     }
   }
 

@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -57,7 +56,7 @@ public abstract class AnnotationFeatureJob extends ThraxJob {
   }
 
   public class Reduce
-      extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair<Writable>> {
+      extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair> {
 
     private List<AnnotationFeature> features;
 
@@ -70,7 +69,7 @@ public abstract class AnnotationFeatureJob extends ThraxJob {
         throws IOException, InterruptedException {
       for (Annotation annotation : values) {
         for (AnnotationFeature f : features) {
-          context.write(key, new FeaturePair<Writable>(f.getName(), f.score(key, annotation)));
+          context.write(key, new FeaturePair(f.getName(), f.score(key, annotation)));
         }
       }
     }

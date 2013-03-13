@@ -18,9 +18,7 @@ public class ExtractionMapper extends Mapper<LongWritable, Text, RuleWritable, A
     Configuration conf = context.getConfiguration();
     String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
     Vocabulary.read(conf, vocabulary_path);
-    
-    // TODO: static initializer call for what annotations ExtractionStuff carries would go here.
-
+    // TODO: static initializer call for what Annotation actually carries would go here.
     extractor = RuleWritableExtractorFactory.create(context);
     if (extractor == null) {
       System.err.println("WARNING: could not create rule extractor as configured!");
@@ -30,9 +28,8 @@ public class ExtractionMapper extends Mapper<LongWritable, Text, RuleWritable, A
   protected void map(LongWritable key, Text value, Context context) throws IOException,
       InterruptedException {
     if (extractor == null) return;
-    for (AnnotatedRule ar : extractor.extract(value)) {
+    for (AnnotatedRule ar : extractor.extract(value))
       context.write(ar.rule, ar.annotation);
-    }
     context.progress();
   }
 }

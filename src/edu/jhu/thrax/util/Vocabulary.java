@@ -95,21 +95,24 @@ public class Vocabulary {
    * @throws IOException
    */
   public static boolean read(Configuration conf, String file) throws IOException {
-    FileSystem file_system = FileSystem.get(URI.create(file), conf);
-    SequenceFile.Reader reader = new SequenceFile.Reader(file_system, new Path(file), conf);
-    clear();
-    Text h_token = new Text();
-    IntWritable h_id = new IntWritable();
-    while (reader.next(h_token, h_id)) {
-      int id = h_id.get();
-      String token = h_token.toString();
-      if (id != Math.abs(id(token))) {
-        reader.close();
-        return false;
+    synchronized (lock) {
+      FileSystem file_system = FileSystem.get(URI.create(file), conf);
+      SequenceFile.Reader reader = new SequenceFile.Reader(file_system, new Path(file), conf);
+      clear();
+      Text h_token = new Text();
+      IntWritable h_id = new IntWritable();
+      while (reader.next(h_id, h_token)) {
+        int id = h_id.get();
+        String token = h_token.toString();
+        if (id != Math.abs(id(token))) {
+          System.err.println("MISMATCH: " + id + "\t" + Vocabulary.word(id) + "\t" + token);
+          reader.close();
+          return false;
+        }
       }
+      reader.close();
+      return true;
     }
-    reader.close();
-    return true;
   }
 
   public static void write(String file_name) throws IOException {

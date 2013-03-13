@@ -9,6 +9,7 @@ import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparator;
+import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -32,6 +33,10 @@ public class LexicalProbabilityFeature extends MapReduceFeature {
     return "lexprob";
   }
 
+  public Class<? extends Reducer> combinerClass() {
+    return Reducer.class;
+  }
+
   public Class<? extends Mapper> mapperClass() {
     return Mapper.class;
   }
@@ -44,12 +49,16 @@ public class LexicalProbabilityFeature extends MapReduceFeature {
     return RuleWritable.YieldPartitioner.class;
   }
 
-  public Class<? extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair<DoubleWritable>>> reducerClass() {
+  public Class<? extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair>> reducerClass() {
     return Reduce.class;
   }
 
-  private static class Reduce
-      extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair<DoubleWritable>> {
+  protected void setMapOutputFormat(Job job) {
+    job.setMapOutputKeyClass(RuleWritable.class);
+    job.setMapOutputValueClass(Annotation.class);
+  }
+
+  private static class Reduce extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair> {
 
     private LexicalProbabilityTable table;
 
@@ -60,6 +69,10 @@ public class LexicalProbabilityFeature extends MapReduceFeature {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+
+      Vocabulary.read(conf, vocabulary_path);
+
       String workDir = conf.getRaw("thrax.work-dir");
       String e2fpath = workDir + "lexprobse2f/part-*";
       String f2epath = workDir + "lexprobsf2e/part-*";
@@ -73,80 +86,72 @@ public class LexicalProbabilityFeature extends MapReduceFeature {
 
     protected void reduce(RuleWritable key, Iterable<Annotation> values, Context context)
         throws IOException, InterruptedException {
-      // TODO: check for multiple maps? shouldn't happen.
       for (Annotation annotation : values) {
-        double sgt = sourceGivenTarget(key, annotation.e2f());
-        double tgs = targetGivenSource(key, annotation.f2e());
-        context.write(key, new FeaturePair<DoubleWritable>(SGT_LABEL, new DoubleWritable(-sgt)));
-        context.write(key, new FeaturePair<DoubleWritable>(TGS_LABEL, new DoubleWritable(-tgs)));
-        context.progress();
+        double sgt = sourceGivenTarget(key, annotation.f2e());
+        double tgs = targetGivenSource(key, annotation.e2f());
+        context.write(key, new FeaturePair(SGT_LABEL, new DoubleWritable(-sgt)));
+        context.write(key, new FeaturePair(TGS_LABEL, new DoubleWritable(-tgs)));
       }
+      context.progress();
     }
 
-    private double sourceGivenTarget(RuleWritable rule, AlignmentWritable e2f) {
-      byte[] points = e2f.points;
-      int[] source = rule.source;
-      int[] target = rule.target;
-
-      int prev = -1;
-      int n = points.length / 2;
-      int m = 0;
-      double total = 0, prob = 0;
-      for (int i = 0; i < n; ++i) {
-        int e = points[2 * i];
-        int f = points[2 * i + 1];
-        if (e != prev && prev != -1) {
-          total += Math.log(prob / (double) m);
-          prob = 0;
-          m = 0;
-          continue;
-        }
-        m++;
-        double p = table.logpSourceGivenTarget(source[f], target[e]);
-        if (p < 0) {
-          System.err.printf("WARNING: could not read lexprob p(%s|%s)\n",
-              Vocabulary.word(source[f]), Vocabulary.word(target[e]));
-          prob += DEFAULT_PROB;
-        } else {
-          prob += p;
-        }
-        prev = e;
-      }
-      return total;
-    }
-
-    private double targetGivenSource(RuleWritable rule, AlignmentWritable f2e) {
+    private double sourceGivenTarget(RuleWritable rule, AlignmentWritable f2e) {
       byte[] points = f2e.points;
       int[] source = rule.source;
       int[] target = rule.target;
 
+      double total = 0, prob = 0;
       int prev = -1;
       int n = points.length / 2;
       int m = 0;
-      double total = 0, prob = 0;
       for (int i = 0; i < n; ++i) {
         int f = points[2 * i];
         int e = points[2 * i + 1];
-        if (e != prev && prev != -1) {
-          total += Math.log(prob / (double) m);
+        if (f != prev && prev != -1) {
+          total += Math.log(prob) - Math.log(m);
           prob = 0;
           m = 0;
-          continue;
         }
+        prev = f;
         m++;
-        double p = table.logpTargetGivenSource(target[e], source[f]);
-        if (p < 0) {
+        double p = table.logpSourceGivenTarget(source[f], target[e]);
+        prob += (p < 0 ? DEFAULT_PROB : p);
+        if (p < 0)
           System.err.printf("WARNING: could not read lexprob p(%s|%s)\n",
               Vocabulary.word(source[f]), Vocabulary.word(target[e]));
-          prob += DEFAULT_PROB;
-        } else {
-          prob += p;
-        }
-        prev = e;
       }
+      total += Math.log(prob) - Math.log(m);
       return total;
     }
 
+    private double targetGivenSource(RuleWritable rule, AlignmentWritable e2f) {
+      byte[] points = e2f.points;
+      int[] source = rule.source;
+      int[] target = rule.target;
+
+      double total = 0, prob = 0;
+      int prev = -1;
+      int n = points.length / 2;
+      int m = 0;
+      for (int i = 0; i < n; ++i) {
+        int e = points[2 * i];
+        int f = points[2 * i + 1];
+        if (e != prev && prev != -1) {
+          total += Math.log(prob) - Math.log(m);
+          prob = 0;
+          m = 0;
+        }
+        prev = e;
+        m++;
+        double p = table.logpTargetGivenSource(source[f], target[e]);
+        prob += (p < 0 ? DEFAULT_PROB : p);
+        if (p <= 0)
+          System.err.printf("WARNING: could not read lexprob p(%s|%s)\n",
+              Vocabulary.word(target[e]), Vocabulary.word(source[f]));
+      }
+      total += Math.log(prob) - Math.log(m);
+      return total;
+    }
   }
 
   public Set<Class<? extends ThraxJob>> getPrerequisites() {

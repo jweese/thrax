@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -44,9 +45,11 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
   private static class Map extends Mapper<RuleWritable, Annotation, RuleWritable, IntWritable> {
     protected void map(RuleWritable key, Annotation value, Context context)
         throws IOException, InterruptedException {
-      RuleWritable marginal = new RuleWritable(key);
+      RuleWritable marginal = new RuleWritable();
       marginal.lhs = PrimitiveUtils.MARGINAL_ID;
       marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
+      marginal.target = key.target;
+      marginal.monotone = key.monotone;
 
       IntWritable count = new IntWritable(value.count());
 
@@ -56,13 +59,14 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private static final Text NAME = new Text("p(f|e)");
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      if (key.source.equals(PrimitiveArrayMarginalComparator.MARGINAL)) {
+      
+      if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         marginal = 0;
         for (IntWritable x : values)
           marginal += x.get();
@@ -75,7 +79,7 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
         count += x.get();
 
       DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
-      context.write(key, new FeaturePair<DoubleWritable>(NAME, prob));
+      context.write(key, new FeaturePair(NAME, prob));
     }
 
   }

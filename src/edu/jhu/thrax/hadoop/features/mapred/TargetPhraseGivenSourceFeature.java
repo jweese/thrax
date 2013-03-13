@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -57,13 +58,13 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private static final Text NAME = new Text("p(e|f)");
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      if (key.target.equals(PrimitiveArrayMarginalComparator.MARGINAL)) {
+      if (Arrays.equals(key.target, PrimitiveArrayMarginalComparator.MARGINAL)) {
         marginal = 0;
         for (IntWritable x : values)
           marginal += x.get();
@@ -76,7 +77,7 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
         count += x.get();
 
       DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
-      context.write(key, new FeaturePair<DoubleWritable>(NAME, prob));
+      context.write(key, new FeaturePair(NAME, prob));
     }
 
   }

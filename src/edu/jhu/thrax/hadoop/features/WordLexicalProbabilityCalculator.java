@@ -24,12 +24,13 @@ import org.apache.hadoop.util.ToolRunner;
 import edu.jhu.thrax.datatypes.AlignedSentencePair;
 import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.hadoop.jobs.WordLexprobJob;
+import edu.jhu.thrax.util.Vocabulary;
 import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.util.io.InputUtilities;
 
 public class WordLexicalProbabilityCalculator extends Configured implements Tool {
-  public static final int UNALIGNED = 0xFFFFFFFF;
-  public static final int MARGINAL = 0x00000000;
+  public static final long UNALIGNED = 0x00000000FFFFFFFFL;
+  public static final long MARGINAL = 0x0000000000000000L;
 
   public static class Map extends Mapper<LongWritable, Text, LongWritable, IntWritable> {
     private HashMap<Long, Integer> counts = new HashMap<Long, Integer>();
@@ -40,11 +41,12 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
+
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+      Vocabulary.read(conf, vocabulary_path);
+
       sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
       targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
-      // TODO: Drop this backwards compatibility hack.
-      if (conf.get("thrax.english-is-parsed") != null)
-        targetParsed = conf.getBoolean("thrax.english-is-parsed", false);
       reverse = conf.getBoolean("thrax.reverse", false);
       sourceGivenTarget = conf.getBoolean(WordLexprobJob.SOURCE_GIVEN_TARGET, false);
     }
@@ -68,50 +70,63 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
 
       for (int i = 0; i < source.length; i++) {
         int src = source[i];
-        long marginal = ((long) src << 32) | MARGINAL;
+        long marginal = ((long) src << 32) + MARGINAL;
+
         if (alignment.sourceIndexIsAligned(i)) {
-          Iterator<Integer> targetIndices = alignment.targetIndicesAlignedTo(i);
-          while (targetIndices.hasNext()) {
-            int tgt = target[targetIndices.next()];
-            long pair = ((long) src << 32) | tgt;
+          Iterator<Integer> target_indices = alignment.targetIndicesAlignedTo(i);
+          int num_words = 0;
+          while (target_indices.hasNext()) {
+            int tgt = target[target_indices.next()];
+            long pair = ((long) src << 32) + tgt;
+
             counts.put(pair, counts.containsKey(pair) ? counts.get(pair) + 1 : 1);
+            num_words++;
           }
-          int numWords = alignment.numTargetWordsAlignedTo(i);
           counts.put(marginal, counts.containsKey(marginal)
-              ? counts.get(marginal) + numWords
-              : numWords);
+              ? counts.get(marginal) + num_words
+              : num_words);
         } else {
-          long pair = ((long) src << 32) | UNALIGNED;
+          long pair = ((long) src << 32) + UNALIGNED;
           counts.put(pair, counts.containsKey(pair) ? counts.get(pair) + 1 : 1);
           counts.put(marginal, counts.containsKey(marginal) ? counts.get(marginal) + 1 : 1);
         }
       }
 
-      for (long pair : counts.keySet()) {
+      for (long pair : counts.keySet())
         context.write(new LongWritable(pair), new IntWritable(counts.get(pair)));
-      }
     }
   }
 
   public static class Reduce
       extends Reducer<LongWritable, IntWritable, LongWritable, DoubleWritable> {
-    private int current;
+    private int current = -1;
     private int marginalCount;
+
+    protected void setup(Context context) throws IOException, InterruptedException {
+      Configuration conf = context.getConfiguration();
+
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+      Vocabulary.read(conf, vocabulary_path);
+    }
 
     protected void reduce(LongWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       long pair = key.get();
-      int first = (int) (pair >> 32);
-      int second = (int) pair;
-      if (first == current) {
-        if (second == MARGINAL) return;
-        current = first;
+      int src = (int) (pair >> 32);
+      int tgt = (int) pair;
+
+      // TODO: is this relevant?
+      if (tgt < 0) tgt = Vocabulary.getUnknownId();
+
+      if (src != current) {
+        if (tgt != MARGINAL) throw new RuntimeException("Sorting something before marginal.");
+        current = src;
         marginalCount = 0;
         for (IntWritable x : values)
           marginalCount += x.get();
         return;
       }
-      // control only gets here if we are using the same marginal
+      // Control only gets here if we are using the same marginal
       int my_count = 0;
       for (IntWritable x : values)
         my_count += x.get();
@@ -125,6 +140,7 @@ public class WordLexicalProbabilityCalculator extends Configured implements Tool
     }
   }
 
+  // TODO: is this still useful/operational?
   public int run(String[] argv) throws Exception {
     String f2eOut;
     String e2fOut;

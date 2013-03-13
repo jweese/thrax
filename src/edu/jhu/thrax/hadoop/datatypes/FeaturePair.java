@@ -7,18 +7,18 @@ import java.io.IOException;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
-public class FeaturePair<V extends Writable> implements Writable {
+public class FeaturePair implements Writable {
   public Text key;
-  public V val;
+  public FeatureValue val;
 
   public FeaturePair() {
     key = new Text();
-    val = null;
+    val = new FeatureValue();
   }
 
-  public FeaturePair(Text k, V v) {
+  public FeaturePair(Text k, Writable v) {
     key = k;
-    val = v;
+    val = new FeatureValue(v);
   }
 
   public void write(DataOutput out) throws IOException {
@@ -36,8 +36,8 @@ public class FeaturePair<V extends Writable> implements Writable {
   }
 
   public boolean equals(Object o) {
-    if (o instanceof FeaturePair<?>) {
-      FeaturePair<?> that = (FeaturePair<?>) o;
+    if (o instanceof FeaturePair) {
+      FeaturePair that = (FeaturePair) o;
       return key.equals(that.key) && val.equals(that.val);
     }
     return false;

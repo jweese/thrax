@@ -2,6 +2,7 @@ package edu.jhu.thrax.hadoop.paraphrasing;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +58,7 @@ public class PivotingReducer extends Reducer<RuleWritable, MapWritable, RuleWrit
 
   protected void reduce(RuleWritable key, Iterable<MapWritable> values, Context context)
       throws IOException, InterruptedException {
-    if (currentLhs == 0 || !(key.lhs == currentLhs && key.source.equals(currentSrc))) {
+    if (currentLhs == 0 || !(key.lhs == currentLhs && Arrays.equals(key.source, currentSrc))) {
       if (currentLhs != 0) pivotAll(context);
       currentLhs = key.lhs;
       currentSrc = key.source;

@@ -1,5 +1,6 @@
 package edu.jhu.thrax.hadoop.features;
 
+import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.hadoop.io.IntWritable;
@@ -15,7 +16,7 @@ public class IdentityFeature implements SimpleFeature {
 	private static final IntWritable ONE = new IntWritable(1);
 
 	public void score(RuleWritable r, Map<Text, Writable> map) {
-		if (r.target.equals(r.source))
+		if (Arrays.equals(r.target, r.source))
 			map.put(LABEL, ONE);
 		else
 			map.put(LABEL, ZERO);

@@ -12,9 +12,11 @@ import org.apache.hadoop.io.WritableUtils;
 
 public class Annotation implements Writable {
 
+  //TODO: make private
+  
   // Internal alignments seen with the rule, and their occurrence counts.
-  private Map<AlignmentWritable, Integer> e2f_alignments = null;
-  private Map<AlignmentWritable, Integer> f2e_alignments = null;
+  public Map<AlignmentWritable, Integer> e2f_alignments = null;
+  public Map<AlignmentWritable, Integer> f2e_alignments = null;
 
   private boolean maxed = false;
 
@@ -24,14 +26,16 @@ public class Annotation implements Writable {
   // Rule occurrence count.
   private int count;
 
-  public Annotation(AlignmentWritable e2f, AlignmentWritable f2e) {
+  public Annotation() {}
+
+  public Annotation(AlignmentWritable f2e, AlignmentWritable e2f) {
     e2f_alignments = new HashMap<AlignmentWritable, Integer>();
     f2e_alignments = new HashMap<AlignmentWritable, Integer>();
 
     count = 1;
 
     e2f_alignments.put(e2f, 1);
-    f2e_alignments.put(e2f, 1);
+    f2e_alignments.put(f2e, 1);
   }
 
   public void merge(Annotation that) {
@@ -44,7 +48,7 @@ public class Annotation implements Writable {
   }
 
   public void retainMaxAlignment() {
-    if (!maxed) { 
+    if (!maxed) {
       e2f = getMaxAlignment(e2f_alignments);
       f2e = getMaxAlignment(f2e_alignments);
       e2f_alignments = null;

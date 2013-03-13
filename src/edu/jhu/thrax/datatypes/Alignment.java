@@ -6,6 +6,7 @@ import java.util.Iterator;
  * This interface represents a word-level alignment of a sentence pair.
  */
 public interface Alignment {
+
   public boolean sourceIndexIsAligned(int i);
 
   public boolean targetIndexIsAligned(int i);

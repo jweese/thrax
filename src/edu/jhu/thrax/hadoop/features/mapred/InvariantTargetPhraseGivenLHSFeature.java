@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -38,7 +39,7 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
     return Map.class;
   }
 
-  public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>>> reducerClass() {
+  public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair>> reducerClass() {
     return Reduce.class;
   }
 
@@ -80,14 +81,14 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private DoubleWritable prob;
     private static final Text NAME = new Text("p(e_inv|LHS)");
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      if (key.target.equals(PrimitiveArrayMarginalComparator.MARGINAL)) {
+      if (Arrays.equals(key.target, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // we only get here if it is the very first time we saw the LHS
         marginal = 0;
         for (IntWritable x : values)
@@ -96,7 +97,7 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
       }
 
       // control only gets here if we are using the same marginal
-      if (key.source.equals(PrimitiveArrayMarginalComparator.MARGINAL)) {
+      if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // we only get in here if it's a new source side
         int count = 0;
         for (IntWritable x : values) {
@@ -110,11 +111,11 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
         int signal = x.get();
         if (signal % 60000 >= 1) {
           result.target = FormatUtils.applyIndices(key.target, true);
-          context.write(result, new FeaturePair<DoubleWritable>(NAME, prob));
+          context.write(result, new FeaturePair(NAME, prob));
         }
         if (signal / 60000 >= 1) {
           result.target = FormatUtils.applyIndices(key.target, false);
-          context.write(result, new FeaturePair<DoubleWritable>(NAME, prob));
+          context.write(result, new FeaturePair(NAME, prob));
         }
       }
     }

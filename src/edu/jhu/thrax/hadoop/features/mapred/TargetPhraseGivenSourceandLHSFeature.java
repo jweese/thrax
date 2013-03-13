@@ -57,13 +57,13 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private static final Text NAME = new Text("p(e|f,LHS)");
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-      if (key.target.equals(PrimitiveArrayMarginalComparator.MARGINAL)) {
+      if (Arrays.equals(key.target, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // we only get here if it is the very first time we saw the LHS
         // and source combination
         marginal = 0;
@@ -78,7 +78,7 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
         count += x.get();
 
       DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
-      context.write(key, new FeaturePair<DoubleWritable>(NAME, prob));
+      context.write(key, new FeaturePair(NAME, prob));
     }
 
   }

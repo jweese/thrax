@@ -139,60 +139,24 @@ public class HierarchicalRule {
     return result;
   }
 
-  private int[] sourceTerminalIndices() {
-    int[] result = new int[numSourceTerminals()];
-    int j = 0;
-    int currNT = 0;
-    for (int i = lhs.sourceStart; i < lhs.sourceEnd; i++) {
-      if (currNT < nts.length && i == nts[currNT].sourceStart) {
-        i = nts[currNT].sourceEnd - 1;
-        currNT++;
-      } else {
-        result[j] = i;
-        j++;
-      }
-    }
-    return result;
-  }
-
-  private int[] targetTerminalIndices() {
-    int[] result = new int[numTargetTerminals()];
-    int curr = 0;
-    for (int i = lhs.targetStart; i < lhs.targetEnd; i++) {
-      boolean nt = false;
-      for (int j = 0; j < arity(); j++) {
-        if (i == nts[j].targetStart) {
-          i = nts[j].targetEnd - 1;
-          nt = true;
-          break;
-        }
-      }
-      if (!nt) {
-        result[curr] = i;
-        curr++;
-      }
-    }
-    return result;
-  }
-
-  private int[] reverseSourceTerminalIndices() {
-    int[] result = new int[lhs.sourceEnd];
+  private int[] sourceToRule() {
+    int[] result = new int[lhs.sourceEnd - lhs.sourceStart];
     int current = 0;
     int n = 0;
     for (int i = lhs.sourceStart; i < lhs.sourceEnd; i++) {
-      if (n < nts.length && i == nts[n].targetStart) {
-        i = nts[n].targetEnd - 1;
+      if (n < nts.length && i == nts[n].sourceStart) {
+        i = nts[n].sourceEnd - 1;
         ++n;
       } else {
-        result[i] = current;
+        result[i - lhs.sourceStart] = current;
       }
       current++;
     }
     return result;
   }
 
-  private int[] reverseTargetTerminalIndices() {
-    int[] result = new int[lhs.targetEnd];
+  private int[] targetToRule() {
+    int[] result = new int[lhs.targetEnd - lhs.targetStart];
     int current = 0;
     boolean nt;
     for (int i = lhs.targetStart; i < lhs.targetEnd; i++) {
@@ -204,25 +168,26 @@ public class HierarchicalRule {
           break;
         }
       }
-      if (!nt) result[i] = current;
+      if (!nt) result[i - lhs.targetStart] = current;
       current++;
     }
     return result;
   }
 
   public byte[] compactSourceAlignment(Alignment a) {
-    int[] src = sourceTerminalIndices();
-    int[] tgt = reverseTargetTerminalIndices();
+    int[] src_to_rule = sourceToRule();
+    int[] tgt_to_rule = targetToRule();
+
     ArrayList<Byte> points = new ArrayList<Byte>();
     int n = 0;
     for (int i = lhs.sourceStart; i < lhs.sourceEnd; ++i) {
       if (n < nts.length && i == nts[n].sourceStart) {
-        i = nts[n].sourceEnd - 1;
+        i = nts[n++].sourceEnd - 1;
       } else {
         Iterator<Integer> aligned = a.targetIndicesAlignedTo(i);
         while (aligned.hasNext()) {
-          points.add((byte) src[i]);
-          points.add((byte) tgt[aligned.next()]);
+          points.add((byte) src_to_rule[i - lhs.sourceStart]);
+          points.add((byte) tgt_to_rule[aligned.next() - lhs.targetStart]);
         }
       }
     }
@@ -234,15 +199,15 @@ public class HierarchicalRule {
   }
 
   public byte[] compactTargetAlignment(Alignment a) {
-    int[] tgt = targetTerminalIndices();
-    int[] src = reverseSourceTerminalIndices();
+    int[] tgt_to_rule = targetToRule();
+    int[] src_to_rule = sourceToRule();
     ArrayList<Byte> points = new ArrayList<Byte>();
     boolean nt;
     for (int i = lhs.targetStart; i < lhs.targetEnd; ++i) {
       nt = false;
       for (int n = 0; n < nts.length; ++n) {
         if (i == nts[n].targetStart) {
-          i = nts[n].sourceEnd - 1;
+          i = nts[n].targetEnd - 1;
           nt = true;
           break;
         }
@@ -250,8 +215,8 @@ public class HierarchicalRule {
       if (!nt) {
         Iterator<Integer> aligned = a.sourceIndicesAlignedTo(i);
         while (aligned.hasNext()) {
-          points.add((byte) tgt[i]);
-          points.add((byte) src[aligned.next()]);
+          points.add((byte) tgt_to_rule[i - lhs.targetStart]);
+          points.add((byte) src_to_rule[aligned.next() - lhs.sourceStart]);
         }
       }
     }
@@ -261,9 +226,9 @@ public class HierarchicalRule {
       result[i++] = b;
     return result;
   }
-  
+
   public boolean monotonic() {
     if (nts.length < 2) return true;
-    return (nts[0].targetStart > nts[1].targetEnd);
+    return (nts[0].targetEnd <= nts[1].targetStart);
   }
 }

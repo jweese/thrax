@@ -28,153 +28,155 @@ import edu.jhu.thrax.hadoop.jobs.ParaphrasePivotingJob;
 import edu.jhu.thrax.hadoop.jobs.Scheduler;
 import edu.jhu.thrax.hadoop.jobs.SchedulerException;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
+import edu.jhu.thrax.hadoop.jobs.VocabularyJob;
 import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.util.FormatUtils;
 
 public class Thrax extends Configured implements Tool {
-	private Scheduler scheduler;
-	private Configuration conf;
+  private Scheduler scheduler;
+  private Configuration conf;
 
-	public synchronized int run(String[] argv) throws Exception {
-		if (argv.length < 1) {
-			System.err.println("usage: Thrax <conf file> [output path]");
-			return 1;
-		}
-		// do some setup of configuration
-		conf = getConf();
-		Map<String, String> options = ConfFileParser.parse(argv[0]);
-		for (String opt : options.keySet())
-			conf.set("thrax." + opt, options.get(opt));
-		String date = (new Date()).toString().replaceAll("\\s+", "_").replaceAll(":", "_");
+  public synchronized int run(String[] argv) throws Exception {
+    if (argv.length < 1) {
+      System.err.println("usage: Thrax <conf file> [output path]");
+      return 1;
+    }
+    // do some setup of configuration
+    conf = getConf();
+    Map<String, String> options = ConfFileParser.parse(argv[0]);
+    for (String opt : options.keySet())
+      conf.set("thrax." + opt, options.get(opt));
+    String date = (new Date()).toString().replaceAll("\\s+", "_").replaceAll(":", "_");
 
-		String workDir = "thrax_run_" + date + Path.SEPARATOR;
+    String workDir = "thrax_run_" + date + Path.SEPARATOR;
 
-		if (argv.length > 1) {
-			workDir = argv[1];
-			if (!workDir.endsWith(Path.SEPARATOR))
-				workDir += Path.SEPARATOR;
-		}
+    if (argv.length > 1) {
+      workDir = argv[1];
+      if (!workDir.endsWith(Path.SEPARATOR)) workDir += Path.SEPARATOR;
+    }
 
-		conf.set("thrax.work-dir", workDir);
-		conf.set("thrax.outputPath", workDir + "final");
+    conf.set("thrax.work-dir", workDir);
+    conf.set("thrax.outputPath", workDir + "final");
 
-		if (options.containsKey("timeout")) {
-			conf.setInt("mapreduce.task.timeout", Integer.parseInt(options.get("timeout")));
-			conf.setInt("mapred.task.timeout", Integer.parseInt(options.get("timeout")));
-		}
+    if (options.containsKey("timeout")) {
+      conf.setInt("mapreduce.task.timeout", Integer.parseInt(options.get("timeout")));
+      conf.setInt("mapred.task.timeout", Integer.parseInt(options.get("timeout")));
+    }
 
-		scheduleJobs();
+    scheduleJobs();
 
-		do {
-			for (Class<? extends ThraxJob> c : scheduler.getClassesByState(JobState.READY)) {
-				scheduler.setState(c, JobState.RUNNING);
-				(new Thread(new ThraxJobWorker(this, c, conf))).start();
-			}
-			wait();
-		} while (scheduler.notFinished());
-		System.err.print(scheduler);
-		if (scheduler.getClassesByState(JobState.SUCCESS).size() == scheduler.numJobs()) {
-			System.err.println("Work directory was " + workDir);
-			System.err.println("To retrieve grammar:");
-			System.err.println("hadoop fs -getmerge " + conf.get("thrax.outputPath", "")
-					+ " <destination>");
-		}
-		return 0;
-	}
+    do {
+      for (Class<? extends ThraxJob> c : scheduler.getClassesByState(JobState.READY)) {
+        scheduler.setState(c, JobState.RUNNING);
+        (new Thread(new ThraxJobWorker(this, c, conf))).start();
+      }
+      wait();
+    } while (scheduler.notFinished());
+    System.err.print(scheduler);
+    if (scheduler.getClassesByState(JobState.SUCCESS).size() == scheduler.numJobs()) {
+      System.err.println("Work directory was " + workDir);
+      System.err.println("To retrieve grammar:");
+      System.err.println("hadoop fs -getmerge " + conf.get("thrax.outputPath", "")
+          + " <destination>");
+    }
+    return 0;
+  }
 
-	// Schedule all the jobs required for grammar extraction. We
-	// currently distinguish three modes: translation grammar extraction, 
-	// paraphrase grammar extraction, and collection of distributional signatures.
-	private synchronized void scheduleJobs() throws SchedulerException {
-		scheduler = new Scheduler(conf);
+  // Schedule all the jobs required for grammar extraction. We
+  // currently distinguish three modes: translation grammar extraction,
+  // paraphrase grammar extraction, and collection of distributional signatures.
+  private synchronized void scheduleJobs() throws SchedulerException {
+    scheduler = new Scheduler(conf);
 
-		String type = conf.get("thrax.type", "translation");
+    String type = conf.get("thrax.type", "translation");
 
-		System.err.println("Running in mode: " + type);
+    System.err.println("Running in mode: " + type);
 
-		if ("translation".equals(type)) {
-			// Schedule rule extraction job.
-			scheduler.schedule(ExtractionJob.class);
-			// Extracting a translation grammar.
-			for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
-				MapReduceFeature f = FeatureJobFactory.get(feature);
-				if (f != null) {
-					scheduler.schedule(f.getClass());
-					OutputJob.addPrerequisite(f.getClass());
-				}
-			}
-			scheduler.schedule(OutputJob.class);
-			scheduler.percolate(OutputJob.class);
-		} else if ("paraphrasing".equals(type)) {
-			// Schedule rule extraction job.
-			scheduler.schedule(ExtractionJob.class);
-			// Collect the translation grammar features required to compute
-			// the requested paraphrasing features.
-			Set<String> prereq_features = new HashSet<String>();
-			List<PivotedFeature> pivoted_features = PivotedFeatureFactory.getAll(conf.get(
-					"thrax.features", ""));
-			for (PivotedFeature pf : pivoted_features) {
-				prereq_features.addAll(pf.getPrerequisites());
-			}
-			// Next, schedule translation features and register with feature
-			// collection job.
-			for (String f_name : prereq_features) {
-				MapReduceFeature f = FeatureJobFactory.get(f_name);
-				if (f != null) {
-					scheduler.schedule(f.getClass());
-					FeatureCollectionJob.addPrerequisite(f.getClass());
-				}
-			}
-			scheduler.schedule(FeatureCollectionJob.class);
-			// Schedule pivoting and pivoted feature computation job.
-			scheduler.schedule(ParaphrasePivotingJob.class);
-			// Schedule aggregation and output job.
-			scheduler.schedule(ParaphraseAggregationJob.class);
-			scheduler.percolate(ParaphraseAggregationJob.class);
-		} else if ("distributional".equals(type)) {
-			scheduler.schedule(DistributionalContextExtractionJob.class);
-			scheduler.schedule(DistributionalContextSortingJob.class);
-			scheduler.percolate(DistributionalContextSortingJob.class);
-		} else {
-			System.err.println("Unknown grammar type. No jobs scheduled.");
-		}
-	}
+    scheduler.schedule(VocabularyJob.class);
 
-	public static void main(String[] argv) throws Exception {
-		ToolRunner.run(null, new Thrax(), argv);
-		return;
-	}
+    if ("translation".equals(type)) {
+      // Schedule rule extraction job.
+      scheduler.schedule(ExtractionJob.class);
+      // Extracting a translation grammar.
+      for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
+        MapReduceFeature f = FeatureJobFactory.get(feature);
+        if (f != null) {
+          scheduler.schedule(f.getClass());
+          OutputJob.addPrerequisite(f.getClass());
+        }
+      }
+      scheduler.schedule(OutputJob.class);
+      scheduler.percolate(OutputJob.class);
+    } else if ("paraphrasing".equals(type)) {
+      // Schedule rule extraction job.
+      scheduler.schedule(ExtractionJob.class);
+      // Collect the translation grammar features required to compute
+      // the requested paraphrasing features.
+      Set<String> prereq_features = new HashSet<String>();
+      List<PivotedFeature> pivoted_features =
+          PivotedFeatureFactory.getAll(conf.get("thrax.features", ""));
+      for (PivotedFeature pf : pivoted_features) {
+        prereq_features.addAll(pf.getPrerequisites());
+      }
+      // Next, schedule translation features and register with feature
+      // collection job.
+      for (String f_name : prereq_features) {
+        MapReduceFeature f = FeatureJobFactory.get(f_name);
+        if (f != null) {
+          scheduler.schedule(f.getClass());
+          FeatureCollectionJob.addPrerequisite(f.getClass());
+        }
+      }
+      scheduler.schedule(FeatureCollectionJob.class);
+      // Schedule pivoting and pivoted feature computation job.
+      scheduler.schedule(ParaphrasePivotingJob.class);
+      // Schedule aggregation and output job.
+      scheduler.schedule(ParaphraseAggregationJob.class);
+      scheduler.percolate(ParaphraseAggregationJob.class);
+    } else if ("distributional".equals(type)) {
+      scheduler.schedule(DistributionalContextExtractionJob.class);
+      scheduler.schedule(DistributionalContextSortingJob.class);
+      scheduler.percolate(DistributionalContextSortingJob.class);
+    } else {
+      System.err.println("Unknown grammar type. No jobs scheduled.");
+    }
+  }
 
-	protected synchronized void workerDone(Class<? extends ThraxJob> theClass, boolean success) {
-		try {
-			scheduler.setState(theClass, success ? JobState.SUCCESS : JobState.FAILED);
-		} catch (SchedulerException e) {
-			System.err.println(e.getMessage());
-		}
-		notify();
-		return;
-	}
+  public static void main(String[] argv) throws Exception {
+    ToolRunner.run(null, new Thrax(), argv);
+    return;
+  }
 
-	public class ThraxJobWorker implements Runnable {
-		private Thrax thrax;
-		private Class<? extends ThraxJob> theClass;
+  protected synchronized void workerDone(Class<? extends ThraxJob> theClass, boolean success) {
+    try {
+      scheduler.setState(theClass, success ? JobState.SUCCESS : JobState.FAILED);
+    } catch (SchedulerException e) {
+      System.err.println(e.getMessage());
+    }
+    notify();
+    return;
+  }
 
-		public ThraxJobWorker(Thrax t, Class<? extends ThraxJob> c, Configuration conf) {
-			thrax = t;
-			theClass = c;
-		}
+  public class ThraxJobWorker implements Runnable {
+    private Thrax thrax;
+    private Class<? extends ThraxJob> theClass;
 
-		public void run() {
-			try {
-				ThraxJob thraxJob = theClass.newInstance();
-				Job job = thraxJob.getJob(conf);
-				job.waitForCompletion(false);
-				thrax.workerDone(theClass, job.isSuccessful());
-			} catch (Exception e) {
-				e.printStackTrace();
-				thrax.workerDone(theClass, false);
-			}
-			return;
-		}
-	}
+    public ThraxJobWorker(Thrax t, Class<? extends ThraxJob> c, Configuration conf) {
+      thrax = t;
+      theClass = c;
+    }
+
+    public void run() {
+      try {
+        ThraxJob thraxJob = theClass.newInstance();
+        Job job = thraxJob.getJob(conf);
+        job.waitForCompletion(false);
+        thrax.workerDone(theClass, job.isSuccessful());
+      } catch (Exception e) {
+        e.printStackTrace();
+        thrax.workerDone(theClass, false);
+      }
+      return;
+    }
+  }
 }

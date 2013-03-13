@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -82,7 +83,7 @@ public class InvariantLhsGivenTargetPhraseFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
 
     private int marginal;
     private DoubleWritable prob;
@@ -99,7 +100,7 @@ public class InvariantLhsGivenTargetPhraseFeature extends MapReduceFeature {
       }
 
       // Control only gets here if we are using the same marginal.
-      if (key.source.equals(PrimitiveArrayMarginalComparator.MARGINAL)) {
+      if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // We only get in here if it's a new LHS.
         int count = 0;
         for (IntWritable c : values)
@@ -114,11 +115,11 @@ public class InvariantLhsGivenTargetPhraseFeature extends MapReduceFeature {
         int signal = s.get();
         if (signal % 60000 >= 1) {
           result.target = FormatUtils.applyIndices(key.target, true);
-          context.write(result, new FeaturePair<DoubleWritable>(NAME, prob));
+          context.write(result, new FeaturePair(NAME, prob));
         }
         if (signal / 60000 >= 1) {
           result.target = FormatUtils.applyIndices(key.target, false);
-          context.write(result, new FeaturePair<DoubleWritable>(NAME, prob));
+          context.write(result, new FeaturePair(NAME, prob));
         }
 
       }

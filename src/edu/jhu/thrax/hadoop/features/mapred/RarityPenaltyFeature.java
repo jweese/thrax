@@ -33,7 +33,7 @@ public class RarityPenaltyFeature extends MapReduceFeature {
     return Map.class;
   }
 
-  public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>>> reducerClass() {
+  public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair>> reducerClass() {
     return Reduce.class;
   }
 
@@ -46,7 +46,7 @@ public class RarityPenaltyFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private static final Text LABEL = new Text("RarityPenalty");
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
@@ -55,7 +55,7 @@ public class RarityPenaltyFeature extends MapReduceFeature {
       for (IntWritable x : values)
         count += x.get();
       context.write(key,
-          new FeaturePair<DoubleWritable>(LABEL, new DoubleWritable(Math.exp(1 - count))));
+          new FeaturePair(LABEL, new DoubleWritable(Math.exp(1 - count))));
     }
   }
 

@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.mapred;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
@@ -37,7 +38,7 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
     return Map.class;
   }
 
-  public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>>> reducerClass() {
+  public Class<? extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair>> reducerClass() {
     return Reduce.class;
   }
 
@@ -62,7 +63,7 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
   }
 
   private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair<DoubleWritable>> {
+      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
 
     private int marginal;
     private DoubleWritable prob;
@@ -79,7 +80,7 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
       }
 
       // Control only gets here if we are using the same marginal.
-      if (key.source.equals(PrimitiveArrayMarginalComparator.MARGINAL)) {
+      if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // We only get in here if it's a new LHS.
         int count = 0;
         for (IntWritable x : values) {
@@ -88,7 +89,7 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
         prob = new DoubleWritable(-Math.log(count / (double) marginal));
         return;
       }
-      context.write(key, new FeaturePair<DoubleWritable>(NAME, prob));
+      context.write(key, new FeaturePair(NAME, prob));
     }
 
   }

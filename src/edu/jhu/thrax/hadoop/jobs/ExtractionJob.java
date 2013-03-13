@@ -1,10 +1,11 @@
 package edu.jhu.thrax.hadoop.jobs;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -17,13 +18,17 @@ import edu.jhu.thrax.hadoop.extraction.ExtractionMapper;
 import edu.jhu.thrax.hadoop.extraction.ExtractionReducer;
 
 public class ExtractionJob extends ThraxJob {
-  
-  public static final Text COUNT = new Text("count");
-  
+
+  public Set<Class<? extends ThraxJob>> getPrerequisites() {
+    Set<Class<? extends ThraxJob>> result = new HashSet<Class<? extends ThraxJob>>();
+    result.add(VocabularyJob.class);
+    return result;
+  }
+
   public Job getJob(Configuration conf) throws IOException {
     Job job = new Job(conf, "extraction");
     job.setJarByClass(ExtractionMapper.class);
-    
+
     job.setMapperClass(ExtractionMapper.class);
     job.setCombinerClass(ExtractionCombiner.class);
     job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
@@ -33,7 +38,7 @@ public class ExtractionJob extends ThraxJob {
     job.setMapOutputValueClass(Annotation.class);
     job.setOutputKeyClass(RuleWritable.class);
     job.setOutputValueClass(Annotation.class);
-    
+
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
     int numReducers = conf.getInt("thrax.reducers", 4);
