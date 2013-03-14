@@ -13,6 +13,8 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureFactory;
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureJob;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
@@ -97,14 +99,22 @@ public class Thrax extends Configured implements Tool {
     if ("translation".equals(type)) {
       // Schedule rule extraction job.
       scheduler.schedule(ExtractionJob.class);
-      // Extracting a translation grammar.
+      
+      // Create feature map-reduces, establish whether annotation features were requested.
+      boolean annotation_features = false;
       for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
         MapReduceFeature f = FeatureJobFactory.get(feature);
         if (f != null) {
           scheduler.schedule(f.getClass());
           OutputJob.addPrerequisite(f.getClass());
         }
+        if (AnnotationFeatureFactory.get(feature) != null)
+          annotation_features = true;
       }
+      if (annotation_features) {
+        scheduler.schedule(AnnotationFeatureJob.class);
+        OutputJob.addPrerequisite(AnnotationFeatureJob.class);
+      }      
       scheduler.schedule(OutputJob.class);
       scheduler.percolate(OutputJob.class);
     } else if ("paraphrasing".equals(type)) {

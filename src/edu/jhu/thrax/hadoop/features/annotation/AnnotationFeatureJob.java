@@ -2,13 +2,12 @@ package edu.jhu.thrax.hadoop.features.annotation;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -20,7 +19,9 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
-public abstract class AnnotationFeatureJob extends ThraxJob {
+public class AnnotationFeatureJob extends ThraxJob {
+
+  public AnnotationFeatureJob() {}
 
   public String getOutputSuffix() {
     return getName();
@@ -31,8 +32,9 @@ public abstract class AnnotationFeatureJob extends ThraxJob {
     Job job = new Job(conf, name);
     job.setJarByClass(this.getClass());
 
+    job.setMapperClass(Mapper.class);
     job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
-    job.setReducerClass(Reduce.class);
+    job.setReducerClass(AnnotationReducer.class);
 
     job.setInputFormatClass(SequenceFileInputFormat.class);
     job.setMapOutputKeyClass(RuleWritable.class);
@@ -55,23 +57,8 @@ public abstract class AnnotationFeatureJob extends ThraxJob {
     return result;
   }
 
-  public class Reduce
-      extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair> {
-
-    private List<AnnotationFeature> features;
-
-    protected void setup(Context context) throws IOException, InterruptedException {
-      Configuration conf = context.getConfiguration();
-      features = AnnotationFeatureFactory.getAll(conf.get("thrax.features", ""));
-    }
-
-    protected void reduce(RuleWritable key, Iterable<Annotation> values, Context context)
-        throws IOException, InterruptedException {
-      for (Annotation annotation : values) {
-        for (AnnotationFeature f : features) {
-          context.write(key, new FeaturePair(f.getName(), f.score(key, annotation)));
-        }
-      }
-    }
+  @Override
+  public String getName() {
+    return "annotation";
   }
 }

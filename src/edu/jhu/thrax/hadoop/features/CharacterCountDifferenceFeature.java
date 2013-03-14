@@ -7,39 +7,38 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.Vocabulary;
 
 public class CharacterCountDifferenceFeature implements SimpleFeature {
 
-	private static final Text LABEL = new Text("CharCountDiff");
-	private static final IntWritable ZERO = new IntWritable(0);
+  private static final Text LABEL = new Text("CharCountDiff");
+  private static final IntWritable ZERO = new IntWritable(0);
 
-	public void score(RuleWritable r, Map<Text, Writable> map) {
-		int char_difference = 0;
-		String[] src = r.source.toString().split("\\s+");
-		for (String tok : src) {
-			if (!tok.startsWith("[")) {
-				char_difference -= tok.length();
-			}
-		}
-		char_difference -= src.length - 1;
-		
-		String[] tgt = r.target.toString().split("\\s+");
-		for (String tok : tgt) {
-			if (!tok.startsWith("[")) {
-				char_difference += tok.length();
-			}
-		}
-		char_difference += tgt.length - 1;
-		
-		map.put(LABEL, new IntWritable(char_difference));
-		return;
-	}
+  public void score(RuleWritable r, Map<Text, Writable> map) {
+    int char_difference = 0;
+    for (int tok : r.source) {
+      if (!Vocabulary.nt(tok)) {
+        char_difference -= Vocabulary.word(tok).length();
+      }
+    }
+    char_difference -= r.source.length - 1;
 
-	public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-		map.put(LABEL, ZERO);
-	}
+    for (int tok : r.target) {
+      if (!Vocabulary.nt(tok)) {
+        char_difference += Vocabulary.word(tok).length();
+      }
+    }
+    char_difference += r.target.length - 1;
 
-	public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-		map.put(LABEL, ZERO);
-	}
+    map.put(LABEL, new IntWritable(char_difference));
+    return;
+  }
+
+  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
+    map.put(LABEL, ZERO);
+  }
+
+  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
+    map.put(LABEL, ZERO);
+  }
 }

@@ -35,6 +35,7 @@ public class Scheduler
             job = jobClass.newInstance();
         }
         catch (Exception e) {
+          e.printStackTrace();
             throw new SchedulerException(e.getMessage());
         }
         for (Class<? extends ThraxJob> c : job.getPrerequisites()) {

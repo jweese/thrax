@@ -28,8 +28,10 @@ public class ExtractionMapper extends Mapper<LongWritable, Text, RuleWritable, A
   protected void map(LongWritable key, Text value, Context context) throws IOException,
       InterruptedException {
     if (extractor == null) return;
-    for (AnnotatedRule ar : extractor.extract(value))
+    for (AnnotatedRule ar : extractor.extract(value)) {
       context.write(ar.rule, ar.annotation);
+      System.err.println("EXTRACT: " + ar.rule.toString() + " COUNT: " + ar.annotation.count()); 
+    }
     context.progress();
   }
 }

@@ -26,7 +26,12 @@ public class Annotation implements Writable {
   // Rule occurrence count.
   private int count;
 
-  public Annotation() {}
+  public Annotation() {
+    e2f_alignments = new HashMap<AlignmentWritable, Integer>();
+    f2e_alignments = new HashMap<AlignmentWritable, Integer>();
+
+    count = 0;
+  }
 
   public Annotation(AlignmentWritable f2e, AlignmentWritable e2f) {
     e2f_alignments = new HashMap<AlignmentWritable, Integer>();

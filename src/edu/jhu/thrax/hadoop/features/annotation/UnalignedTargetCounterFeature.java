@@ -27,7 +27,7 @@ public class UnalignedTargetCounterFeature implements AnnotationFeature {
     for (i = 0; i < tgt.length; ++i) {
       if (Vocabulary.nt(tgt[i]))
         continue;
-      if (i != e2f[j]) count++;
+      if (j >= e2f.length || i != e2f[j]) count++;
       while (j < e2f.length && e2f[j] <= i) j += 2;
     }
     return new IntWritable(count);

@@ -3,6 +3,7 @@ package edu.jhu.thrax.hadoop.features.mapred;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.DoubleWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
@@ -12,6 +13,7 @@ import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import edu.jhu.thrax.hadoop.comparators.FieldComparator;
 import edu.jhu.thrax.hadoop.comparators.PrimitiveArrayMarginalComparator;
@@ -19,6 +21,7 @@ import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.Vocabulary;
 
 @SuppressWarnings("rawtypes")
 public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
@@ -44,16 +47,26 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
   }
 
   private static class Map extends Mapper<RuleWritable, Annotation, RuleWritable, IntWritable> {
+    
+    protected void setup(Context context) throws IOException, InterruptedException {
+      Configuration conf = context.getConfiguration();
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+      Vocabulary.read(conf, vocabulary_path);
+    }
+    
     protected void map(RuleWritable key, Annotation value, Context context)
         throws IOException, InterruptedException {
       RuleWritable marginal = new RuleWritable(key);
       marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      marginal.monotone = true;
       marginal.lhs = PrimitiveUtils.MARGINAL_ID;
 
       IntWritable count = new IntWritable(value.count());
 
       context.write(key, count);
       context.write(marginal, count);
+      
+      System.err.println("MAPPING: " + key.toString() + " COUNT: " + count.get());
     }
   }
 
@@ -61,6 +74,12 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
       extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private static final Text NAME = new Text("p(e|f)");
+    
+    protected void setup(Context context) throws IOException, InterruptedException {
+      Configuration conf = context.getConfiguration();
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+      Vocabulary.read(conf, vocabulary_path);
+    }
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
@@ -68,6 +87,9 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
         marginal = 0;
         for (IntWritable x : values)
           marginal += x.get();
+        
+        System.err.println("MARGINAL: " + key.toString() + " COUNT: " + marginal);
+
         return;
       }
 
@@ -75,6 +97,8 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
       int count = 0;
       for (IntWritable x : values)
         count += x.get();
+      
+      System.err.println("RULE: " + key.toString() + " COUNT: " + count);
 
       DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
       context.write(key, new FeaturePair(NAME, prob));

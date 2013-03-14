@@ -3,7 +3,6 @@ package edu.jhu.thrax.hadoop.datatypes;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
-import java.nio.charset.Charset;
 
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -64,15 +63,18 @@ public class AlignmentWritable implements Writable {
     // if (total > 1) counts = PrimitiveUtils.readFloatArray(in);
   }
 
-  public String toString() {
+  public String toString(String glue) {
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < points.length / 2; ++i) {
-      if (i != 0) sb.append(" ");
+    for (int i = 0; i < points.length; ++i) {
+      if (i != 0) sb.append(glue);
       sb.append(points[2 * i]);
       sb.append("-");
       sb.append(points[2 * i + 1]);
     }
     return sb.toString();
-    // return new String(points, Charset.forName("UTF-8"));
+  }
+
+  public String toString() {
+    return toString(" ");
   }
 }

@@ -9,8 +9,7 @@ import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.Vocabulary;
 
-public class ExtractionReducer
-    extends Reducer<RuleWritable, Annotation, RuleWritable, Annotation> {
+public class ExtractionReducer extends Reducer<RuleWritable, Annotation, RuleWritable, Annotation> {
 
   private int minCount;
 
@@ -18,20 +17,16 @@ public class ExtractionReducer
     Configuration conf = context.getConfiguration();
     String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
     Vocabulary.read(conf, vocabulary_path);
-    
+
     minCount = conf.getInt("thrax.min-rule-count", 1);
   }
 
   protected void reduce(RuleWritable key, Iterable<Annotation> values, Context context)
       throws IOException, InterruptedException {
     context.progress();
-    Annotation merged = null;
-    for (Annotation a : values) {
-      if (merged == null)
-        merged = a;
-      else
-        merged.merge(a);
-    }
+    Annotation merged = new Annotation();
+    for (Annotation a : values)
+      merged.merge(a);
     if (merged.count() >= minCount || isUnigramRule(key)) {
       merged.retainMaxAlignment();
       context.write(key, merged);

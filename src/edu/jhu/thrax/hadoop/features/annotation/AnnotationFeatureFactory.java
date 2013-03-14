@@ -8,8 +8,10 @@ import edu.jhu.thrax.util.FormatUtils;
 public class AnnotationFeatureFactory {
 
   public static AnnotationFeature get(String name) {
-    if (name.equals("unaligned-count"))
+    if (name.equals("unaligned-source"))
       return new UnalignedSourceCounterFeature();
+    else if (name.equals("unaligned-target"))
+      return new UnalignedTargetCounterFeature();
     else if (name.equals("alignment")) return new AlignmentFeature();
 
     return null;

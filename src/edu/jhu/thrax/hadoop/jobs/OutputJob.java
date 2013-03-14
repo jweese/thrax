@@ -17,6 +17,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureFactory;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
 import edu.jhu.thrax.util.FormatUtils;
@@ -55,11 +56,14 @@ public class OutputJob extends ThraxJob {
     int numReducers = conf.getInt("thrax.reducers", 4);
     job.setNumReduceTasks(numReducers);
 
+    boolean annotation_features = false;
     for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
-      if (FeatureJobFactory.get(feature) instanceof MapReduceFeature) {
+      if (FeatureJobFactory.get(feature) instanceof MapReduceFeature)
         FileInputFormat.addInputPath(job, new Path(workDir + feature));
-      }
+      if (AnnotationFeatureFactory.get(feature) != null) annotation_features = true;
     }
+    if (annotation_features) FileInputFormat.addInputPath(job, new Path(workDir + "annotation"));
+
     if (FileInputFormat.getInputPaths(job).length == 0) {
       // TODO: This is going to crash.
       FileInputFormat.addInputPath(job, new Path(workDir + "rules"));

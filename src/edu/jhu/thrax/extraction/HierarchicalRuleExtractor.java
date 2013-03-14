@@ -124,15 +124,15 @@ public class HierarchicalRuleExtractor {
   }
 
   private boolean isValid(HierarchicalRule r, Alignment a) {
-    // conditions:
+    // Conditions:
     // 1) limit of the total number of symbols on the source side
     // 2) limit of the total number of symbols on the target side
     // 3) minimum number of alignment points
     int arity = r.arity();
     int numSourceTerminals = r.numSourceTerminals();
     int numTargetTerminals = r.numTargetTerminals();
-    if (arity + numSourceTerminals > sourceSymbolLimit) return false;
-    if (arity + numTargetTerminals > targetSymbolLimit) return false;
+    if (arity > 0 && arity + numSourceTerminals > sourceSymbolLimit) return false;
+    if (arity > 0 && arity + numTargetTerminals > targetSymbolLimit) return false;
     if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints) return false;
     // 4) whether to allow abstract rules (with no terminals)
     if (!allowAbstract && numSourceTerminals == 0 && numTargetTerminals == 0) return false;

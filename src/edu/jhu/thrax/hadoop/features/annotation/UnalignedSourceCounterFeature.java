@@ -27,7 +27,7 @@ public class UnalignedSourceCounterFeature implements AnnotationFeature {
     for (i = 0; i < src.length; ++i) {
       if (Vocabulary.nt(src[i]))
         continue;
-      if (i != f2e[j]) count++;
+      if (j >= f2e.length || i != f2e[j]) count++;
       while (j < f2e.length && f2e[j] <= i) j += 2;
     }
     return new IntWritable(count);
