@@ -66,10 +66,8 @@ public class FeatureCollectionJob extends ThraxJob {
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
     if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
 
-    for (String prereq_name : prereq_names) {
+    for (String prereq_name : prereq_names)
       FileInputFormat.addInputPath(job, new Path(workDir + prereq_name));
-      System.err.println("LOADING: " + workDir + prereq_name);
-    }
 
     // TODO: double-check this.
     if (FileInputFormat.getInputPaths(job).length == 0)

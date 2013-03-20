@@ -8,6 +8,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import edu.jhu.thrax.hadoop.datatypes.AlignmentWritable;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
 public class FormatUtils {
@@ -94,6 +95,7 @@ public class FormatUtils {
     return input;
   }
 
+  // TODO: this isn't a good place for this method any more.
   public static Text ruleToText(RuleWritable r, Map<Text, Writable> fs, boolean label,
       boolean sparse) {
     if (r == null) throw new IllegalArgumentException("Cannot convert a null rule to text.");
@@ -103,8 +105,8 @@ public class FormatUtils {
     int n = 1;
     for (int i = 0; i < r.source.length; ++i) {
       if (i != 0) sb.append(" ");
-      if (Vocabulary.nt(r.source[i])) 
-         sb.append(markup(Vocabulary.word(r.source[i]), n++));
+      if (Vocabulary.nt(r.source[i]))
+        sb.append(markup(Vocabulary.word(r.source[i]), n++));
       else
         sb.append(Vocabulary.word(r.source[i]));
     }
@@ -112,8 +114,8 @@ public class FormatUtils {
     n = (r.monotone ? 1 : 2);
     for (int i = 0; i < r.target.length; ++i) {
       if (i != 0) sb.append(" ");
-      if (Vocabulary.nt(r.target[i])) 
-         sb.append(markup(Vocabulary.word(r.target[i]), (r.monotone ? n++ : n--)));
+      if (Vocabulary.nt(r.target[i]))
+        sb.append(markup(Vocabulary.word(r.target[i]), (r.monotone ? n++ : n--)));
       else
         sb.append(Vocabulary.word(r.target[i]));
     }
@@ -123,13 +125,15 @@ public class FormatUtils {
       String score;
       Writable val = fs.get(t);
       if (val instanceof DoubleWritable) {
-        score = String.format("%.5f", ((DoubleWritable) fs.get(t)).get());
+        score = String.format("%.7f", ((DoubleWritable) fs.get(t)).get());
         if (sparse && Double.parseDouble(score) == 0) continue;
       } else if (val instanceof IntWritable) {
         score = String.format("%d", ((IntWritable) fs.get(t)).get());
         if (sparse && Integer.parseInt(score) == 0) continue;
       } else if (val instanceof Text) {
         score = ((Text) fs.get(t)).toString();
+      } else if (val instanceof AlignmentWritable) {
+        score = ((AlignmentWritable) val).toString(":");
       } else {
         throw new RuntimeException("Expecting double, integer, or string feature values.");
       }

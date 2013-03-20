@@ -9,14 +9,15 @@ import org.apache.hadoop.io.Writable;
 public class FeatureValue extends GenericWritable {
 
   @SuppressWarnings("rawtypes")
-  private static Class[] TYPES = {DoubleWritable.class, IntWritable.class, Text.class};
+  private static Class[] TYPES = {DoubleWritable.class, IntWritable.class, Text.class,
+      AlignmentWritable.class};
 
   FeatureValue() {}
-  
+
   FeatureValue(Writable val) {
     this.set(val);
   }
-  
+
   @SuppressWarnings("unchecked")
   @Override
   protected Class<? extends Writable>[] getTypes() {

@@ -14,6 +14,8 @@ public class AnnotationFeatureFactory {
       return new UnalignedTargetCounterFeature();
     else if (name.equals("rarity"))
       return new RarityPenaltyFeature();
+    else if (name.equals("count"))
+      return new CountFeature();
     else if (name.equals("f_given_e_lex"))
       return new SourceGivenTargetLexicalProbabilityFeature();
     else if (name.equals("e_given_f_lex"))

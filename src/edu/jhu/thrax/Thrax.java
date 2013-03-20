@@ -134,9 +134,6 @@ public class Thrax extends Configured implements Tool {
       // collection job.
       boolean annotation_features = false;
       for (String f_name : prereq_features) {
-        
-        System.err.println("PREREQ: " + f_name);
-        
         MapReduceFeature mf = MapReduceFeatureFactory.get(f_name);
         if (mf != null) {
           scheduler.schedule(mf.getClass());

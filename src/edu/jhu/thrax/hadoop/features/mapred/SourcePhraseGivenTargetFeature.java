@@ -55,21 +55,26 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
     
     protected void map(RuleWritable key, Annotation value, Context context) throws IOException,
         InterruptedException {
-      RuleWritable marginal = new RuleWritable();
-      marginal.lhs = PrimitiveUtils.MARGINAL_ID;
-      marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
-      marginal.target = key.target;
-      marginal.monotone = key.monotone;
+      RuleWritable lhs_source_marginal = new RuleWritable();
+      lhs_source_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+      lhs_source_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_source_marginal.target = key.target;
+      lhs_source_marginal.monotone = key.monotone;
 
+      RuleWritable lhs_marginal = new RuleWritable(key);
+      lhs_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+      
       IntWritable count = new IntWritable(value.count());
 
+      context.write(lhs_source_marginal, count);
+      context.write(lhs_marginal, count);
       context.write(key, count);
-      context.write(marginal, count);
     }
   }
 
   private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
+    private DoubleWritable prob;
     private static final Text NAME = new Text("p(f|e)");
 
     protected void setup(Context context) throws IOException, InterruptedException {
@@ -80,19 +85,19 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
-
       if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         marginal = 0;
         for (IntWritable x : values)
           marginal += x.get();
         return;
       }
-
-      // control only gets here if we are using the same marginal
-      int count = 0;
-      for (IntWritable x : values)
-        count += x.get();
-      DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
+      if (key.lhs == PrimitiveUtils.MARGINAL_ID) {
+        int count = 0;
+        for (IntWritable x : values)
+          count += x.get();
+        prob = new DoubleWritable(-Math.log(count / (double) marginal));  
+        return;
+      }
       context.write(key, new FeaturePair(NAME, prob));
     }
 

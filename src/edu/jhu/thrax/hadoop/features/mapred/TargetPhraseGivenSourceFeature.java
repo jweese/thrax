@@ -46,32 +46,37 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
   }
 
   private static class Map extends Mapper<RuleWritable, Annotation, RuleWritable, IntWritable> {
-    
+
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
       Vocabulary.read(conf, vocabulary_path);
     }
-    
-    protected void map(RuleWritable key, Annotation value, Context context)
-        throws IOException, InterruptedException {
-      RuleWritable marginal = new RuleWritable(key);
-      marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
-      marginal.monotone = true;
-      marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+
+    protected void map(RuleWritable key, Annotation value, Context context) throws IOException,
+        InterruptedException {
+
+      RuleWritable lhs_target_marginal = new RuleWritable(key);
+      lhs_target_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+      lhs_target_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_target_marginal.monotone = false;
+
+      RuleWritable lhs_marginal = new RuleWritable(key);
+      lhs_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
 
       IntWritable count = new IntWritable(value.count());
 
+      context.write(lhs_target_marginal, count);
+      context.write(lhs_marginal, count);
       context.write(key, count);
-      context.write(marginal, count);
     }
   }
 
-  private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
+  private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
+    private DoubleWritable prob;
     private static final Text NAME = new Text("p(e|f)");
-    
+
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
@@ -86,12 +91,13 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
           marginal += x.get();
         return;
       }
-
-      // control only gets here if we are using the same marginal
-      int count = 0;
-      for (IntWritable x : values)
-        count += x.get();
-      DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
+      if (key.lhs == PrimitiveUtils.MARGINAL_ID) {
+        int count = 0;
+        for (IntWritable x : values)
+          count += x.get();
+        prob = new DoubleWritable(-Math.log(count / (double) marginal));
+        return;
+      }
       context.write(key, new FeaturePair(NAME, prob));
     }
 

@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
@@ -26,13 +25,6 @@ public class FeatureCollectionReducer
     MapWritable features = new MapWritable();
     for (FeaturePair fp : values)
       features.put(new Text(fp.key), fp.val.get());
-
-    System.err.println("PIVOTING: " + key.toString());
-    for (Writable k : features.keySet()) {
-      System.err.println("FEAT: " + ((Text) k).toString() + " = "
-          + features.get(k).toString());
-    }
-
     context.write(key, features);
   }
 }

@@ -188,10 +188,8 @@ public class VocabularyJob extends ThraxJob {
       Configuration conf = context.getConfiguration();
       combineNonterminals(conf);
       int size = Vocabulary.size();
-      for (int i = 1; i < size; ++i) {
+      for (int i = 1; i < size; ++i)
         context.write(new IntWritable(i), new Text(Vocabulary.word(i)));
-        System.err.println("VOC " + i + ": " + Vocabulary.word(i));
-      }
     }
 
     private void combineNonterminals(Configuration conf) {

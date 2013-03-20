@@ -125,10 +125,6 @@ public class WordLexicalProbabilityCalculator extends Configured {
       for (IntWritable x : values)
         my_count += x.get();
       context.write(key, new DoubleWritable(my_count / (double) marginalCount));
-
-      System.err.println((sourceGivenTarget ? "SGT" : "TGS") + "LEX: "
-          + Long.toBinaryString(key.get()) + " p(" + Vocabulary.word(src) + " | "
-          + Vocabulary.word(tgt) + ") = " + (my_count / (double) marginalCount));
     }
   }
 
