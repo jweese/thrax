@@ -25,7 +25,7 @@ import edu.jhu.thrax.util.Vocabulary;
 @SuppressWarnings("rawtypes")
 public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
   public String getName() {
-    return "e2fphrase";
+    return "f_given_e_phrase";
   }
 
   public Class<? extends WritableComparator> sortComparatorClass() {
@@ -65,8 +65,6 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
 
       context.write(key, count);
       context.write(marginal, count);
-      
-      System.err.println("MAPPING: " + key.toString() + " COUNT: " + count.get());
     }
   }
 
@@ -87,9 +85,6 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
         marginal = 0;
         for (IntWritable x : values)
           marginal += x.get();
-        
-        System.err.println("MARGINAL: " + key.toString() + " COUNT: " + marginal);
-        
         return;
       }
 
@@ -97,9 +92,6 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
       int count = 0;
       for (IntWritable x : values)
         count += x.get();
-
-      System.err.println("RULE: " + key.toString() + " COUNT: " + count);
-
       DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
       context.write(key, new FeaturePair(NAME, prob));
     }

@@ -13,16 +13,17 @@ import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeature;
 import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureFactory;
 import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureJob;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
 import edu.jhu.thrax.hadoop.jobs.DistributionalContextExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.DistributionalContextSortingJob;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.FeatureCollectionJob;
-import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
 import edu.jhu.thrax.hadoop.jobs.JobState;
 import edu.jhu.thrax.hadoop.jobs.OutputJob;
 import edu.jhu.thrax.hadoop.jobs.ParaphraseAggregationJob;
@@ -32,7 +33,6 @@ import edu.jhu.thrax.hadoop.jobs.SchedulerException;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 import edu.jhu.thrax.hadoop.jobs.VocabularyJob;
 import edu.jhu.thrax.util.ConfFileParser;
-import edu.jhu.thrax.util.FormatUtils;
 
 public class Thrax extends Configured implements Tool {
   private Scheduler scheduler;
@@ -91,6 +91,7 @@ public class Thrax extends Configured implements Tool {
     scheduler = new Scheduler(conf);
 
     String type = conf.get("thrax.type", "translation");
+    String features = conf.get("thrax.features", "");
 
     System.err.println("Running in mode: " + type);
 
@@ -99,23 +100,21 @@ public class Thrax extends Configured implements Tool {
     if ("translation".equals(type)) {
       // Schedule rule extraction job.
       scheduler.schedule(ExtractionJob.class);
-      
-      // Create feature map-reduces, establish whether annotation features were requested.
-      boolean annotation_features = false;
-      for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
-        MapReduceFeature f = FeatureJobFactory.get(feature);
-        if (f != null) {
-          scheduler.schedule(f.getClass());
-          OutputJob.addPrerequisite(f.getClass());
-        }
-        if (AnnotationFeatureFactory.get(feature) != null)
-          annotation_features = true;
+      // Create feature map-reduces.
+      for (MapReduceFeature f : MapReduceFeatureFactory.getAll(features)) {
+        scheduler.schedule(f.getClass());
+        OutputJob.addPrerequisite(f.getClass());
       }
-      if (annotation_features) {
+      // Set up annotation-level feature & prerequisites.
+      List<AnnotationFeature> annotation_features = AnnotationFeatureFactory.getAll(features); 
+      for (AnnotationFeature f : annotation_features)
+        AnnotationFeatureJob.addPrerequisites(f.getPrerequisites());
+      if (!annotation_features.isEmpty()) {
         scheduler.schedule(AnnotationFeatureJob.class);
         OutputJob.addPrerequisite(AnnotationFeatureJob.class);
-      }      
+      }
       scheduler.schedule(OutputJob.class);
+      
       scheduler.percolate(OutputJob.class);
     } else if ("paraphrasing".equals(type)) {
       // Schedule rule extraction job.
@@ -131,7 +130,7 @@ public class Thrax extends Configured implements Tool {
       // Next, schedule translation features and register with feature
       // collection job.
       for (String f_name : prereq_features) {
-        MapReduceFeature f = FeatureJobFactory.get(f_name);
+        MapReduceFeature f = MapReduceFeatureFactory.get(f_name);
         if (f != null) {
           scheduler.schedule(f.getClass());
           FeatureCollectionJob.addPrerequisite(f.getClass());

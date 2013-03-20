@@ -42,7 +42,7 @@ public class VocabularyJob extends ThraxJob {
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
     if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
-    
+
     FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "vocabulary"));
 
     job.setNumReduceTasks(1);
@@ -136,10 +136,13 @@ public class VocabularyJob extends ThraxJob {
               if (!nonterminal)
                 context.write(new Text(input.substring(from, to)), NullWritable.get());
             } else {
-              if (nonterminal)
-                context.write(new Text("[" + input.substring(from, to)), NullWritable.get());
-              else
+              if (nonterminal) {
+                String nt = input.substring(from, to);
+                if (nt.equals(",")) nt = "COMMA";
+                context.write(new Text("[" + nt), NullWritable.get());
+              } else {
                 context.write(new Text(input.substring(from, to)), NullWritable.get());
+              }
             }
             from = to + 1;
             seeking = true;
@@ -185,8 +188,10 @@ public class VocabularyJob extends ThraxJob {
       Configuration conf = context.getConfiguration();
       combineNonterminals(conf);
       int size = Vocabulary.size();
-      for (int i = 1; i < size; ++i)
+      for (int i = 1; i < size; ++i) {
         context.write(new IntWritable(i), new Text(Vocabulary.word(i)));
+        System.err.println("VOC " + i + ": " + Vocabulary.word(i));
+      }
     }
 
     private void combineNonterminals(Configuration conf) {

@@ -15,8 +15,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
-import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
 import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.util.FormatUtils;
@@ -59,7 +59,7 @@ public class OutputTool extends Configured implements Tool
         job.setOutputValueClass(NullWritable.class);
 
         for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
-            if (FeatureJobFactory.get(feature) instanceof MapReduceFeature) {
+            if (MapReduceFeatureFactory.get(feature) instanceof MapReduceFeature) {
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
             }
         }

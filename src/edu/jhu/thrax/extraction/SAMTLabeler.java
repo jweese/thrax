@@ -61,6 +61,7 @@ public class SAMTLabeler implements SpanLabeler {
       case BOTTOM:
         return nodes.get(nodes.size() - 1).label();
       case ALL:
+        // TODO: currently broken.
         String result = Vocabulary.word(nodes.get(0).label());
         for (int i = 1; i < nodes.size(); i++)
           result += ":" + Vocabulary.word(nodes.get(i).label());
@@ -91,7 +92,7 @@ public class SAMTLabeler implements SpanLabeler {
     for (int start = from - 1; start >= 0; start--) {
       int a = constituentLabel(start, to);
       int b = constituentLabel(start, from);
-      if (a != 0 && b != 0) return join(a, b, "\\");
+      if (a != 0 && b != 0) return join(b, a, "\\");
     }
     return 0;
   }
@@ -107,9 +108,12 @@ public class SAMTLabeler implements SpanLabeler {
     }
     return 0;
   }
-  
+
   private static int join(int a, int b, String glue) {
-    return Vocabulary.id(Vocabulary.word(a) + glue + Vocabulary.word(b));
+    String word_a = Vocabulary.word(a);
+    String word_b = Vocabulary.word(b);
+    return Vocabulary.id(word_a.substring(0, word_a.length() - 1) + glue
+        + word_b.substring(1));
   }
 
   private enum UnaryCategoryHandler {

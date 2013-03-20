@@ -7,26 +7,23 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 
-public class TargetWordGivenSourceWordProbabilityJob extends WordLexprobJob
-{
-	public TargetWordGivenSourceWordProbabilityJob()
-	{
-		super(false);
-	}
+public class TargetWordGivenSourceWordProbabilityJob extends WordLexprobJob {
 
-    public Job getJob(Configuration conf) throws IOException
-    {
-        Job job = super.getJob(conf);
-        FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "lexprobsf2e"));
-        return job;
-    }
-    
-    public String getName() {
-    	return "target-word-lexprob";
-    }
-    
-    public String getOutputSuffix() {
-    	return "lexprobsf2e";
-    }
+  public TargetWordGivenSourceWordProbabilityJob() {
+    super(false);
+  }
+
+  public Job getJob(Configuration conf) throws IOException {
+    Job job = super.getJob(conf);
+    FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "lexprobs_tgs"));
+    return job;
+  }
+
+  public String getName() {
+    return "target-word-lexprob";
+  }
+
+  public String getOutputSuffix() {
+    return "lexprobs_tgs";
+  }
 }
-

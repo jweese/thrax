@@ -59,6 +59,10 @@ public class ParseTree {
     ss.add(start);
     es.add(end);
   }
+  
+  private static void increment(List<Integer> list, int index) {
+    list.set(index, list.get(index) + 1);
+  }
 
   private static void buildLists(List<Integer> ls, List<Integer> cs, List<Integer> ss,
       List<Integer> es, String line) {
@@ -78,6 +82,7 @@ public class ParseTree {
           ++from;
           nonterminal = true;
         } else if (current == ')') {
+          ++from;
           ancestors.pop();
         } else if (current == ' ') {
           ++from;
@@ -88,30 +93,29 @@ public class ParseTree {
       } else {
         current = input.charAt(to);
         if (current == ' ' || current == ')' || current == '(') {
-          int token = Vocabulary.id(input.substring(from, to));
           if (nonterminal) {
+            String nt = input.substring(from, to);
+            if (nt.equals(",")) nt = "COMMA";
+            int token = Vocabulary.id("[" + nt + "]");
             nonterminal = false;
             addToken(ls, cs, ss, es, token, count, count);
             if (!ancestors.empty()) increment(cs, ancestors.peek());
             ancestors.push(ls.size() - 1);
           } else {
+            int token = Vocabulary.id(input.substring(from, to));
             addToken(ls, cs, ss, es, token, count, count + 1);
             for (int i : ancestors)
               increment(es, i);
             if (!ancestors.empty()) increment(cs, ancestors.peek());
             count++;
           }
-          from = to + 1;
+          from = to;
           seeking = true;
         } else {
           ++to;
         }
       }
     }
-  }
-
-  private static void increment(List<Integer> list, int index) {
-    list.set(index, list.get(index) + 1);
   }
 
   public Node root() {

@@ -12,6 +12,12 @@ public class AnnotationFeatureFactory {
       return new UnalignedSourceCounterFeature();
     else if (name.equals("unaligned-target"))
       return new UnalignedTargetCounterFeature();
+    else if (name.equals("rarity"))
+      return new RarityPenaltyFeature();
+    else if (name.equals("f_given_e_lex"))
+      return new SourceGivenTargetLexicalProbabilityFeature();
+    else if (name.equals("e_given_f_lex"))
+      return new TargetGivenSourceLexicalProbabilityFeature();
     else if (name.equals("alignment")) return new AlignmentFeature();
 
     return null;

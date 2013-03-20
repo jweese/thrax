@@ -67,7 +67,7 @@ public class SourceWordGivenTargetWordProbabilityTool extends Configured impleme
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         FileInputFormat.setInputPaths(job, new Path(input));
-        FileOutputFormat.setOutputPath(job, new Path(workDir + "lexprobse2f"));
+        FileOutputFormat.setOutputPath(job, new Path(workDir + "lexprobs_sgt"));
 
         job.submit();
         return 0;

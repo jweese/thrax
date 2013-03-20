@@ -115,8 +115,8 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
         cmp = PrimitiveUtils.compare(b1[s1], b2[s2]);
         if (cmp != 0) return cmp;
 
-        int lhs1 = WritableComparator.readVInt(b1, s1 + 1);
-        int lhs2 = WritableComparator.readVInt(b2, s2 + 1);
+        int lhs1 = Math.abs(WritableComparator.readVInt(b1, s1 + 1));
+        int lhs2 = Math.abs(WritableComparator.readVInt(b2, s2 + 1));
         cmp = PrimitiveUtils.compare(lhs1, lhs2);
         if (cmp != 0) return cmp;
 

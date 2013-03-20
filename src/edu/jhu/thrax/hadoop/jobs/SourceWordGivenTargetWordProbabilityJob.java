@@ -12,10 +12,10 @@ public class SourceWordGivenTargetWordProbabilityJob extends WordLexprobJob {
   public SourceWordGivenTargetWordProbabilityJob() {
     super(true);
   }
-  
+
   public Job getJob(Configuration conf) throws IOException {
     Job job = super.getJob(conf);
-    FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "lexprobse2f"));
+    FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "lexprobs_sgt"));
     return job;
   }
 
@@ -24,6 +24,6 @@ public class SourceWordGivenTargetWordProbabilityJob extends WordLexprobJob {
   }
 
   public String getOutputSuffix() {
-    return "lexprobse2f";
+    return "lexprobs_sgt";
   }
 }

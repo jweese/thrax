@@ -9,6 +9,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.Vocabulary;
 
 public class AnnotationReducer extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair> {
 
@@ -18,7 +19,12 @@ public class AnnotationReducer extends Reducer<RuleWritable, Annotation, RuleWri
 
   protected void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
+    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+    Vocabulary.read(conf, vocabulary_path);
+
     features = AnnotationFeatureFactory.getAll(conf.get("thrax.features", ""));
+    for (AnnotationFeature af : features)
+      af.init(context);
   }
 
   protected void reduce(RuleWritable key, Iterable<Annotation> values, Context context)

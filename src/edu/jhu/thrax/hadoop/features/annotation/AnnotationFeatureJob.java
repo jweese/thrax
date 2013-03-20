@@ -23,6 +23,24 @@ public class AnnotationFeatureJob extends ThraxJob {
 
   public AnnotationFeatureJob() {}
 
+  protected static HashSet<Class<? extends ThraxJob>> prereqs =
+      new HashSet<Class<? extends ThraxJob>>();
+
+  public Set<Class<? extends ThraxJob>> getPrerequisites() {
+    prereqs.add(ExtractionJob.class);
+    return prereqs;
+  }
+
+  public static void addPrerequisites(Iterable<Class<? extends ThraxJob>> cs) {
+    if (cs != null)
+      for (Class<? extends ThraxJob> c : cs)
+        prereqs.add(c);
+  }
+
+  public static void addPrerequisite(Class<? extends ThraxJob> c) {
+    prereqs.add(c);
+  }
+
   public String getOutputSuffix() {
     return getName();
   }
@@ -49,12 +67,6 @@ public class AnnotationFeatureJob extends ThraxJob {
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "rules"));
     FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "annotation"));
     return job;
-  }
-
-  public Set<Class<? extends ThraxJob>> getPrerequisites() {
-    Set<Class<? extends ThraxJob>> result = new HashSet<Class<? extends ThraxJob>>();
-    result.add(ExtractionJob.class);
-    return result;
   }
 
   @Override

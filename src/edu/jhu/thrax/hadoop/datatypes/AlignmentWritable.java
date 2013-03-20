@@ -65,7 +65,7 @@ public class AlignmentWritable implements Writable {
 
   public String toString(String glue) {
     StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < points.length; ++i) {
+    for (int i = 0; i < points.length / 2; ++i) {
       if (i != 0) sb.append(glue);
       sb.append(points[2 * i]);
       sb.append("-");

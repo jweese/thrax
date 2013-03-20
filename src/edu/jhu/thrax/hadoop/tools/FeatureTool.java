@@ -15,8 +15,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
-import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
 import edu.jhu.thrax.util.ConfFileParser;
 
 public class FeatureTool extends Configured implements Tool
@@ -29,7 +29,7 @@ public class FeatureTool extends Configured implements Tool
         }
         String confFile = argv[0];
         String featureName = argv[1];
-        MapReduceFeature f = FeatureJobFactory.get(featureName);
+        MapReduceFeature f = MapReduceFeatureFactory.get(featureName);
         if (!(f instanceof MapReduceFeature)) {
             System.err.println("Not a MapReduceFeature: " + featureName);
             return 1;

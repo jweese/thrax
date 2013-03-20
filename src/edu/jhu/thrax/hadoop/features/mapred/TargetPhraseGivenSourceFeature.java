@@ -13,7 +13,6 @@ import org.apache.hadoop.io.WritableUtils;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
-import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import edu.jhu.thrax.hadoop.comparators.FieldComparator;
 import edu.jhu.thrax.hadoop.comparators.PrimitiveArrayMarginalComparator;
@@ -27,7 +26,7 @@ import edu.jhu.thrax.util.Vocabulary;
 public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
 
   public String getName() {
-    return "f2ephrase";
+    return "e_given_f_phrase";
   }
 
   public Class<? extends WritableComparator> sortComparatorClass() {
@@ -65,8 +64,6 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
 
       context.write(key, count);
       context.write(marginal, count);
-      
-      System.err.println("MAPPING: " + key.toString() + " COUNT: " + count.get());
     }
   }
 
@@ -87,9 +84,6 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
         marginal = 0;
         for (IntWritable x : values)
           marginal += x.get();
-        
-        System.err.println("MARGINAL: " + key.toString() + " COUNT: " + marginal);
-
         return;
       }
 
@@ -97,9 +91,6 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
       int count = 0;
       for (IntWritable x : values)
         count += x.get();
-      
-      System.err.println("RULE: " + key.toString() + " COUNT: " + count);
-
       DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
       context.write(key, new FeaturePair(NAME, prob));
     }
