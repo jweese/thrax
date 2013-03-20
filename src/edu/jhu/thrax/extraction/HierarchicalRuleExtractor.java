@@ -136,15 +136,25 @@ public class HierarchicalRuleExtractor {
     int numSourceTerminals = r.numSourceTerminals();
     int numTargetTerminals = r.numTargetTerminals();
     // Conditions:
-    // 1) limit of the total number of symbols on the source side
-    // 2) limit of the total number of symbols on the target side
-    if (arity > 0 && arity + numSourceTerminals > sourceSymbolLimit) return false;
-    if (arity > 0 && arity + numTargetTerminals > targetSymbolLimit) return false;
-    // 3) minimum number of alignment points
+    // 1) rule size limits
+    if (arity > 0) {
+      // When we are a hierarchical rule,
+      // 1a) limit of the total number of symbols on the source side
+      // 1b) limit of the total number of symbols on the target side
+      if (arity + numSourceTerminals > sourceSymbolLimit) return false;
+      if (arity + numTargetTerminals > targetSymbolLimit) return false;
+    } else {
+      // When we are a lexical rule,
+      // 1c) limit to the overall span limits (even if full sentence rules
+      // are allowed, we don't want to extract some giant 50-word phrase)
+      if (numSourceTerminals > initialPhraseSourceLimit) return false;
+      if (numTargetTerminals > initialPhraseTargetLimit) return false;
+    }
+    // 2) minimum number of alignment points
     if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints) return false;
-    // 4) whether to allow abstract rules (with no terminals)
+    // 3) whether to allow abstract rules (with no terminals)
     if (!allowAbstract && numSourceTerminals == 0 && numTargetTerminals == 0) return false;
-    // 5) whether to allow mixed rules (with NTs and terminals together)
+    // 4) whether to allow mixed rules (with NTs and terminals together)
     if (!allowMixed && arity > 0 && (numSourceTerminals > 0 || numTargetTerminals > 0))
       return false;
     // This is where you add more conditions!
