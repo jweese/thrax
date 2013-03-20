@@ -80,7 +80,8 @@ public class HierarchicalRuleExtractor {
           }
         }
       }
-      if (i == 0 && allowFullSentenceRules) {
+      if (i == 0 && allowFullSentenceRules
+          && !result.contains(fullSentencePhrasePair)) {
         result.add(fullSentencePhrasePair);
       }
     }
