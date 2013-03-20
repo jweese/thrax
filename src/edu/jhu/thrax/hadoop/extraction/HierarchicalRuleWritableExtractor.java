@@ -12,6 +12,7 @@ import org.apache.hadoop.mapreduce.Mapper;
 import edu.jhu.thrax.datatypes.AlignedSentencePair;
 import edu.jhu.thrax.datatypes.Alignment;
 import edu.jhu.thrax.datatypes.HierarchicalRule;
+import edu.jhu.thrax.datatypes.PhrasePair;
 import edu.jhu.thrax.extraction.HierarchicalRuleExtractor;
 import edu.jhu.thrax.extraction.HieroLabeler;
 import edu.jhu.thrax.extraction.ManualSpanLabeler;
@@ -63,9 +64,10 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     boolean adjacent = conf.getBoolean("thrax.adjacent-nts", false);
     boolean abs = conf.getBoolean("thrax.allow-abstract-rules", false);
     boolean mixed = conf.getBoolean("thrax.allow-mixed-rules", true);
+    boolean fullSentence = conf.getBoolean("thrax.allow-full-sentence-rules", true);
     return new HierarchicalRuleExtractor(arity, initialPhraseSource, initialPhraseTarget,
         initialAlignment, initialAligned, sourceLimit, targetLimit, ruleAlignment, adjacent, abs,
-        mixed);
+        mixed, fullSentence);
   }
 
   public Iterable<AnnotatedRule> extract(Text line) {
@@ -93,7 +95,16 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
 
   private RuleWritable toRuleWritable(HierarchicalRule r, SpanLabeler spanLabeler, int[] source,
       int[] target) {
-    int lhs = r.lhsLabel(spanLabeler, sourceLabels);
+    int lhs;
+    PhrasePair lhsPP = r.getLhs();
+    if (lhsPP.sourceStart == 0
+        && lhsPP.sourceEnd == source.length
+        && lhsPP.targetStart == 0
+        && lhsPP.targetEnd == target.length) {
+      lhs = Vocabulary.FULL_SENTENCE_ID;
+    } else {
+      lhs = r.lhsLabel(spanLabeler, sourceLabels);
+    }
     int[] src = r.sourceSide(source, spanLabeler, sourceLabels);
     int[] tgt = r.targetSide(target, spanLabeler, sourceLabels);
     if (!isValidLabeling(lhs, src, tgt)) return null;

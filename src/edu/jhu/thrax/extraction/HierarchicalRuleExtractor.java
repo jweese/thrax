@@ -24,6 +24,8 @@ public class HierarchicalRuleExtractor {
   private int minimumRuleAlignmentPoints = 1;
   private boolean allowAbstract = false;
   private boolean allowMixed = true;
+  private boolean allowFullSentenceRules = true;
+  private PhrasePair fullSentencePhrasePair;
 
   public HierarchicalRuleExtractor() {
     // just use the defaults!
@@ -31,7 +33,7 @@ public class HierarchicalRuleExtractor {
 
   public HierarchicalRuleExtractor(int arity, int initialPhraseSource, int initialPhraseTarget,
       int initialAlignment, boolean initialAligned, int sourceLimit, int targetLimit,
-      int ruleAlignment, boolean adjacent, boolean allow_abstract, boolean allow_mixed) {
+      int ruleAlignment, boolean adjacent, boolean allow_abstract, boolean allow_mixed, boolean allowFullSentence) {
     arityLimit = arity;
     initialPhraseSourceLimit = initialPhraseSource;
     initialPhraseTargetLimit = initialPhraseTarget;
@@ -43,9 +45,11 @@ public class HierarchicalRuleExtractor {
     allowAdjacent = adjacent;
     allowAbstract = allow_abstract;
     allowMixed = allow_mixed;
+    allowFullSentenceRules = allowFullSentence;
   }
 
   public List<HierarchicalRule> extract(int sourceLength, int targetLength, Alignment alignment) {
+    fullSentencePhrasePair = new PhrasePair(0, sourceLength, 0, targetLength);
     List<PhrasePair> initialPhrasePairs = initialPhrasePairs(sourceLength, targetLength, alignment);
 
     HierarchicalRule[][] rulesByArity = new HierarchicalRule[arityLimit + 1][];
@@ -75,6 +79,9 @@ public class HierarchicalRuleExtractor {
             }
           }
         }
+      }
+      if (i == 0 && allowFullSentenceRules) {
+        result.add(fullSentencePhrasePair);
       }
     }
     return result;
@@ -124,15 +131,20 @@ public class HierarchicalRuleExtractor {
   }
 
   private boolean isValid(HierarchicalRule r, Alignment a) {
-    // Conditions:
-    // 1) limit of the total number of symbols on the source side
-    // 2) limit of the total number of symbols on the target side
-    // 3) minimum number of alignment points
     int arity = r.arity();
     int numSourceTerminals = r.numSourceTerminals();
     int numTargetTerminals = r.numTargetTerminals();
-    if (arity > 0 && arity + numSourceTerminals > sourceSymbolLimit) return false;
-    if (arity > 0 && arity + numTargetTerminals > targetSymbolLimit) return false;
+    // Conditions:
+    // 1) limit of the total number of symbols on the source side
+    // 2) limit of the total number of symbols on the target side
+    //
+    // We only want to perform checks against symbol limits if this isn't
+    // a full-sentence rule.
+    if (r.getLhs() != fullSentencePhrasePair) {
+      if (arity > 0 && arity + numSourceTerminals > sourceSymbolLimit) return false;
+      if (arity > 0 && arity + numTargetTerminals > targetSymbolLimit) return false;
+    }
+    // 3) minimum number of alignment points
     if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints) return false;
     // 4) whether to allow abstract rules (with no terminals)
     if (!allowAbstract && numSourceTerminals == 0 && numTargetTerminals == 0) return false;
