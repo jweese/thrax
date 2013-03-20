@@ -212,6 +212,7 @@ public class VocabularyJob extends ThraxJob {
         addNonterminals(double_concat);
       }
       Vocabulary.id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
+      Vocabulary.id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
     }
 
     private ArrayList<String> joinNonterminals(String glue, ArrayList<String> prefixes) {

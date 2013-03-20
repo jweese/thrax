@@ -43,8 +43,6 @@ public class Vocabulary {
 
   private static final int UNKNOWN_ID;
   private static final String UNKNOWN_WORD;
-  public static final int FULL_SENTENCE_ID;
-  public static final String FULL_SENTENCE_LABEL;
 
   public static final String START_SYM = "<s>";
   public static final String STOP_SYM = "</s>";
@@ -54,8 +52,6 @@ public class Vocabulary {
 
     UNKNOWN_ID = 0;
     UNKNOWN_WORD = "<unk>";
-    FULL_SENTENCE_ID = 1;
-    FULL_SENTENCE_LABEL = "_S";
 
     clear();
   }
@@ -256,7 +252,6 @@ public class Vocabulary {
     idToString = new ArrayList<String>();
 
     idToString.add(UNKNOWN_ID, UNKNOWN_WORD);
-    idToString.add(FULL_SENTENCE_ID, FULL_SENTENCE_LABEL);
   }
 
   /**

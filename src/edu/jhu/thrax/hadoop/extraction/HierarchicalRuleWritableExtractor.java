@@ -34,6 +34,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
   private boolean reverse;
   private boolean sourceLabels;
   private int defaultLabel;
+  private int fullSentenceLabel;
   private boolean allowDefaultLHSOnNonlexicalRules;
 
   private HierarchicalRuleExtractor extractor;
@@ -48,6 +49,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     // TODO: this configuration key needs a more general name now
     sourceLabels = !conf.getBoolean("thrax.target-is-samt-syntax", true);
     defaultLabel = Vocabulary.id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
+    fullSentenceLabel = Vocabulary.id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
     allowDefaultLHSOnNonlexicalRules = conf.getBoolean("thrax.allow-nonlexical-x", true);
     extractor = getExtractor(conf);
   }
@@ -101,7 +103,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
         && lhsPP.sourceEnd == source.length
         && lhsPP.targetStart == 0
         && lhsPP.targetEnd == target.length) {
-      lhs = Vocabulary.FULL_SENTENCE_ID;
+      lhs = fullSentenceLabel;
     } else {
       lhs = r.lhsLabel(spanLabeler, sourceLabels);
     }
