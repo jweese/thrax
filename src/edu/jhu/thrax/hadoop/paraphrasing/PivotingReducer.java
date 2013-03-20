@@ -113,6 +113,8 @@ public class PivotingReducer extends Reducer<RuleWritable, MapWritable, RuleWrit
       for (Writable w : tgt.features.keySet())
         tgt_f.append(w.toString() + "=" + tgt.features.get(w) + " ");
 
+      e.printStackTrace();
+      
       throw new RuntimeException(Vocabulary.getWords(src.rhs) + " \n "
           + Vocabulary.getWords(tgt.rhs) + " \n " + src_f.toString() + " \n " + tgt_f.toString()
           + " \n");

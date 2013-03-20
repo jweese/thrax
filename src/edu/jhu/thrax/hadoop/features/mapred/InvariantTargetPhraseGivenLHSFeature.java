@@ -19,7 +19,6 @@ import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.util.FormatUtils;
 
 public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
 
@@ -45,43 +44,27 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
 
   private static class Map extends Mapper<RuleWritable, Annotation, RuleWritable, IntWritable> {
 
-    protected void map(RuleWritable key, Annotation value, Context context)
-        throws IOException, InterruptedException {
+    protected void map(RuleWritable key, Annotation value, Context context) throws IOException,
+        InterruptedException {
       RuleWritable lhs_marginal = new RuleWritable(key);
       RuleWritable marginal = new RuleWritable(key);
-      RuleWritable invariant_key = new RuleWritable(key);
-
-      boolean monotonic = true;
-      boolean seen_first = false;
-      int[] zeroed = new int[key.target.length];
-      for (int i = 0; i < zeroed.length; ++i) {
-        if (key.target[i] < 0) {
-          zeroed[i] = -1;
-          if (key.target[i] == -1) seen_first = true;
-          if (key.target[i] == -2 && !seen_first) monotonic = false;
-        } else {
-          zeroed[i] = key.target[i];
-        }
-      }
 
       lhs_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
       lhs_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_marginal.monotone = false;
 
       marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
-      marginal.target = zeroed;
-
-      invariant_key.target = zeroed;
+      marginal.monotone = false;
 
       IntWritable count = new IntWritable(value.count());
 
-      context.write(invariant_key, new IntWritable(monotonic ? 1 : 60000));
+      context.write(key, count);
       context.write(marginal, count);
       context.write(lhs_marginal, count);
     }
   }
 
-  private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
+  private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private DoubleWritable prob;
     private static final Text NAME = new Text("p(e_inv|LHS)");
@@ -106,18 +89,7 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
         prob = new DoubleWritable(-Math.log(count / (double) marginal));
         return;
       }
-      RuleWritable result = new RuleWritable(key);
-      for (IntWritable x : values) {
-        int signal = x.get();
-        if (signal % 60000 >= 1) {
-          result.target = FormatUtils.applyIndices(key.target, true);
-          context.write(result, new FeaturePair(NAME, prob));
-        }
-        if (signal / 60000 >= 1) {
-          result.target = FormatUtils.applyIndices(key.target, false);
-          context.write(result, new FeaturePair(NAME, prob));
-        }
-      }
+      context.write(key, new FeaturePair(NAME, prob));
     }
   }
 
@@ -143,7 +115,10 @@ public class InvariantTargetPhraseGivenLHSFeature extends MapReduceFeature {
         cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
         if (cmp != 0) return cmp;
 
-        return SOURCE_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
+        cmp = SOURCE_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
+        if (cmp != 0) return cmp;
+
+        return PrimitiveUtils.compare(b1[s1], b2[s2]);
       } catch (IOException e) {
         throw new IllegalArgumentException(e);
       }

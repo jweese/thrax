@@ -22,7 +22,8 @@ public class PivotedLexicalTargetGivenSourceFeature extends
 
 	public Set<String> getPrerequisites() {
 		Set<String> prereqs = new HashSet<String>();
-		prereqs.add("lexprob");
+		prereqs.add("f_given_e_lex");
+		prereqs.add("e_given_f_lex");
 		return prereqs;
 	}
 

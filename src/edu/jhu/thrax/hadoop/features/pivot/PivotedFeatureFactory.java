@@ -14,9 +14,9 @@ public class PivotedFeatureFactory {
       return new PivotedSourcePhraseGivenTargetFeature();
     else if (name.equals("rarity"))
       return new PivotedRarityPenaltyFeature();
-    else if (name.equals("lexprob_sgt"))
+    else if (name.equals("f_given_e_lex"))
       return new PivotedLexicalSourceGivenTargetFeature();
-    else if (name.equals("lexprob_tgs"))
+    else if (name.equals("e_given_f_lex"))
       return new PivotedLexicalTargetGivenSourceFeature();
     else if (name.equals("f_given_lhs"))
       return new PivotedSourcePhraseGivenLHSFeature();

@@ -97,6 +97,7 @@ public class Thrax extends Configured implements Tool {
 
     scheduler.schedule(VocabularyJob.class);
 
+    // Translation grammar mode.
     if ("translation".equals(type)) {
       // Schedule rule extraction job.
       scheduler.schedule(ExtractionJob.class);
@@ -106,7 +107,7 @@ public class Thrax extends Configured implements Tool {
         OutputJob.addPrerequisite(f.getClass());
       }
       // Set up annotation-level feature & prerequisites.
-      List<AnnotationFeature> annotation_features = AnnotationFeatureFactory.getAll(features); 
+      List<AnnotationFeature> annotation_features = AnnotationFeatureFactory.getAll(features);
       for (AnnotationFeature f : annotation_features)
         AnnotationFeatureJob.addPrerequisites(f.getPrerequisites());
       if (!annotation_features.isEmpty()) {
@@ -114,8 +115,10 @@ public class Thrax extends Configured implements Tool {
         OutputJob.addPrerequisite(AnnotationFeatureJob.class);
       }
       scheduler.schedule(OutputJob.class);
-      
+
       scheduler.percolate(OutputJob.class);
+
+      // Paraphrase grammar mode.
     } else if ("paraphrasing".equals(type)) {
       // Schedule rule extraction job.
       scheduler.schedule(ExtractionJob.class);
@@ -129,12 +132,26 @@ public class Thrax extends Configured implements Tool {
       }
       // Next, schedule translation features and register with feature
       // collection job.
+      boolean annotation_features = false;
       for (String f_name : prereq_features) {
-        MapReduceFeature f = MapReduceFeatureFactory.get(f_name);
-        if (f != null) {
-          scheduler.schedule(f.getClass());
-          FeatureCollectionJob.addPrerequisite(f.getClass());
+        
+        System.err.println("PREREQ: " + f_name);
+        
+        MapReduceFeature mf = MapReduceFeatureFactory.get(f_name);
+        if (mf != null) {
+          scheduler.schedule(mf.getClass());
+          FeatureCollectionJob.addPrerequisite(mf.getClass());
+        } else {
+          AnnotationFeature af = AnnotationFeatureFactory.get(f_name);
+          if (af != null) {
+            AnnotationFeatureJob.addPrerequisites(af.getPrerequisites());
+            annotation_features = true;
+          }
         }
+      }
+      if (annotation_features) {
+        scheduler.schedule(AnnotationFeatureJob.class);
+        FeatureCollectionJob.addPrerequisite(AnnotationFeatureJob.class);
       }
       scheduler.schedule(FeatureCollectionJob.class);
       // Schedule pivoting and pivoted feature computation job.

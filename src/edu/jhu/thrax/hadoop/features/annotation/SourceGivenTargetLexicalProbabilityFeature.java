@@ -15,7 +15,6 @@ import edu.jhu.thrax.hadoop.datatypes.AlignmentWritable;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.jobs.SourceWordGivenTargetWordProbabilityJob;
-import edu.jhu.thrax.hadoop.jobs.TargetWordGivenSourceWordProbabilityJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 import edu.jhu.thrax.lexprob.TrieLexprobTable;
 import edu.jhu.thrax.util.Vocabulary;
@@ -97,7 +96,6 @@ public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFea
 
   public Set<Class<? extends ThraxJob>> getPrerequisites() {
     Set<Class<? extends ThraxJob>> pqs = new HashSet<Class<? extends ThraxJob>>();
-    pqs.add(TargetWordGivenSourceWordProbabilityJob.class);
     pqs.add(SourceWordGivenTargetWordProbabilityJob.class);
     return pqs;
   }

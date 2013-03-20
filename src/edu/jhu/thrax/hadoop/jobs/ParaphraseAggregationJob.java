@@ -46,6 +46,7 @@ public class ParaphraseAggregationJob extends ThraxJob {
 
     String outputPath = conf.get("thrax.outputPath", "");
     FileOutputFormat.setOutputPath(job, new Path(outputPath));
+    
     FileOutputFormat.setCompressOutput(job, true);
     FileOutputFormat.setOutputCompressorClass(job, GzipCodec.class);
 
