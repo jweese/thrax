@@ -50,8 +50,8 @@ public class InvariantLhsGivenTargetPhraseFeature extends MapReduceFeature {
       RuleWritable target_marginal = new RuleWritable(key);
       RuleWritable lhs_target_marginal = new RuleWritable(key);
 
-      target_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
       target_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+      target_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
       target_marginal.monotone = false;
 
       lhs_target_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
@@ -114,8 +114,9 @@ public class InvariantLhsGivenTargetPhraseFeature extends MapReduceFeature {
         int cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
         if (cmp != 0) return cmp;
 
-        int lhs1 = WritableComparator.readVInt(b1, s1 + 1);
-        int lhs2 = WritableComparator.readVInt(b2, s2 + 1);
+        // TODO: all the Math.abs() is dumb – fix how rules are written.
+        int lhs1 = Math.abs(WritableComparator.readVInt(b1, s1 + 1));
+        int lhs2 = Math.abs(WritableComparator.readVInt(b2, s2 + 1));
         cmp = PrimitiveUtils.compare(lhs1, lhs2);
         if (cmp != 0) return cmp;
 

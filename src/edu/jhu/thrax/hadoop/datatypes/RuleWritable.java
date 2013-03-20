@@ -57,6 +57,7 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
     monotone = r.monotone;
   }
 
+  // TODO: either encode monotone in LHS sign or always write LHS as positive (for marginal sort)
   public void write(DataOutput out) throws IOException {
     out.writeBoolean(monotone);
     WritableUtils.writeVInt(out, lhs);
