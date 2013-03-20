@@ -64,6 +64,8 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     boolean initialAligned = !conf.getBoolean("thrax.loose", false);
     int sourceLimit = conf.getInt("thrax.nonlex-source-length", 5);
     int targetLimit = conf.getInt("thrax.nonlex-target-length", 5);
+    int lexSourceLimit = conf.getInt("thrax.lex-source-words", 6);
+    int lexTargetLimit = conf.getInt("thrax.lex-target-words", 6);
     int ruleAlignment = conf.getInt("thrax.lexicality", 1);
     boolean adjacent = conf.getBoolean("thrax.adjacent-nts", false);
     boolean abs = conf.getBoolean("thrax.allow-abstract-rules", false);
@@ -71,7 +73,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     boolean fullSentence = conf.getBoolean("thrax.allow-full-sentence-rules", true);
     return new HierarchicalRuleExtractor(arity, initialPhraseSource, initialPhraseTarget,
         initialAlignment, initialAligned, sourceLimit, targetLimit, ruleAlignment, adjacent, abs,
-        mixed, fullSentence);
+        mixed, fullSentence, lexSourceLimit, lexTargetLimit);
   }
 
   public Iterable<AnnotatedRule> extract(Text line) {

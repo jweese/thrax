@@ -22,6 +22,8 @@ public class HierarchicalRuleExtractor {
   private int sourceSymbolLimit = 5;
   private int targetSymbolLimit = 1000;
   private int minimumRuleAlignmentPoints = 1;
+  private int lexicalRuleSourceLimit = 10;
+  private int lexicalRuleTargetLimit = 10;
   private boolean allowAbstract = false;
   private boolean allowMixed = true;
   private boolean allowFullSentenceRules = true;
@@ -33,7 +35,8 @@ public class HierarchicalRuleExtractor {
 
   public HierarchicalRuleExtractor(int arity, int initialPhraseSource, int initialPhraseTarget,
       int initialAlignment, boolean initialAligned, int sourceLimit, int targetLimit,
-      int ruleAlignment, boolean adjacent, boolean allow_abstract, boolean allow_mixed, boolean allowFullSentence) {
+      int ruleAlignment, boolean adjacent, boolean allow_abstract, boolean allow_mixed,
+      boolean allowFullSentence, int lexSourceLimit, int lexTargetLimit) {
     arityLimit = arity;
     initialPhraseSourceLimit = initialPhraseSource;
     initialPhraseTargetLimit = initialPhraseTarget;
@@ -42,6 +45,8 @@ public class HierarchicalRuleExtractor {
     sourceSymbolLimit = sourceLimit;
     targetSymbolLimit = targetLimit;
     minimumRuleAlignmentPoints = ruleAlignment;
+    lexicalRuleSourceLimit = lexSourceLimit;
+    lexicalRuleTargetLimit = lexTargetLimit;
     allowAdjacent = adjacent;
     allowAbstract = allow_abstract;
     allowMixed = allow_mixed;
@@ -145,10 +150,10 @@ public class HierarchicalRuleExtractor {
       if (arity + numTargetTerminals > targetSymbolLimit) return false;
     } else {
       // When we are a lexical rule,
-      // 1c) limit to the overall span limits (even if full sentence rules
+      // 1c) use lexical rule limits (even if full sentence rules
       // are allowed, we don't want to extract some giant 50-word phrase)
-      if (numSourceTerminals > initialPhraseSourceLimit) return false;
-      if (numTargetTerminals > initialPhraseTargetLimit) return false;
+      if (numSourceTerminals > lexicalRuleSourceLimit) return false;
+      if (numTargetTerminals > lexicalRuleTargetLimit) return false;
     }
     // 2) minimum number of alignment points
     if (r.numAlignmentPoints(a) < minimumRuleAlignmentPoints) return false;
