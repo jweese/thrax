@@ -24,7 +24,7 @@ public class AmazonConfigFileLoader {
     }
 
     AmazonS3 s3 = new AmazonS3Client(new PropertiesCredentials(resStream));
-    return (InputStream) s3.getObject(
+    return s3.getObject(
         new GetObjectRequest(configURI.getHost(), configURI.getPath().replaceFirst("/+", "")))
         .getObjectContent();
   }
