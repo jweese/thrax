@@ -128,7 +128,7 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
 
   public static class YieldPartitioner extends Partitioner<RuleWritable, Writable> {
     public int getPartition(RuleWritable key, Writable value, int numPartitions) {
-      return (hashCode() & Integer.MAX_VALUE) % numPartitions;
+      return (key.hashCode() & Integer.MAX_VALUE) % numPartitions;
     }
   }
 

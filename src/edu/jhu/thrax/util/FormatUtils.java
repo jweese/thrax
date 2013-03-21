@@ -125,7 +125,9 @@ public class FormatUtils {
       String score;
       Writable val = fs.get(t);
       if (val instanceof DoubleWritable) {
-        score = String.format("%.5f", ((DoubleWritable) fs.get(t)).get());
+        double value = ((DoubleWritable) fs.get(t)).get();
+        if (value == -0.0) value = 0;
+        score = String.format("%.5f", value);
         if (sparse && Double.parseDouble(score) == 0) continue;
       } else if (val instanceof IntWritable) {
         score = String.format("%d", ((IntWritable) fs.get(t)).get());
