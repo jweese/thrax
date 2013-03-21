@@ -63,14 +63,12 @@ public class WordLexicalProbabilityCalculator extends Configured {
 
       for (int i = 0; i < source.length; i++) {
         int src = source[i];
-
         if (alignment.sourceIndexIsAligned(i)) {
           Iterator<Integer> target_indices = alignment.targetIndicesAlignedTo(i);
           while (target_indices.hasNext()) {
             int tgt = target[target_indices.next()];
             long pair = ((long) tgt << 32) + src;
             long marginal = ((long) tgt << 32) + MARGINAL;
-
             counts.put(pair, counts.containsKey(pair) ? counts.get(pair) + 1 : 1);
             counts.put(marginal, counts.containsKey(marginal) ? counts.get(marginal) + 1 : 1);
           }
@@ -81,7 +79,6 @@ public class WordLexicalProbabilityCalculator extends Configured {
           counts.put(marginal, counts.containsKey(marginal) ? counts.get(marginal) + 1 : 1);
         }
       }
-
       for (long pair : counts.keySet())
         context.write(new LongWritable(pair), new IntWritable(counts.get(pair)));
     }
@@ -94,7 +91,8 @@ public class WordLexicalProbabilityCalculator extends Configured {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-
+      
+      // TODO: remove unnecessary vocabulary loads?
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
       Vocabulary.read(conf, vocabulary_path);
     }
