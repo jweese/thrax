@@ -91,23 +91,19 @@ public class WordLexicalProbabilityCalculator extends Configured {
       extends Reducer<LongWritable, IntWritable, LongWritable, DoubleWritable> {
     private int current = -1;
     private int marginalCount;
-    
-//    private boolean sourceGivenTarget;
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
 
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
       Vocabulary.read(conf, vocabulary_path);
-      
-//      sourceGivenTarget = conf.getBoolean(WordLexprobJob.SOURCE_GIVEN_TARGET, false);
     }
 
     protected void reduce(LongWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       long pair = key.get();
       int tgt = (int) (pair >> 32);
-      int src = (int) pair;
+      int src = (int) (pair & 0xFFFFFFFFL);
 
       if (tgt != current) {
         if (src != MARGINAL) throw new RuntimeException("Sorting something before marginal.");
@@ -115,11 +111,6 @@ public class WordLexicalProbabilityCalculator extends Configured {
         marginalCount = 0;
         for (IntWritable x : values)
           marginalCount += x.get();
-        
-//        System.err.println((sourceGivenTarget ? "SGT" : "TGS") + "MAR: "
-//            + Long.toBinaryString(key.get()) + " c(" + Vocabulary.word(src) + " | "
-//            + Vocabulary.word(tgt) + ") = " + marginalCount);
-        
         return;
       }
       // Control only gets here if we are using the same marginal
@@ -127,10 +118,6 @@ public class WordLexicalProbabilityCalculator extends Configured {
       for (IntWritable x : values)
         my_count += x.get();
       context.write(key, new DoubleWritable(my_count / (double) marginalCount));
-      
-//      System.err.println((sourceGivenTarget ? "SGT" : "TGS") + "LEX: "
-//          + Long.toBinaryString(key.get()) + " p(" + Vocabulary.word(src) + " | "
-//          + Vocabulary.word(tgt) + ") = " + (my_count / (double) marginalCount));
     }
   }
 

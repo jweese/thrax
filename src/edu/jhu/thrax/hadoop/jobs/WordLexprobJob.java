@@ -14,7 +14,6 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 
-import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
 public abstract class WordLexprobJob extends ThraxJob {
@@ -39,7 +38,6 @@ public abstract class WordLexprobJob extends ThraxJob {
     job.setMapperClass(WordLexicalProbabilityCalculator.Map.class);
     job.setCombinerClass(IntSumReducer.class);
     
-    job.setSortComparatorClass(TextPair.SndMarginalComparator.class);
     job.setPartitionerClass(WordLexicalProbabilityCalculator.Partition.class);
     job.setReducerClass(WordLexicalProbabilityCalculator.Reduce.class);
 
