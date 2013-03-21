@@ -9,12 +9,13 @@ import org.apache.hadoop.mapreduce.Reducer;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.Vocabulary;
 
 public class AnnotationReducer extends Reducer<RuleWritable, Annotation, RuleWritable, FeaturePair> {
 
-  private List<AnnotationFeature> features;
-  
+  private List<AnnotationFeature> annotationFeatures;
+
   public AnnotationReducer() {}
 
   protected void setup(Context context) throws IOException, InterruptedException {
@@ -22,15 +23,17 @@ public class AnnotationReducer extends Reducer<RuleWritable, Annotation, RuleWri
     String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
     Vocabulary.read(conf, vocabulary_path);
 
-    features = AnnotationFeatureFactory.getAll(conf.get("thrax.features", ""));
-    for (AnnotationFeature af : features)
+    String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
+
+    annotationFeatures = AnnotationFeatureFactory.getAll(features);
+    for (AnnotationFeature af : annotationFeatures)
       af.init(context);
   }
 
   protected void reduce(RuleWritable key, Iterable<Annotation> values, Context context)
       throws IOException, InterruptedException {
     for (Annotation annotation : values) {
-      for (AnnotationFeature f : features) {
+      for (AnnotationFeature f : annotationFeatures) {
         context.write(key, new FeaturePair(f.getName(), f.score(key, annotation)));
       }
     }

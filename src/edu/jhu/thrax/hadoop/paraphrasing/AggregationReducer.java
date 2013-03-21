@@ -16,6 +16,7 @@ import edu.jhu.thrax.hadoop.features.SimpleFeature;
 import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
+import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.FormatUtils;
 
 public class AggregationReducer extends Reducer<RuleWritable, MapWritable, Text, NullWritable> {
@@ -31,8 +32,10 @@ public class AggregationReducer extends Reducer<RuleWritable, MapWritable, Text,
     label = conf.getBoolean("thrax.label-feature-scores", true);
     sparse = conf.getBoolean("thrax.sparse-feature-vectors", false);
 
-    simpleFeatures = SimpleFeatureFactory.getAll(conf.get("thrax.features", ""));
-    pivotedFeatures = PivotedFeatureFactory.getAll(conf.get("thrax.features", ""));
+    String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
+    
+    simpleFeatures = SimpleFeatureFactory.getAll(features);
+    pivotedFeatures = PivotedFeatureFactory.getAll(features);
   }
 
   protected void reduce(RuleWritable key, Iterable<MapWritable> values, Context context)

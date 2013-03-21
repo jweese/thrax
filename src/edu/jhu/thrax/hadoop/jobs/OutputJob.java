@@ -22,6 +22,7 @@ import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureFactory;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
+import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.FormatUtils;
 
 public class OutputJob extends ThraxJob {
@@ -59,7 +60,8 @@ public class OutputJob extends ThraxJob {
     job.setNumReduceTasks(numReducers);
 
     boolean annotation_features = false;
-    for (String feature : FormatUtils.P_SPACE.split(conf.get("thrax.features", ""))) {
+    String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
+    for (String feature : FormatUtils.P_SPACE.split(features)) {
       if (MapReduceFeatureFactory.get(feature) instanceof MapReduceFeature)
         FileInputFormat.addInputPath(job, new Path(workDir + feature));
       if (AnnotationFeatureFactory.get(feature) != null) annotation_features = true;

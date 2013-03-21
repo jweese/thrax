@@ -18,6 +18,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
+import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.Vocabulary;
 
 public class PivotingReducer extends Reducer<RuleWritable, MapWritable, RuleWritable, MapWritable> {
@@ -33,7 +34,7 @@ public class PivotingReducer extends Reducer<RuleWritable, MapWritable, RuleWrit
   private int lhs;
 
   private List<ParaphrasePattern> targets;
-  private List<PivotedFeature> features;
+  private List<PivotedFeature> pivotedFeatures;
 
   private Map<Text, PruningRule> translationPruningRules;
   private Map<Text, PruningRule> pivotedPruningRules;
@@ -43,7 +44,8 @@ public class PivotingReducer extends Reducer<RuleWritable, MapWritable, RuleWrit
     String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
     Vocabulary.read(conf, vocabulary_path);
     
-    features = PivotedFeatureFactory.getAll(conf.get("thrax.features", ""));
+    String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
+    pivotedFeatures = PivotedFeatureFactory.getAll(features);
 
     currentLhs = 0;
     currentSrc = null;
@@ -103,7 +105,7 @@ public class PivotingReducer extends Reducer<RuleWritable, MapWritable, RuleWrit
 
     try {
       // Compute the features.
-      for (PivotedFeature f : features)
+      for (PivotedFeature f : pivotedFeatures)
         pivoted_features.put(f.getFeatureLabel(), f.pivot(src.features, tgt.features));
     } catch (Exception e) {
       StringBuilder src_f = new StringBuilder();
@@ -114,7 +116,7 @@ public class PivotingReducer extends Reducer<RuleWritable, MapWritable, RuleWrit
         tgt_f.append(w.toString() + "=" + tgt.features.get(w) + " ");
 
       e.printStackTrace();
-      
+
       throw new RuntimeException(Vocabulary.getWords(src.rhs) + " \n "
           + Vocabulary.getWords(tgt.rhs) + " \n " + src_f.toString() + " \n " + tgt_f.toString()
           + " \n");

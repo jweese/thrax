@@ -32,6 +32,7 @@ import edu.jhu.thrax.hadoop.jobs.Scheduler;
 import edu.jhu.thrax.hadoop.jobs.SchedulerException;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 import edu.jhu.thrax.hadoop.jobs.VocabularyJob;
+import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.ConfFileParser;
 
 public class Thrax extends Configured implements Tool {
@@ -91,7 +92,7 @@ public class Thrax extends Configured implements Tool {
     scheduler = new Scheduler(conf);
 
     String type = conf.get("thrax.type", "translation");
-    String features = conf.get("thrax.features", "");
+    String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
 
     System.err.println("Running in mode: " + type);
 
@@ -125,8 +126,7 @@ public class Thrax extends Configured implements Tool {
       // Collect the translation grammar features required to compute
       // the requested paraphrasing features.
       Set<String> prereq_features = new HashSet<String>();
-      List<PivotedFeature> pivoted_features =
-          PivotedFeatureFactory.getAll(conf.get("thrax.features", ""));
+      List<PivotedFeature> pivoted_features = PivotedFeatureFactory.getAll(features);
       for (PivotedFeature pf : pivoted_features) {
         prereq_features.addAll(pf.getPrerequisites());
       }
