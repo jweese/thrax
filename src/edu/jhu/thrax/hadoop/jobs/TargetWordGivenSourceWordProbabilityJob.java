@@ -19,10 +19,12 @@ public class TargetWordGivenSourceWordProbabilityJob extends WordLexprobJob {
     return job;
   }
 
+  @Override
   public String getName() {
     return "target-word-lexprob";
   }
 
+  @Override
   public String getOutputSuffix() {
     return "lexprobs_tgs";
   }

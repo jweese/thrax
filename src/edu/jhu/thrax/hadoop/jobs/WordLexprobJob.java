@@ -17,7 +17,7 @@ import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
-public class WordLexprobJob extends ThraxJob {
+public abstract class WordLexprobJob extends ThraxJob {
   public static final String SOURCE_GIVEN_TARGET = "thrax.__wordlexprob_sgt";
   private boolean isSourceGivenTarget;
 
@@ -57,14 +57,5 @@ public class WordLexprobJob extends ThraxJob {
       FileInputFormat.setMaxInputSplitSize(job, maxSplitSize);
     }
     return job;
-  }
-
-  public String getOutputSuffix() {
-    return "wordlexprob";
-  }
-
-  @Override
-  public String getName() {
-    return "source-word-lexprob";
   }
 }

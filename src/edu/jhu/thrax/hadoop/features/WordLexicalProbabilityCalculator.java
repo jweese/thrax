@@ -22,7 +22,7 @@ import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.util.io.InputUtilities;
 
 public class WordLexicalProbabilityCalculator extends Configured {
-  public static final long UNALIGNED = 0xFFFFFFFF00000000L;
+  public static final long UNALIGNED = 0x0000000000000000L;
   public static final long MARGINAL = 0x0000000000000000L;
 
   public static class Map extends Mapper<LongWritable, Text, LongWritable, IntWritable> {
@@ -91,16 +91,16 @@ public class WordLexicalProbabilityCalculator extends Configured {
       extends Reducer<LongWritable, IntWritable, LongWritable, DoubleWritable> {
     private int current = -1;
     private int marginalCount;
-
-    private boolean sourceGivenTarget;
+    
+//    private boolean sourceGivenTarget;
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
 
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
       Vocabulary.read(conf, vocabulary_path);
-
-      sourceGivenTarget = conf.getBoolean(WordLexprobJob.SOURCE_GIVEN_TARGET, false);
+      
+//      sourceGivenTarget = conf.getBoolean(WordLexprobJob.SOURCE_GIVEN_TARGET, false);
     }
 
     protected void reduce(LongWritable key, Iterable<IntWritable> values, Context context)
@@ -109,15 +109,17 @@ public class WordLexicalProbabilityCalculator extends Configured {
       int tgt = (int) (pair >> 32);
       int src = (int) pair;
 
-      // TODO: is this relevant?
-      if (tgt < 0) tgt = Vocabulary.getUnknownId();
-
       if (tgt != current) {
         if (src != MARGINAL) throw new RuntimeException("Sorting something before marginal.");
         current = tgt;
         marginalCount = 0;
         for (IntWritable x : values)
           marginalCount += x.get();
+        
+//        System.err.println((sourceGivenTarget ? "SGT" : "TGS") + "MAR: "
+//            + Long.toBinaryString(key.get()) + " c(" + Vocabulary.word(src) + " | "
+//            + Vocabulary.word(tgt) + ") = " + marginalCount);
+        
         return;
       }
       // Control only gets here if we are using the same marginal
@@ -125,6 +127,10 @@ public class WordLexicalProbabilityCalculator extends Configured {
       for (IntWritable x : values)
         my_count += x.get();
       context.write(key, new DoubleWritable(my_count / (double) marginalCount));
+      
+//      System.err.println((sourceGivenTarget ? "SGT" : "TGS") + "LEX: "
+//          + Long.toBinaryString(key.get()) + " p(" + Vocabulary.word(src) + " | "
+//          + Vocabulary.word(tgt) + ") = " + (my_count / (double) marginalCount));
     }
   }
 
