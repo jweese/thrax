@@ -34,7 +34,7 @@ public abstract class WordLexprobJob extends ThraxJob {
   public Job getJob(Configuration conf) throws IOException {
     Configuration theConf = new Configuration(conf);
     theConf.setBoolean(SOURCE_GIVEN_TARGET, isSourceGivenTarget);
-    Job job = new Job(theConf, "source-word-lexprob");
+    Job job = new Job(theConf, getName());
     job.setJarByClass(WordLexicalProbabilityCalculator.class);
     job.setMapperClass(WordLexicalProbabilityCalculator.Map.class);
     job.setCombinerClass(IntSumReducer.class);
