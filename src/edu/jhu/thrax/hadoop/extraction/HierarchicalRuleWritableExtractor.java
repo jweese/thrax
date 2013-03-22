@@ -91,6 +91,11 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     List<HierarchicalRule> rules = extractor.extract(source.length, target.length, alignment);
     List<AnnotatedRule> result = new ArrayList<AnnotatedRule>(rules.size());
     SpanLabeler labeler = getSpanLabeler(line, context.getConfiguration());
+		if (labeler instanceof HieroLabeler) {
+			// If this is false, we won't extract any rules, because the LHS label
+			// is the default for Hiero.
+			allowDefaultLHSOnNonlexicalRules = true;
+		}
     for (HierarchicalRule r : rules) {
       RuleWritable rule = toRuleWritable(r, labeler, source, target);
       Annotation annotation = annotateRule(r, labeler, source, target, alignment);
