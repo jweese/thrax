@@ -113,16 +113,19 @@ public class VocabularyJob extends ThraxJob {
       boolean seeking = true;
       boolean nonterminal = false;
       char current;
+
+      if (input == null || input.isEmpty() || input.charAt(0) != '(') return;
+
       // Run through entire (potentially parsed) sentence.
       while (from < input.length() && to < input.length()) {
         if (seeking) {
           // Seeking mode: looking for the start of the next symbol.
           current = input.charAt(from);
-          // We skip brackets and spaces.
           if (current == '(' || current == ')' || current == ' ') {
+            // We skip brackets and spaces.
             ++from;
-            // Found a non spacing symbol, go into word filling mode.
           } else {
+            // Found a non spacing symbol, go into word filling mode.
             to = from + 1;
             seeking = false;
             nonterminal = (input.charAt(from - 1) == '(');
@@ -177,6 +180,7 @@ public class VocabularyJob extends ThraxJob {
     protected void reduce(Text key, Iterable<NullWritable> values, Context context)
         throws IOException, InterruptedException {
       String token = key.toString();
+      if (token == null || token.isEmpty()) return;
       if (token.charAt(0) == '[')
         nonterminals.add(token);
       else
