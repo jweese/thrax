@@ -7,7 +7,6 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -15,6 +14,7 @@ import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 
 import edu.jhu.thrax.extraction.Labeling;
 import edu.jhu.thrax.util.FormatUtils;
@@ -29,10 +29,11 @@ public class VocabularyJob extends ThraxJob {
     job.setJarByClass(VocabularyJob.class);
 
     job.setMapperClass(VocabularyJob.Map.class);
+    job.setCombinerClass(IntSumReducer.class);
     job.setReducerClass(VocabularyJob.Reduce.class);
 
     job.setMapOutputKeyClass(Text.class);
-    job.setMapOutputValueClass(NullWritable.class);
+    job.setMapOutputValueClass(IntWritable.class);
 
     job.setOutputKeyClass(IntWritable.class);
     job.setOutputValueClass(Text.class);
@@ -60,7 +61,9 @@ public class VocabularyJob extends ThraxJob {
     return "vocabulary";
   }
 
-  private static class Map extends Mapper<LongWritable, Text, Text, NullWritable> {
+  private static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
+
+    private static final IntWritable ONE = new IntWritable(1);
 
     private boolean sourceParsed;
     private boolean targetParsed;
@@ -97,7 +100,7 @@ public class VocabularyJob extends ThraxJob {
       if (labeling == Labeling.MANUAL && parts.length > 3) {
         String[] labels = FormatUtils.P_SPACE.split(parts[3].trim());
         for (String label : labels)
-          context.write(new Text("[" + label), NullWritable.get());
+          context.write(new Text("[" + label), ONE);
       }
     }
 
@@ -105,7 +108,7 @@ public class VocabularyJob extends ThraxJob {
         InterruptedException {
       String[] tokens = FormatUtils.P_SPACE.split(input);
       for (String token : tokens)
-        context.write(new Text(token), NullWritable.get());
+        context.write(new Text(token), ONE);
     }
 
     protected void extractTokensFromParsed(String input, boolean terminals_only, Context context)
@@ -137,15 +140,14 @@ public class VocabularyJob extends ThraxJob {
           if (current == ' ' || current == ')' || current == '(') {
             // Word ended.
             if (terminals_only) {
-              if (!nonterminal)
-                context.write(new Text(input.substring(from, to)), NullWritable.get());
+              if (!nonterminal) context.write(new Text(input.substring(from, to)), ONE);
             } else {
               if (nonterminal) {
                 String nt = input.substring(from, to);
                 if (nt.equals(",")) nt = "COMMA";
-                context.write(new Text("[" + nt), NullWritable.get());
+                context.write(new Text("[" + nt), ONE);
               } else {
-                context.write(new Text(input.substring(from, to)), NullWritable.get());
+                context.write(new Text(input.substring(from, to)), ONE);
               }
             }
             from = to + 1;
@@ -158,7 +160,7 @@ public class VocabularyJob extends ThraxJob {
     }
   }
 
-  private static class Reduce extends Reducer<Text, NullWritable, IntWritable, Text> {
+  private static class Reduce extends Reducer<Text, IntWritable, IntWritable, Text> {
 
     private ArrayList<String> nonterminals;
 
@@ -178,10 +180,11 @@ public class VocabularyJob extends ThraxJob {
       allowDoubleConcat = conf.getBoolean("thrax.allow-double-plus", true);
     }
 
-    protected void reduce(Text key, Iterable<NullWritable> values, Context context)
+    protected void reduce(Text key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
+      // We get word counts in here that might be used for something, but are currently ignored.      
       String token = key.toString();
-//      if (token == null || token.isEmpty()) return;
+      if (token == null || token.isEmpty()) throw new RuntimeException("Unexpected empty token.");
       if (token.charAt(0) == '[')
         nonterminals.add(token);
       else
