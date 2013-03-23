@@ -21,9 +21,9 @@ public class InputUtilities {
    * @return an array of String giving the labels of the tree's leaves
    * @throws MalformedInputException if the parse tree is not well-formed
    */
-  public static int[] parseYield(String parse) throws MalformedInputException {
-    String input = parse.trim();
-    if (input.equals("")) return new int[0];
+  public static int[] parseYield(String input) throws MalformedInputException {
+    if (input == null || input.isEmpty()) return new int[0];
+    if (input.charAt(0) != '(') throw new MalformedInputException("malformed parse");
     
     ArrayList<Integer> words = new ArrayList<Integer>();
     
@@ -77,35 +77,35 @@ public class InputUtilities {
    */
   public static int[] getWords(String input, boolean parsed) throws MalformedInputException {
     String trimmed = input.trim();
-    if (trimmed.equals("")) return new int[0];
+    if (trimmed.isEmpty()) return new int[0];
     if (parsed) return parseYield(trimmed);
     return Vocabulary.addAll(trimmed);
   }
 
-  public static AlignedSentencePair alignedSentencePair(String source, boolean sourceIsParsed,
-      String target, boolean targetIsParsed, String al, boolean reverse)
+  public static AlignedSentencePair alignedSentencePair(String source, boolean source_is_parsed,
+      String target, boolean target_is_parsed, String al, boolean reverse)
       throws MalformedInputException {
-    int[] sourceWords = getWords(source, sourceIsParsed);
-    int[] targetWords = getWords(target, targetIsParsed);
-    if (sourceWords.length == 0 || targetWords.length == 0)
+    int[] source_words = getWords(source, source_is_parsed);
+    int[] target_words = getWords(target, target_is_parsed);
+    if (source_words.length == 0 || target_words.length == 0)
       throw new MalformedInputException("empty sentence");
     Alignment alignment = ArrayAlignment.fromString(al.trim(), reverse);
     if (reverse) {
-      if (!alignment.consistentWith(targetWords.length, sourceWords.length))
+      if (!alignment.consistentWith(target_words.length, source_words.length))
         throw new MalformedInputException("inconsistent alignment");
-      return new AlignedSentencePair(targetWords, sourceWords, alignment);
+      return new AlignedSentencePair(target_words, source_words, alignment);
     } else {
-      if (!alignment.consistentWith(sourceWords.length, targetWords.length))
+      if (!alignment.consistentWith(source_words.length, target_words.length))
         throw new MalformedInputException("inconsistent alignment");
-      return new AlignedSentencePair(sourceWords, targetWords, alignment);
+      return new AlignedSentencePair(source_words, target_words, alignment);
     }
   }
 
-  public static AlignedSentencePair alignedSentencePair(String line, boolean sourceIsParsed,
-      boolean targetIsParsed, boolean reverse) throws MalformedInputException {
+  public static AlignedSentencePair alignedSentencePair(String line, boolean source_is_parsed,
+      boolean target_is_parsed, boolean reverse) throws MalformedInputException {
     String[] parts = FormatUtils.P_DELIM.split(line);
     if (parts.length < 3) throw new MalformedInputException("not enough fields");
-    return alignedSentencePair(parts[0], sourceIsParsed, parts[1], targetIsParsed, parts[2],
+    return alignedSentencePair(parts[0], source_is_parsed, parts[1], target_is_parsed, parts[2],
         reverse);
   }
 }
