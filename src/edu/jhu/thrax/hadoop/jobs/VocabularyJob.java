@@ -37,6 +37,7 @@ public class VocabularyJob extends ThraxJob {
     job.setOutputKeyClass(IntWritable.class);
     job.setOutputValueClass(Text.class);
 
+    job.setSortComparatorClass(Text.Comparator.class);
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));
@@ -180,7 +181,7 @@ public class VocabularyJob extends ThraxJob {
     protected void reduce(Text key, Iterable<NullWritable> values, Context context)
         throws IOException, InterruptedException {
       String token = key.toString();
-      if (token == null || token.isEmpty()) return;
+//      if (token == null || token.isEmpty()) return;
       if (token.charAt(0) == '[')
         nonterminals.add(token);
       else
