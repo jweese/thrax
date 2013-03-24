@@ -4,6 +4,7 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -12,11 +13,12 @@ import org.apache.hadoop.io.WritableUtils;
 
 public class Annotation implements Writable {
 
-  //TODO: make private
-  
+  private static final int MAX_NUM_ALIGNMENTS = 50;
+  private static final int MIN_ALIGNMENT_COUNT = 3;
+
   // Internal alignments seen with the rule, and their occurrence counts.
-  public Map<AlignmentWritable, Integer> e2f_alignments = null;
-  public Map<AlignmentWritable, Integer> f2e_alignments = null;
+  private Map<AlignmentWritable, Integer> e2f_alignments = null;
+  private Map<AlignmentWritable, Integer> f2e_alignments = null;
 
   private boolean maxed = false;
 
@@ -134,6 +136,14 @@ public class Annotation implements Writable {
         to.put(aw.getKey(), aw.getValue());
       } else {
         to.put(aw.getKey(), to_count + aw.getValue());
+      }
+    }
+    // TODO: awful heuristic.
+    if (to.size() > MAX_NUM_ALIGNMENTS) {
+      Iterator<Entry<AlignmentWritable, Integer>> iter = to.entrySet().iterator();
+      while (iter.hasNext()) {
+        Entry<AlignmentWritable, Integer> entry = iter.next();
+        if (entry.getValue() < MIN_ALIGNMENT_COUNT) iter.remove();
       }
     }
   }
