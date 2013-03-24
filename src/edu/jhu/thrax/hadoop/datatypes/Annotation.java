@@ -139,13 +139,13 @@ public class Annotation implements Writable {
       }
     }
     // TODO: awful heuristic.
-    if (to.size() > MAX_NUM_ALIGNMENTS) {
-      Iterator<Entry<AlignmentWritable, Integer>> iter = to.entrySet().iterator();
-      while (iter.hasNext()) {
-        Entry<AlignmentWritable, Integer> entry = iter.next();
-        if (entry.getValue() < MIN_ALIGNMENT_COUNT) iter.remove();
-      }
-    }
+//    if (to.size() > MAX_NUM_ALIGNMENTS) {
+//      Iterator<Entry<AlignmentWritable, Integer>> iter = to.entrySet().iterator();
+//      while (iter.hasNext()) {
+//        Entry<AlignmentWritable, Integer> entry = iter.next();
+//        if (entry.getValue() < MIN_ALIGNMENT_COUNT) iter.remove();
+//      }
+//    }
   }
 
   private static AlignmentWritable getMaxAlignment(Map<AlignmentWritable, Integer> alignments) {
