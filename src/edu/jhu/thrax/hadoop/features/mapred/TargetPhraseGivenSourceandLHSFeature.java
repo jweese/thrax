@@ -46,13 +46,14 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
   private static class Map extends Mapper<RuleWritable, Annotation, RuleWritable, IntWritable> {
     protected void map(RuleWritable key, Annotation value, Context context)
         throws IOException, InterruptedException {
-      RuleWritable marginal = new RuleWritable(key);
-      marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      RuleWritable lhs_source_marginal = new RuleWritable(key);
+      lhs_source_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_source_marginal.monotone = false;
 
       IntWritable count = new IntWritable(value.count());
 
       context.write(key, count);
-      context.write(marginal, count);
+      context.write(lhs_source_marginal, count);
     }
   }
 

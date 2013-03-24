@@ -44,25 +44,27 @@ public class TargetPhraseGivenLHSFeature extends MapReduceFeature {
   }
 
   private static class Map extends Mapper<RuleWritable, Annotation, RuleWritable, IntWritable> {
-    protected void map(RuleWritable key, Annotation value, Context context)
-        throws IOException, InterruptedException {
+    protected void map(RuleWritable key, Annotation value, Context context) throws IOException,
+        InterruptedException {
       RuleWritable lhs_marginal = new RuleWritable(key);
-      RuleWritable marginal = new RuleWritable(key);
+      RuleWritable lhs_target_marginal = new RuleWritable(key);
 
       lhs_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
       lhs_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
-      marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_marginal.monotone = false;
+
+      lhs_target_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_target_marginal.monotone = false;
 
       IntWritable count = new IntWritable(value.count());
 
       context.write(key, count);
-      context.write(marginal, count);
+      context.write(lhs_target_marginal, count);
       context.write(lhs_marginal, count);
     }
   }
 
-  private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
+  private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private DoubleWritable prob;
     private static final Text NAME = new Text("p(e|LHS)");
@@ -81,9 +83,8 @@ public class TargetPhraseGivenLHSFeature extends MapReduceFeature {
       if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // we only get in here if it's a new source side
         int count = 0;
-        for (IntWritable x : values) {
+        for (IntWritable x : values)
           count += x.get();
-        }
         prob = new DoubleWritable(-Math.log(count / (double) marginal));
         return;
       }
@@ -114,7 +115,7 @@ public class TargetPhraseGivenLHSFeature extends MapReduceFeature {
 
         cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
         if (cmp != 0) return cmp;
-        
+
         cmp = PrimitiveUtils.compare(b1[s1], b2[s2]);
         if (cmp != 0) return cmp;
 

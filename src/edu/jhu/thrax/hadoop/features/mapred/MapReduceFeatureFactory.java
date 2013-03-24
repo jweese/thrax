@@ -22,11 +22,6 @@ public class MapReduceFeatureFactory {
       return new TargetPhraseGivenLHSFeature();
     else if (name.equals("lhs_given_e"))
       return new LhsGivenTargetPhraseFeature();
-    else if (name.equals("e_inv_given_lhs"))
-      return new InvariantTargetPhraseGivenLHSFeature();
-    else if (name.equals("lhs_given_e_inv"))
-      return new InvariantLhsGivenTargetPhraseFeature();
-    else if (name.equals("e_given_f_and_lhs")) return new TargetPhraseGivenSourceandLHSFeature();
 
     return null;
   }

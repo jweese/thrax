@@ -51,9 +51,11 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
 
       target_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
       target_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+      target_marginal.monotone = false;
 
       lhs_target_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
-
+      target_marginal.monotone = false;
+      
       IntWritable count = new IntWritable(value.count());
 
       context.write(key, count);
@@ -83,9 +85,8 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
       if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
         // We only get in here if it's a new LHS.
         int count = 0;
-        for (IntWritable x : values) {
+        for (IntWritable x : values)
           count += x.get();
-        }
         prob = new DoubleWritable(-Math.log(count / (double) marginal));
         return;
       }
@@ -112,15 +113,15 @@ public class LhsGivenTargetPhraseFeature extends MapReduceFeature {
         int cmp = TARGET_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
         if (cmp != 0) return cmp;
         
-        cmp = PrimitiveUtils.compare(b1[s1], b2[s2]);
-        if (cmp != 0) return cmp;
-
         int lhs1 = Math.abs(WritableComparator.readVInt(b1, s1 + 1));
         int lhs2 = Math.abs(WritableComparator.readVInt(b2, s2 + 1));
         cmp = PrimitiveUtils.compare(lhs1, lhs2);
         if (cmp != 0) return cmp;
 
-        return SOURCE_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2);
+        cmp = SOURCE_COMP.compare(b1, s1 + h1, l1 - h1, b2, s2 + h2, l2 - h2); 
+        if (cmp != 0) return cmp;
+        
+        return PrimitiveUtils.compare(b1[s1], b2[s2]);
       } catch (IOException e) {
         throw new IllegalArgumentException(e);
       }

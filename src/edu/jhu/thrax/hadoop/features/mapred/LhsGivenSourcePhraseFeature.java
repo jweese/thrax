@@ -49,10 +49,12 @@ public class LhsGivenSourcePhraseFeature extends MapReduceFeature {
       RuleWritable source_marginal = new RuleWritable(key);
       RuleWritable lhs_source_marginal = new RuleWritable(key);
 
-      source_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
       source_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+      source_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      source_marginal.monotone = false;
 
       lhs_source_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_source_marginal.monotone = false;
 
       IntWritable count = new IntWritable(value.count());
 

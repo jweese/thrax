@@ -21,18 +21,18 @@ public class PivotedLhsGivenSourcePhraseFeature extends NonAggregatingPivotedFea
 
   public Set<String> getPrerequisites() {
     Set<String> prereqs = new HashSet<String>();
-    prereqs.add("lhs_given_e_inv");
+    prereqs.add("lhs_given_e");
     return prereqs;
   }
 
   public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
-    return new DoubleWritable(((DoubleWritable) src.get(new Text("p(LHS|e_inv)"))).get());
+    return new DoubleWritable(((DoubleWritable) src.get(new Text("p(LHS|e)"))).get());
   }
 
   @Override
   public Set<Text> getLowerBoundLabels() {
     Set<Text> lower_bound_labels = new HashSet<Text>();
-    lower_bound_labels.add(new Text("p(LHS|e_inv)"));
+    lower_bound_labels.add(new Text("p(LHS|e)"));
     return lower_bound_labels;
   }
 

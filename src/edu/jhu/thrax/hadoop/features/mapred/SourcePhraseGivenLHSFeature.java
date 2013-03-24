@@ -47,16 +47,19 @@ public class SourcePhraseGivenLHSFeature extends MapReduceFeature {
     protected void map(RuleWritable key, Annotation value, Context context)
         throws IOException, InterruptedException {
       RuleWritable lhs_marginal = new RuleWritable(key);
-      RuleWritable marginal = new RuleWritable(key);
+      RuleWritable lhs_source_marginal = new RuleWritable(key);
 
       lhs_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
       lhs_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
-      marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
-
+      lhs_marginal.monotone = false;
+      
+      lhs_source_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
+      lhs_source_marginal.monotone = false;
+      
       IntWritable count = new IntWritable(value.count());
 
       context.write(key, count);
-      context.write(marginal, count);
+      context.write(lhs_source_marginal, count);
       context.write(lhs_marginal, count);
     }
   }
@@ -70,20 +73,18 @@ public class SourcePhraseGivenLHSFeature extends MapReduceFeature {
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
       if (Arrays.equals(key.source, PrimitiveArrayMarginalComparator.MARGINAL)) {
-        // we only get here if it is the very first time we saw the LHS
+        // We only get here if it is the very first time we saw the LHS.
         marginal = 0;
         for (IntWritable x : values)
           marginal += x.get();
         return;
       }
-
-      // control only gets here if we are using the same marginal
+      // Control only gets here if we are using the same marginal.
       if (Arrays.equals(key.target, PrimitiveArrayMarginalComparator.MARGINAL)) {
-        // we only get in here if it's a new source side
+        // We only get in here if it's a new source side.
         int count = 0;
-        for (IntWritable x : values) {
+        for (IntWritable x : values)
           count += x.get();
-        }
         prob = new DoubleWritable(-Math.log(count / (double) marginal));
         return;
       }

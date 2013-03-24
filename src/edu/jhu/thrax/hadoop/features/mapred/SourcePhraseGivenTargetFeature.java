@@ -55,18 +55,16 @@ public class SourcePhraseGivenTargetFeature extends MapReduceFeature {
     
     protected void map(RuleWritable key, Annotation value, Context context) throws IOException,
         InterruptedException {
-      RuleWritable lhs_source_marginal = new RuleWritable();
-      lhs_source_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
-      lhs_source_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
-      lhs_source_marginal.target = key.target;
-      lhs_source_marginal.monotone = key.monotone;
-
+      RuleWritable target_marginal = new RuleWritable(key);
+      target_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
+      target_marginal.source = PrimitiveArrayMarginalComparator.MARGINAL;
+      
       RuleWritable lhs_marginal = new RuleWritable(key);
       lhs_marginal.lhs = PrimitiveUtils.MARGINAL_ID;
       
       IntWritable count = new IntWritable(value.count());
 
-      context.write(lhs_source_marginal, count);
+      context.write(target_marginal, count);
       context.write(lhs_marginal, count);
       context.write(key, count);
     }
