@@ -13,10 +13,9 @@ import edu.jhu.thrax.util.Vocabulary;
 
 public class ExtractionReducer extends Reducer<AlignedRuleWritable, Annotation, RuleWritable, Annotation> {
 
-  private RuleWritable currentRule;
-  private Annotation currentAnnotation;
-  
-  private AlignmentWritable maxAlignment;
+  private RuleWritable currentRule = null;
+  private Annotation currentAnnotation = null;
+  private AlignmentWritable maxAlignment = null;
   private int alignmentCount;
   
   private int minCount;
