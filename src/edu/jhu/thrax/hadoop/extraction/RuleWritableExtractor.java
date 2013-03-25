@@ -2,6 +2,7 @@ package edu.jhu.thrax.hadoop.extraction;
 
 import org.apache.hadoop.io.Text;
 
+import edu.jhu.thrax.hadoop.datatypes.AlignmentWritable;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 
@@ -11,11 +12,17 @@ public interface RuleWritableExtractor {
 
 
 class AnnotatedRule {
-  public RuleWritable rule;
-  public Annotation annotation;
+  public RuleWritable rule = null;
+  public AlignmentWritable f2e = null;
+  public Annotation annotation = null;
 
-  public AnnotatedRule(RuleWritable r, Annotation a) {
+  public AnnotatedRule(RuleWritable r) {
     rule = r;
-    annotation = a;
+  }
+
+  public AnnotatedRule(RuleWritable r, AlignmentWritable f2e, Annotation a) {
+    this.rule = r;
+    this.f2e = f2e;
+    this.annotation = a;
   }
 }

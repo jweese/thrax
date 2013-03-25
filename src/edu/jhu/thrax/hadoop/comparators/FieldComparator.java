@@ -20,36 +20,35 @@ public class FieldComparator {
   }
 
   public int compare(byte[] b1, int s1, int l1, byte[] b2, int s2, int l2) throws IOException {
-    int start1 = getTextStart(fieldNumber, b1, s1);
-    int start2 = getTextStart(fieldNumber, b2, s2);
+    int start1 = getFieldStart(fieldNumber, b1, s1);
+    int start2 = getFieldStart(fieldNumber, b2, s2);
 
-    int length1 = getTextLength(b1, start1);
-    int length2 = getTextLength(b2, start2);
+    int length1 = getFieldLength(b1, start1);
+    int length2 = getFieldLength(b2, start2);
 
     // TODO: l1 and l2 may need to be adjusted to reflect offset.
     return comparator.compare(b1, start1, length1, b2, start2, length2);
   }
 
-  private int getTextStart(int field, byte[] bytes, int start) throws IOException {
+  private final int getFieldStart(int field, byte[] bytes, int start) throws IOException {
     // if we want the first field, just return current start
     if (field == 0) return start;
     // otherwise, find out how long this field is ...
-    int fieldLength = getTextLength(bytes, start);
+    int fieldLength = getFieldLength(bytes, start);
     // then decrement the field number and find the next start
-    return getTextStart(field - 1, bytes, start + fieldLength);
+    return getFieldStart(field - 1, bytes, start + fieldLength);
   }
 
-  private static int getTextLength(byte[] bytes, int start) throws IOException {
+  private static final int getFieldLength(byte[] bytes, int start) throws IOException {
     // Text is serialized as vInt (the length) plus that many bytes
-    int vIntSize = WritableUtils.decodeVIntSize(bytes[start]);
-    int textLength = WritableComparator.readVInt(bytes, start);
-    int fieldLength = vIntSize + textLength;
-    return fieldLength;
+    int vint_size = WritableUtils.decodeVIntSize(bytes[start]);
+    int field_length = WritableComparator.readVInt(bytes, start);
+    return vint_size + field_length;
   }
 
   public int fieldEndIndex(byte[] bytes, int start) throws IOException {
-    int fieldStart = getTextStart(fieldNumber, bytes, start);
-    int fieldLength = getTextLength(bytes, fieldStart);
+    int fieldStart = getFieldStart(fieldNumber, bytes, start);
+    int fieldLength = getFieldLength(bytes, fieldStart);
     return fieldStart + fieldLength;
   }
 }

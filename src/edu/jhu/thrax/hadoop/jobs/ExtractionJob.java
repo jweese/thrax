@@ -11,6 +11,7 @@ import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
+import edu.jhu.thrax.hadoop.datatypes.AlignedRuleWritable;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.extraction.ExtractionCombiner;
@@ -31,10 +32,12 @@ public class ExtractionJob extends ThraxJob {
 
     job.setMapperClass(ExtractionMapper.class);
     job.setCombinerClass(ExtractionCombiner.class);
-    job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
     job.setReducerClass(ExtractionReducer.class);
 
-    job.setMapOutputKeyClass(RuleWritable.class);
+    job.setSortComparatorClass(AlignedRuleWritable.RuleYieldComparator.class);
+    job.setPartitionerClass(AlignedRuleWritable.RuleYieldPartitioner.class);
+    
+    job.setMapOutputKeyClass(AlignedRuleWritable.class);
     job.setMapOutputValueClass(Annotation.class);
     job.setOutputKeyClass(RuleWritable.class);
     job.setOutputValueClass(Annotation.class);

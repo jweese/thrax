@@ -30,6 +30,32 @@ public final class PrimitiveUtils {
     return (a == b ? 0 : (a ? 1 : -1));
   }
 
+  public static final int compareIntArrays(int[] a, int[] b) {
+    for (int i = 0; i < Math.min(a.length, b.length); ++i) {
+      if (a[i] < b[i]) {
+        return -1;
+      } else if (a[i] > b[i]) {
+        return 1;
+      }
+    }
+    if (a.length < b.length) return -1;
+    if (a.length > b.length) return 1;
+    return 0;
+  }
+  
+  public static final int compareByteArrays(byte[] a, byte[] b) {
+    for (int i = 0; i < Math.min(a.length, b.length); ++i) {
+      if (a[i] < b[i]) {
+        return -1;
+      } else if (a[i] > b[i]) {
+        return 1;
+      }
+    }
+    if (a.length < b.length) return -1;
+    if (a.length > b.length) return 1;
+    return 0;
+  }
+  
   public static final void writeBooleanArray(DataOutput out, boolean[] array) throws IOException {
     WritableUtils.writeVInt(out, array.length);
     for (boolean b : array)

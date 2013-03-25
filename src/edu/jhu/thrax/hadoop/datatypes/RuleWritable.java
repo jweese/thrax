@@ -13,7 +13,6 @@ import org.apache.hadoop.mapreduce.Partitioner;
 
 import edu.jhu.thrax.hadoop.comparators.FieldComparator;
 import edu.jhu.thrax.hadoop.comparators.PrimitiveArrayMarginalComparator;
-import edu.jhu.thrax.util.ArrayUtils;
 import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.Vocabulary;
 
@@ -116,16 +115,33 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
   }
 
   public int compareTo(RuleWritable that) {
-    int cmp = ArrayUtils.compareIntArrays(this.source, that.source);
+    int cmp = PrimitiveUtils.compareIntArrays(this.source, that.source);
     if (cmp != 0) return cmp;
     cmp = PrimitiveUtils.compare(this.lhs, that.lhs);
     if (cmp != 0) return cmp;
-    cmp = ArrayUtils.compareIntArrays(this.target, that.target);
+    cmp = PrimitiveUtils.compareIntArrays(this.target, that.target);
     if (cmp != 0) return cmp;
     cmp = PrimitiveUtils.compare(this.monotone, that.monotone);
     return cmp;
   }
 
+  public static final int size(byte[] b, int s, int l) throws IOException {
+    int pos = s;
+    pos += WritableUtils.decodeVIntSize(b[s + 1]) + 1;
+    
+    int srclen_size = WritableUtils.decodeVIntSize(b[pos]);
+    int source_size = WritableComparator.readVInt(b, pos);
+    
+    pos += srclen_size + source_size;
+    
+    int tgtlen_size = WritableUtils.decodeVIntSize(b[pos]);
+    int target_size = WritableComparator.readVInt(b, pos);
+    
+    pos += tgtlen_size + target_size;
+    
+    return pos - s;
+  }
+  
   public static class YieldPartitioner extends Partitioner<RuleWritable, Writable> {
     public int getPartition(RuleWritable key, Writable value, int numPartitions) {
       return (key.hashCode() & Integer.MAX_VALUE) % numPartitions;

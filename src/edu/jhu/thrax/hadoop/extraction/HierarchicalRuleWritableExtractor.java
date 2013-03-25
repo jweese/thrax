@@ -18,6 +18,7 @@ import edu.jhu.thrax.extraction.HieroLabeler;
 import edu.jhu.thrax.extraction.ManualSpanLabeler;
 import edu.jhu.thrax.extraction.SAMTLabeler;
 import edu.jhu.thrax.extraction.SpanLabeler;
+import edu.jhu.thrax.hadoop.datatypes.AlignedRuleWritable;
 import edu.jhu.thrax.hadoop.datatypes.AlignmentWritable;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
@@ -27,7 +28,7 @@ import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.util.io.InputUtilities;
 
 public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor {
-  private Mapper<LongWritable, Text, RuleWritable, Annotation>.Context context;
+  private Mapper<LongWritable, Text, AlignedRuleWritable, Annotation>.Context context;
 
   private boolean sourceParsed;
   private boolean targetParsed;
@@ -41,7 +42,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
   private HierarchicalRuleExtractor extractor;
 
   public HierarchicalRuleWritableExtractor(
-      Mapper<LongWritable, Text, RuleWritable, Annotation>.Context c) {
+      Mapper<LongWritable, Text, AlignedRuleWritable, Annotation>.Context c) {
     context = c;
     Configuration conf = c.getConfiguration();
     sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
@@ -91,15 +92,18 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     List<HierarchicalRule> rules = extractor.extract(source.length, target.length, alignment);
     List<AnnotatedRule> result = new ArrayList<AnnotatedRule>(rules.size());
     SpanLabeler labeler = getSpanLabeler(line, context.getConfiguration());
-		if (labeler instanceof HieroLabeler) {
-			// If this is false, we won't extract any rules, because the LHS label
-			// is the default for Hiero.
-			allowDefaultLHSOnNonlexicalRules = true;
-		}
+    if (labeler instanceof HieroLabeler) {
+      // If this is false, we won't extract any rules, because the LHS label
+      // is the default for Hiero.
+      allowDefaultLHSOnNonlexicalRules = true;
+    }
     for (HierarchicalRule r : rules) {
       RuleWritable rule = toRuleWritable(r, labeler, source, target);
-      Annotation annotation = annotateRule(r, labeler, source, target, alignment);
-      if (rule != null) result.add(new AnnotatedRule(rule, annotation));
+      if (rule != null) {
+        result.add(new AnnotatedRule(rule, new AlignmentWritable(r
+            .compactSourceAlignment(alignment)), getRuleAnnotation(r, labeler, source, target,
+            alignment)));
+      }
     }
     return result;
   }
@@ -122,13 +126,10 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     return rw;
   }
 
-  private static Annotation annotateRule(HierarchicalRule r, SpanLabeler spanLabeler, int[] source,
-      int[] target, Alignment alignment) {
+  private static Annotation getRuleAnnotation(HierarchicalRule r, SpanLabeler spanLabeler,
+      int[] source, int[] target, Alignment alignment) {
     // TODO: this should be handling extraction-time annotation features.
-    Annotation annotation =
-        new Annotation(new AlignmentWritable(r.compactSourceAlignment(alignment)),
-            new AlignmentWritable(r.compactTargetAlignment(alignment)));
-    return annotation;
+    return new Annotation(1);
   }
 
   private SpanLabeler getSpanLabeler(Text line, Configuration conf) {
