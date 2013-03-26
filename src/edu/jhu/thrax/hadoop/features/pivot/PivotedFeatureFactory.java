@@ -8,9 +8,9 @@ import edu.jhu.thrax.util.FormatUtils;
 public class PivotedFeatureFactory {
 
   public static PivotedFeature get(String name) {
-    if (name.equals("e2fphrase"))
+    if (name.equals("e_given_f_phrase"))
       return new PivotedTargetPhraseGivenSourceFeature();
-    else if (name.equals("f2ephrase"))
+    else if (name.equals("f_given_e_phrase"))
       return new PivotedSourcePhraseGivenTargetFeature();
     else if (name.equals("rarity"))
       return new PivotedRarityPenaltyFeature();

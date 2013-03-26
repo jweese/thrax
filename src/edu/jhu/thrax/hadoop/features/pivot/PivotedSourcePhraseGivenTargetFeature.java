@@ -22,8 +22,8 @@ public class PivotedSourcePhraseGivenTargetFeature extends
 
 	public Set<String> getPrerequisites() {
 		Set<String> prereqs = new HashSet<String>();
-		prereqs.add("e2fphrase");
-		prereqs.add("f2ephrase");
+		prereqs.add("e_given_f_phrase");
+		prereqs.add("f_given_e_phrase");
 		return prereqs;
 	}
 

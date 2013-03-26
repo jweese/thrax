@@ -18,6 +18,8 @@ public class MapReduceFeatureFactory {
       return new LhsGivenSourcePhraseFeature();
     else if (name.equals("f_given_e_and_lhs"))
       return new SourcePhraseGivenTargetandLHSFeature();
+    else if (name.equals("e_given_f_and_lhs"))
+      return new TargetPhraseGivenSourceandLHSFeature();
     else if (name.equals("e_given_lhs"))
       return new TargetPhraseGivenLHSFeature();
     else if (name.equals("lhs_given_e"))
