@@ -4,8 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
+
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 
 public class PivotedTargetPhraseGivenLHSFeature extends NonAggregatingPivotedFeature {
 
@@ -25,7 +26,7 @@ public class PivotedTargetPhraseGivenLHSFeature extends NonAggregatingPivotedFea
     return prereqs;
   }
 
-  public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
+  public DoubleWritable pivot(FeatureMap src, FeatureMap tgt) {
     return new DoubleWritable(((DoubleWritable) tgt.get(new Text("p(e|LHS)"))).get());
   }
 

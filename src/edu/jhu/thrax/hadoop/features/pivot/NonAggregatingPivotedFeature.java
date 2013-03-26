@@ -3,9 +3,10 @@ package edu.jhu.thrax.hadoop.features.pivot;
 import java.util.Map;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 
 public abstract class NonAggregatingPivotedFeature implements PivotedFeature {
 
@@ -17,7 +18,7 @@ public abstract class NonAggregatingPivotedFeature implements PivotedFeature {
     value = Double.MAX_VALUE;
   }
 
-  public void aggregate(MapWritable features) {
+  public void aggregate(FeatureMap features) {
     DoubleWritable val = (DoubleWritable) features.get(getFeatureLabel());
     if (value == Double.MAX_VALUE) {
       value = val.get();

@@ -4,8 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
+
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 
 public class PivotedSourcePhraseGivenTargetAndLHSFeature extends
 		PivotedNegLogProbFeature {
@@ -27,7 +28,7 @@ public class PivotedSourcePhraseGivenTargetAndLHSFeature extends
 		return prereqs;
 	}
 
-	public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
+	public DoubleWritable pivot(FeatureMap src, FeatureMap tgt) {
 		double fge = ((DoubleWritable) src.get(new Text("p(e|f,LHS)"))).get();
 		double egf = ((DoubleWritable) tgt.get(new Text("p(f|e,LHS)"))).get();
 

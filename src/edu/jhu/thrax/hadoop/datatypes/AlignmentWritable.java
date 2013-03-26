@@ -3,6 +3,7 @@ package edu.jhu.thrax.hadoop.datatypes;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -41,7 +42,7 @@ public class AlignmentWritable implements WritableComparable<AlignmentWritable> 
   }
 
   public void set(AlignmentWritable r) {
-    points = r.points;
+    points = Arrays.copyOf(r.points, r.points.length);
   }
 
   public AlignmentWritable flip() {
@@ -63,6 +64,51 @@ public class AlignmentWritable implements WritableComparable<AlignmentWritable> 
       flipped = new AlignmentWritable(flipside);
     }
     return flipped;
+  }
+
+  public AlignmentWritable join(AlignmentWritable that) {
+    ArrayList<Byte> joined = new ArrayList<Byte>();
+    int j = 0;
+    int j_max = that.points.length / 2;
+    for (int i = 0; i < this.points.length / 2; ++i) {
+      byte through = this.points[2 * i];
+      byte from = this.points[2 * i + 1];
+      while (j < j_max && that.points[2 * j] < through)
+        j++;
+      int start = j;
+      while (j < j_max && that.points[2 * j] == through) {
+        joined.add(from);
+        joined.add(that.points[2 * j + 1]);
+        j++;
+      }
+      // Jump to start of this through-point in "that", in case the next through point is the same.
+      j = start;
+    }
+    byte[] join_points = new byte[joined.size()];
+    for (int i = 0; i < join_points.length; ++i)
+      join_points[i] = joined.get(i);
+    return new AlignmentWritable(join_points);
+  }
+
+  public AlignmentWritable intersect(AlignmentWritable that) {
+    ArrayList<Byte> common = new ArrayList<Byte>();
+
+    int j = 0;
+    int j_max = that.points.length / 2;
+    for (int i = 0; i < this.points.length / 2; ++i) {
+      byte from = this.points[2 * i];
+      byte to = this.points[2 * i + 1];
+      while (j < j_max && that.points[2 * j] <= from && that.points[2 * j + 1] < to)
+        j++;
+      if (j < j_max && that.points[2 * j] == from && that.points[2 * j + 1] == to) {
+        common.add(from);
+        common.add(to);
+      }
+    }
+    byte[] common_points = new byte[common.size()];
+    for (int i = 0; i < common_points.length; ++i)
+      common_points[i] = common.get(i);
+    return new AlignmentWritable(common_points);
   }
 
   public void write(DataOutput out) throws IOException {

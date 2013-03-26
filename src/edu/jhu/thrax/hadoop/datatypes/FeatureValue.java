@@ -10,7 +10,7 @@ public class FeatureValue extends GenericWritable {
 
   @SuppressWarnings("rawtypes")
   private static Class[] TYPES = {DoubleWritable.class, IntWritable.class, Text.class,
-      AlignmentWritable.class};
+      Annotation.class, AlignmentWritable.class};
 
   FeatureValue() {}
 

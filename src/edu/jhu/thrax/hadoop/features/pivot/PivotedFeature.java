@@ -3,10 +3,10 @@ package edu.jhu.thrax.hadoop.features.pivot;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 
 public interface PivotedFeature {
 
@@ -16,13 +16,13 @@ public interface PivotedFeature {
 
 	public Set<String> getPrerequisites();
 
-	public DoubleWritable pivot(MapWritable src, MapWritable tgt);
+	public Writable pivot(FeatureMap src, FeatureMap tgt);
 
 	public void initializeAggregation();
 	
-	public void aggregate(MapWritable a);
+	public void aggregate(FeatureMap a);
 
-	public DoubleWritable finalizeAggregation();
+	public Writable finalizeAggregation();
 	
 	public Set<Text> getLowerBoundLabels();
 	

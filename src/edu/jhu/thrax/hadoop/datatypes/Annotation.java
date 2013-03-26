@@ -23,6 +23,11 @@ public class Annotation implements Writable {
     count = c;
   }
 
+  public Annotation(Annotation a) {
+    count = a.count;
+    this.f2e = new AlignmentWritable(a.f2e);
+  }
+  
   public Annotation(AlignmentWritable f2e) {
     count = 1;
     this.f2e = f2e;

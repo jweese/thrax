@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -14,6 +13,7 @@ import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.paraphrasing.FeatureCollectionReducer;
@@ -55,7 +55,7 @@ public class FeatureCollectionJob extends ThraxJob {
     job.setMapOutputKeyClass(RuleWritable.class);
     job.setMapOutputValueClass(FeaturePair.class);
     job.setOutputKeyClass(RuleWritable.class);
-    job.setOutputValueClass(MapWritable.class);
+    job.setOutputValueClass(FeatureMap.class);
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
     job.setPartitionerClass(RuleWritable.YieldPartitioner.class);

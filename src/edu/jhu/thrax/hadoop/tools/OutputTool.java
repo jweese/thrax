@@ -15,8 +15,8 @@ import org.apache.hadoop.util.Tool;
 import org.apache.hadoop.util.ToolRunner;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
 import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.ConfFileParser;

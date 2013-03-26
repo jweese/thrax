@@ -3,16 +3,16 @@ package edu.jhu.thrax.hadoop.paraphrasing;
 import java.io.IOException;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.Vocabulary;
 
 public class FeatureCollectionReducer
-    extends Reducer<RuleWritable, FeaturePair, RuleWritable, MapWritable> {
+    extends Reducer<RuleWritable, FeaturePair, RuleWritable, FeatureMap> {
 
   protected void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
@@ -22,7 +22,7 @@ public class FeatureCollectionReducer
 
   protected void reduce(RuleWritable key, Iterable<FeaturePair> values, Context context)
       throws IOException, InterruptedException {
-    MapWritable features = new MapWritable();
+    FeatureMap features = new FeatureMap();
     for (FeaturePair fp : values)
       features.put(new Text(fp.key), fp.val.get());
     context.write(key, features);

@@ -3,10 +3,10 @@ package edu.jhu.thrax.hadoop.features.pivot;
 import java.util.Map;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 import edu.jhu.thrax.util.NegLogMath;
 
 public abstract class PivotedNegLogProbFeature implements PivotedFeature {
@@ -19,7 +19,7 @@ public abstract class PivotedNegLogProbFeature implements PivotedFeature {
     aggregated = 64;
   }
 
-  public void aggregate(MapWritable features) {
+  public void aggregate(FeatureMap features) {
     DoubleWritable val = (DoubleWritable) features.get(getFeatureLabel());
     aggregated = NegLogMath.logAdd(aggregated, val.get());
   }

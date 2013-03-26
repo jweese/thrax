@@ -1,6 +1,7 @@
 package edu.jhu.thrax.hadoop.features.annotation;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.hadoop.conf.Configuration;
@@ -25,7 +26,15 @@ public class AnnotationReducer extends Reducer<RuleWritable, Annotation, RuleWri
 
     String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
 
-    annotationFeatures = AnnotationFeatureFactory.getAll(features);
+    // Paraphrasing only needs the annotation to be passed through.
+    String type = conf.get("thrax.type", "translation");
+    if ("paraphrasing".equals(type)) {
+      annotationFeatures = new ArrayList<AnnotationFeature>();
+      annotationFeatures.add(new AnnotationPassthroughFeature());
+    } else {
+      annotationFeatures = AnnotationFeatureFactory.getAll(features);
+    }
+
     for (AnnotationFeature af : annotationFeatures)
       af.init(context);
   }

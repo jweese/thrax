@@ -5,9 +5,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
+
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 
 public class PivotedRarityPenaltyFeature implements PivotedFeature {
 
@@ -33,7 +34,7 @@ public class PivotedRarityPenaltyFeature implements PivotedFeature {
     return prereqs;
   }
 
-  public DoubleWritable pivot(MapWritable a, MapWritable b) {
+  public DoubleWritable pivot(FeatureMap a, FeatureMap b) {
     double a_rp = ((DoubleWritable) a.get(new Text("RarityPenalty"))).get();
     double b_rp = ((DoubleWritable) b.get(new Text("RarityPenalty"))).get();
     return new DoubleWritable(Math.max(a_rp, b_rp));
@@ -51,7 +52,7 @@ public class PivotedRarityPenaltyFeature implements PivotedFeature {
     aggregated_rp = -1;
   }
 
-  public void aggregate(MapWritable a) {
+  public void aggregate(FeatureMap a) {
     double rp = ((DoubleWritable) a.get(LABEL)).get();
     if (aggregated_rp == -1) {
       aggregated_rp = rp;
