@@ -11,13 +11,14 @@ import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.Vocabulary;
 
-public class ExtractionReducer extends Reducer<AlignedRuleWritable, Annotation, RuleWritable, Annotation> {
+public class ExtractionReducer
+    extends Reducer<AlignedRuleWritable, Annotation, RuleWritable, Annotation> {
 
   private RuleWritable currentRule = null;
   private Annotation currentAnnotation = null;
   private AlignmentWritable maxAlignment = null;
   private int alignmentCount;
-  
+
   private int minCount;
 
   protected void setup(Context context) throws IOException, InterruptedException {
@@ -31,18 +32,17 @@ public class ExtractionReducer extends Reducer<AlignedRuleWritable, Annotation, 
       throws IOException, InterruptedException {
     RuleWritable rule = key.getRule();
     AlignmentWritable alignment = key.getAlignment();
-    
+
     Annotation merged = new Annotation();
     for (Annotation a : values)
       merged.merge(a);
-    
+
     if (!rule.equals(currentRule)) {
-      if (currentRule != null) {
-        if (currentAnnotation.count() >= minCount || isUnigramRule(currentRule)) {
-          currentAnnotation.setAlignment(maxAlignment);
-          context.write(currentRule, currentAnnotation);
-          context.progress();
-        }
+      if (currentRule != null
+          && (currentAnnotation.count() >= minCount || isUnigramRule(currentRule))) {
+        currentAnnotation.setAlignment(maxAlignment);
+        context.write(currentRule, currentAnnotation);
+        context.progress();
       }
       currentRule = new RuleWritable(rule);
       currentAnnotation = new Annotation();
@@ -55,12 +55,12 @@ public class ExtractionReducer extends Reducer<AlignedRuleWritable, Annotation, 
       alignmentCount = merged.count();
     }
   }
-  
+
   protected void cleanup(Context context) throws IOException, InterruptedException {
     if (currentRule != null) {
       if (currentAnnotation.count() >= minCount || isUnigramRule(currentRule)) {
         currentAnnotation.setAlignment(maxAlignment);
-        context.write(currentRule, currentAnnotation);
+        context.write(currentRule, currentAnnotation);        
         context.progress();
       }
     }
