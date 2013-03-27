@@ -75,8 +75,6 @@ public class ArrayAlignment implements Alignment {
   public Iterator<Integer> sourceIndicesAlignedTo(int i) {
     int start = firstIndexOf(targetIndicesInOrder, i);
     if (start < 0) return Collections.<Integer>emptyList().iterator();
-    // TODO: why is this call here?
-    // int end = lastIndexOf(targetIndicesInOrder, i);
     return new AlignmentIterator(targetIndicesInOrder, sourceIndicesTargetOrder, i, start);
   }
   

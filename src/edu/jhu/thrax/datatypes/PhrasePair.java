@@ -77,7 +77,7 @@ public class PhrasePair
 	 * @param allowUnaligned whether to allow unaligned words at the edges of
 	 * initial phrase pairs
 	 * @param minimumAligned the minimum number of alignment points needed
-	 * @return true if this is an initial phrase pair, false otherewise
+	 * @return true if this is an initial phrase pair, false otherwise
 	 */
 	public boolean isInitialPhrasePair(Alignment a, boolean allowUnaligned, int minimumAligned)
 	{
