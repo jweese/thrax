@@ -14,7 +14,7 @@ public enum LabelCache {
     glue = g;
   }
   
-  public int get(int left, int right) {
+  public final int get(int left, int right) {
     long key = ((long) left << 32) | ((long) right & 0x00000000FFFFFFFFL);
     Integer val = cache.get(key);
     if (val == null) {
