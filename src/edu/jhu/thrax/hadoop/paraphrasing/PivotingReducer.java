@@ -31,7 +31,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
 
   private static enum PivotingCounters {
     F_READ, EF_READ, EF_PRUNED, EE_PRUNED, EE_WRITTEN
-  };
+  }
 
   private int[] currentSrc;
   private int currentLhs;
@@ -216,7 +216,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
     return rules;
   }
 
-  protected boolean prune(FeatureMap features, final Map<Text, PruningRule> rules) {
+  protected static boolean prune(FeatureMap features, final Map<Text, PruningRule> rules) {
     for (Map.Entry<Text, PruningRule> e : rules.entrySet()) {
       if (features.containsKey(e.getKey())
           && e.getValue().applies((FloatWritable) features.get(e.getKey()))) return true;
@@ -224,7 +224,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
     return false;
   }
 
-  protected int[] extractNonterminals(int[] source) {
+  protected static int[] extractNonterminals(int[] source) {
     int first_nt = 0;
     for (int token : source)
       if (Vocabulary.nt(token)) {
@@ -238,11 +238,11 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
 
   class ParaphrasePattern {
     int arity;
-    private int lhs;
-    private int[] rhs;
+    int lhs;
+    int[] rhs;
     boolean monotone;
 
-    private FeatureMap features;
+    FeatureMap features;
 
     public ParaphrasePattern(int[] target, int[] nts, int lhs, boolean mono, FeatureMap features) {
       this.arity = nts.length;
