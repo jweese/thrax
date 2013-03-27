@@ -37,7 +37,7 @@ public class PivotedRarityPenaltyFeature implements PivotedFeature {
   public FloatWritable pivot(FeatureMap a, FeatureMap b) {
     float a_rp = ((FloatWritable) a.get(new Text("RarityPenalty"))).get();
     float b_rp = ((FloatWritable) b.get(new Text("RarityPenalty"))).get();
-    return new FloatWritable((float) Math.max(a_rp, b_rp));
+    return new FloatWritable(Math.max(a_rp, b_rp));
   }
 
   public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
