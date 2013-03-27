@@ -15,14 +15,7 @@ public enum LabelCache {
   }
   
   public int get(int left, int right) {
-    System.err.println("LEFT: " + Integer.toBinaryString(left));
-    System.err.println("RGHT: " + Integer.toBinaryString(right));
-    
     long key = ((long) left << 32) | ((long) right & 0x00000000FFFFFFFFL);
-    
-    System.err.println("SHFT: " + Long.toBinaryString(((long) left << 32)));
-    System.err.println("JOIN: " + Long.toBinaryString(key));
-    
     Integer val = cache.get(key);
     if (val == null) {
       val = join(left, right, glue);
