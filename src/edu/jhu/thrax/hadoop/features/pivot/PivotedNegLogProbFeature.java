@@ -2,7 +2,7 @@ package edu.jhu.thrax.hadoop.features.pivot;
 
 import java.util.Map;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -11,21 +11,21 @@ import edu.jhu.thrax.util.NegLogMath;
 
 public abstract class PivotedNegLogProbFeature implements PivotedFeature {
 
-  private static final DoubleWritable ONE_PROB = new DoubleWritable(0.0);
+  private static final FloatWritable ONE_PROB = new FloatWritable(0.0f);
 
-  private double aggregated;
+  private float aggregated;
 
   public void initializeAggregation() {
-    aggregated = 64;
+    aggregated = 64.0f;
   }
 
   public void aggregate(FeatureMap features) {
-    DoubleWritable val = (DoubleWritable) features.get(getFeatureLabel());
+    FloatWritable val = (FloatWritable) features.get(getFeatureLabel());
     aggregated = NegLogMath.logAdd(aggregated, val.get());
   }
 
-  public DoubleWritable finalizeAggregation() {
-    return new DoubleWritable(aggregated);
+  public FloatWritable finalizeAggregation() {
+    return new FloatWritable(aggregated);
   }
 
   public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {

@@ -5,7 +5,7 @@ import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
@@ -39,7 +39,7 @@ public class FeatureMap extends HashMap<Text, Writable> implements Writable {
         val = new Annotation();
         val.readFields(in);
       } else {
-        val = new DoubleWritable();
+        val = new FloatWritable();
         val.readFields(in);
       }
       this.put(key, val);
@@ -54,7 +54,7 @@ public class FeatureMap extends HashMap<Text, Writable> implements Writable {
       if (key.equals(AnnotationPassthroughFeature.LABEL)) {
         ((Annotation) this.get(key)).write(out);
       } else {
-        ((DoubleWritable) this.get(key)).write(out);
+        ((FloatWritable) this.get(key)).write(out);
       }
     }
   }

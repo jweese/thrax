@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -181,7 +181,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
         continue;
       }
       Text label = PivotedFeatureFactory.get(f[0]).getFeatureLabel();
-      rules.put(label, new PruningRule(smaller, Double.parseDouble(f[1])));
+      rules.put(label, new PruningRule(smaller, Float.parseFloat(f[1])));
     }
     return rules;
   }
@@ -201,7 +201,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
       } else {
         continue;
       }
-      Double threshold = Double.parseDouble(f[1]);
+      Float threshold = Float.parseFloat(f[1]);
 
       System.err.println("FEAT: " + f[0]);
 
@@ -219,7 +219,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
   protected boolean prune(FeatureMap features, final Map<Text, PruningRule> rules) {
     for (Map.Entry<Text, PruningRule> e : rules.entrySet()) {
       if (features.containsKey(e.getKey())
-          && e.getValue().applies((DoubleWritable) features.get(e.getKey()))) return true;
+          && e.getValue().applies((FloatWritable) features.get(e.getKey()))) return true;
     }
     return false;
   }
@@ -256,14 +256,14 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
 
   class PruningRule {
     private boolean smaller;
-    private double threshold;
+    private float threshold;
 
-    PruningRule(boolean smaller, double threshold) {
+    PruningRule(boolean smaller, float threshold) {
       this.smaller = smaller;
       this.threshold = threshold;
     }
 
-    protected boolean applies(DoubleWritable value) {
+    protected boolean applies(FloatWritable value) {
       return (smaller ? value.get() < threshold : value.get() > threshold);
     }
   }

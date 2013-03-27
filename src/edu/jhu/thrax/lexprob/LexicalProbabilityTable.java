@@ -12,18 +12,18 @@ public interface LexicalProbabilityTable {
    * 
    * @param source the source language word
    * @param target the target language word
-   * @return the probability -logp(source|target) if present, -1 otherwise
+   * @return the probability p(source|target) if present, -1 otherwise
    */
-  public double logpSourceGivenTarget(int source, int target);
+  public float logpSourceGivenTarget(int source, int target);
 
   // TODO: these don't actually return -logp, they return p.
-  
+
   /**
    * Return the lexical probability of a target language word given a source language word.
    * 
    * @param source the source language word
    * @param target the target language word
-   * @return the probability -logp(target|source) is present, -1 otherwise
+   * @return the probability p(target|source) is present, -1 otherwise
    */
-  public double logpTargetGivenSource(int source, int target);
+  public float logpTargetGivenSource(int source, int target);
 }

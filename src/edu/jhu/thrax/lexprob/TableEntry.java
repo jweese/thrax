@@ -1,6 +1,6 @@
 package edu.jhu.thrax.lexprob;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
 
 import edu.jhu.thrax.util.Vocabulary;
@@ -9,9 +9,9 @@ public class TableEntry {
   
   public final int car;
   public final int cdr;
-  public final double probability;
+  public final float probability;
 
-  public TableEntry(LongWritable pair, DoubleWritable d) {
+  public TableEntry(LongWritable pair, FloatWritable d) {
     int first = (int) (pair.get() >> 32); 
     car = (first < 0 ? Vocabulary.getUnknownId() : first);
     cdr = (int) pair.get();

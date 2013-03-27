@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.mapreduce.Job;
@@ -45,7 +45,7 @@ public abstract class WordLexprobJob extends ThraxJob {
     job.setMapOutputValueClass(IntWritable.class);
 
     job.setOutputKeyClass(LongWritable.class);
-    job.setOutputValueClass(DoubleWritable.class);
+    job.setOutputValueClass(FloatWritable.class);
 
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 

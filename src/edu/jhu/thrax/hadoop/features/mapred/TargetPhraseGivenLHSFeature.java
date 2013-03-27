@@ -3,7 +3,7 @@ package edu.jhu.thrax.hadoop.features.mapred;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -66,7 +66,7 @@ public class TargetPhraseGivenLHSFeature extends MapReduceFeature {
 
   private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
-    private DoubleWritable prob;
+    private FloatWritable prob;
     private static final Text NAME = new Text("p(e|LHS)");
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
@@ -85,7 +85,7 @@ public class TargetPhraseGivenLHSFeature extends MapReduceFeature {
         int count = 0;
         for (IntWritable x : values)
           count += x.get();
-        prob = new DoubleWritable(-Math.log(count / (double) marginal));
+        prob = new FloatWritable((float) -Math.log(count / (float) marginal));
         return;
       }
       context.write(key, new FeaturePair(NAME, prob));
@@ -126,7 +126,7 @@ public class TargetPhraseGivenLHSFeature extends MapReduceFeature {
     }
   }
 
-  private static final DoubleWritable ZERO = new DoubleWritable(0.0);
+  private static final FloatWritable ZERO = new FloatWritable(0.0f);
 
   public void unaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
     map.put(Reduce.NAME, ZERO);

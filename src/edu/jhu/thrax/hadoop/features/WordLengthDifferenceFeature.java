@@ -2,7 +2,7 @@ package edu.jhu.thrax.hadoop.features;
 
 import java.util.Map;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -12,7 +12,7 @@ import edu.jhu.thrax.util.Vocabulary;
 public class WordLengthDifferenceFeature implements SimpleFeature {
 
   private static final Text LABEL = new Text("WordLenDiff");
-  private static final DoubleWritable ZERO = new DoubleWritable(0);
+  private static final FloatWritable ZERO = new FloatWritable(0);
 
   public void score(RuleWritable r, Map<Text, Writable> map) {
     int src_length = 0;
@@ -34,9 +34,9 @@ public class WordLengthDifferenceFeature implements SimpleFeature {
     if (src_count == 0 || tgt_count == 0) {
       map.put(LABEL, ZERO);
     } else {
-      double avg_src_length = (double) src_length / src_count;
-      double avg_tgt_length = (double) tgt_length / tgt_count;
-      map.put(LABEL, new DoubleWritable(avg_tgt_length - avg_src_length));
+      float avg_src_length = (float) src_length / src_count;
+      float avg_tgt_length = (float) tgt_length / tgt_count;
+      map.put(LABEL, new FloatWritable(avg_tgt_length - avg_src_length));
     }
     return;
   }

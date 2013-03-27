@@ -2,7 +2,7 @@ package edu.jhu.thrax.hadoop.features;
 
 import java.util.Map;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -12,7 +12,7 @@ import edu.jhu.thrax.util.Vocabulary;
 public class CharacterCompressionRatioFeature implements SimpleFeature {
 
   private static final Text LABEL = new Text("CharLogCR");
-  private static final DoubleWritable ZERO = new DoubleWritable(0);
+  private static final FloatWritable ZERO = new FloatWritable(0f);
 
   public void score(RuleWritable r, Map<Text, Writable> map) {
     int src_length = 0;
@@ -34,7 +34,7 @@ public class CharacterCompressionRatioFeature implements SimpleFeature {
     if (src_length == 0 || tgt_length == 0) {
       map.put(LABEL, ZERO);
     } else {
-      map.put(LABEL, new DoubleWritable(Math.log((double) tgt_length / src_length)));
+      map.put(LABEL, new FloatWritable((float) Math.log((float) tgt_length / src_length)));
     }
     return;
   }

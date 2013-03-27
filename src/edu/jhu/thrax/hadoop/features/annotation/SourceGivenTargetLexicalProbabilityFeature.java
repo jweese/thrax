@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
@@ -24,7 +24,7 @@ public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFea
 
   private TrieLexprobTable table;
 
-  private static final double DEFAULT_PROB = 10e-7;
+  private static final float DEFAULT_PROB = 10e-7f;
   private static final Text LABEL = new Text("Lex(f|e)");
 
   public Text getName() {
@@ -40,15 +40,15 @@ public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFea
   }
 
   public Writable score(RuleWritable key, Annotation annotation) {
-    return new DoubleWritable(sourceGivenTarget(key, annotation.f2e()));
+    return new FloatWritable(sourceGivenTarget(key, annotation.f2e()));
   }
 
-  private double sourceGivenTarget(RuleWritable rule, AlignmentWritable f2e) {
+  private float sourceGivenTarget(RuleWritable rule, AlignmentWritable f2e) {
     byte[] points = f2e.points;
     int[] source = rule.source;
     int[] target = rule.target;
     
-    double total = 0, prob = 0;
+    float total = 0, prob = 0;
     int prev = -1;
     int n = points.length / 2;
     int m = 0;
@@ -67,14 +67,14 @@ public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFea
 
       while (expected < f) {
         if (!Vocabulary.nt(source[expected])) {
-          double p = table.get(Vocabulary.getUnknownId(), source[expected]);
+          float p = table.get(Vocabulary.getUnknownId(), source[expected]);
           total += (p < 0 ? Math.log(DEFAULT_PROB) : Math.log(p));
         }
         ++expected;
       }
       expected = f + 1;
 
-      double p = table.get(target[e], source[f]);
+      float p = table.get(target[e], source[f]);
       prob += (p < 0 ? DEFAULT_PROB : p);
       if (p < 0)
         System.err.printf("WARNING: could not read lexprob p(%s|%s)\n", Vocabulary.word(source[f]),
@@ -85,7 +85,7 @@ public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFea
     
     while (expected < source.length) {
       if (!Vocabulary.nt(source[expected])) {
-        double p = table.get(Vocabulary.getUnknownId(), source[expected]);
+        float p = table.get(Vocabulary.getUnknownId(), source[expected]);
         total += (p < 0 ? Math.log(DEFAULT_PROB) : Math.log(p));
       }
       ++expected;
@@ -100,7 +100,7 @@ public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFea
     return pqs;
   }
 
-  private static final DoubleWritable ONE_PROB = new DoubleWritable(0.0);
+  private static final FloatWritable ONE_PROB = new FloatWritable(0.0f);
 
   public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
     map.put(LABEL, ONE_PROB);

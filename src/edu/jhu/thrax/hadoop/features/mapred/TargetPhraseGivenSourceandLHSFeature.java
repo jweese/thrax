@@ -3,7 +3,7 @@ package edu.jhu.thrax.hadoop.features.mapred;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -78,7 +78,7 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
       for (IntWritable x : values)
         count += x.get();
 
-      DoubleWritable prob = new DoubleWritable(-Math.log(count / (double) marginal));
+      FloatWritable prob = new FloatWritable((float) -Math.log(count / (float) marginal));
       context.write(key, new FeaturePair(NAME, prob));
     }
 
@@ -126,7 +126,7 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
     }
   }
 
-  private static final DoubleWritable ZERO = new DoubleWritable(0.0);
+  private static final FloatWritable ZERO = new FloatWritable(0.0f);
 
   public void unaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
     map.put(Reduce.NAME, ZERO);

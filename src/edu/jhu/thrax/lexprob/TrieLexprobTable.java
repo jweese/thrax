@@ -10,7 +10,7 @@ import org.apache.hadoop.conf.Configuration;
 public class TrieLexprobTable extends SequenceFileLexprobTable {
   private int[] cars;
   private int[][] cdrs;
-  private double[][] values;
+  private float[][] values;
   
   public TrieLexprobTable(Configuration conf, String fileGlob) throws IOException {
     super(conf, fileGlob);
@@ -18,7 +18,7 @@ public class TrieLexprobTable extends SequenceFileLexprobTable {
     int size = getNumCars(entries);
     cars = new int[size];
     cdrs = new int[size][];
-    values = new double[size][];
+    values = new float[size][];
     entries = getSequenceFileIterator(fs, conf, files);
     initialize(entries);
   }
@@ -39,7 +39,7 @@ public class TrieLexprobTable extends SequenceFileLexprobTable {
     int i = 0;
     int car = -1;
     List<Integer> cdrList = new ArrayList<Integer>();
-    List<Double> valueList = new ArrayList<Double>();
+    List<Float> valueList = new ArrayList<Float>();
     for (TableEntry te : entries) {
       if (car == -1) {
         car = te.car;
@@ -47,7 +47,7 @@ public class TrieLexprobTable extends SequenceFileLexprobTable {
       }
       if (te.car != car) {
         cdrs[i] = intArray(cdrList);
-        values[i] = doubleArray(valueList);
+        values[i] = floatArray(valueList);
         cdrList.clear();
         valueList.clear();
         i++;
@@ -59,11 +59,11 @@ public class TrieLexprobTable extends SequenceFileLexprobTable {
       valueList.add(te.probability);
     }
     cdrs[i] = intArray(cdrList);
-    values[i] = doubleArray(valueList);
+    values[i] = floatArray(valueList);
   }
 
-  private static double[] doubleArray(List<Double> list) {
-    double[] result = new double[list.size()];
+  private static float[] floatArray(List<Float> list) {
+    float[] result = new float[list.size()];
     for (int i = 0; i < list.size(); i++)
       result[i] = list.get(i);
     return result;
@@ -76,7 +76,7 @@ public class TrieLexprobTable extends SequenceFileLexprobTable {
     return result;
   }
 
-  public double get(int car, int cdr) {
+  public float get(int car, int cdr) {
     int i = Arrays.binarySearch(cars, car);
     if (i < 0) // the car is not present
       return 0;

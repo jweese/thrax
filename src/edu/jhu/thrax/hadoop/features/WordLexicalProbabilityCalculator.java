@@ -6,7 +6,7 @@ import java.util.Iterator;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
@@ -85,7 +85,7 @@ public class WordLexicalProbabilityCalculator extends Configured {
   }
 
   public static class Reduce
-      extends Reducer<LongWritable, IntWritable, LongWritable, DoubleWritable> {
+      extends Reducer<LongWritable, IntWritable, LongWritable, FloatWritable> {
     private int current = -1;
     private int marginalCount;
 
@@ -115,7 +115,7 @@ public class WordLexicalProbabilityCalculator extends Configured {
       int my_count = 0;
       for (IntWritable x : values)
         my_count += x.get();
-      context.write(key, new DoubleWritable(my_count / (double) marginalCount));
+      context.write(key, new FloatWritable(my_count / (float) marginalCount));
     }
   }
 

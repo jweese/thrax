@@ -8,7 +8,7 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.SequenceFile;
 
@@ -37,7 +37,7 @@ public abstract class SequenceFileLexprobTable {
 
   protected abstract void initialize(Iterable<TableEntry> entries);
 
-  public abstract double get(int car, int cdr);
+  public abstract float get(int car, int cdr);
 
   public abstract boolean contains(int car, int cdr);
 
@@ -52,7 +52,7 @@ public abstract class SequenceFileLexprobTable {
   protected static Iterable<TableEntry> getSequenceFileIterator(FileSystem theFS,
       Configuration conf, FileStatus[] files) {
     final LongWritable pair = new LongWritable();
-    final DoubleWritable d = new DoubleWritable(0.0);
+    final FloatWritable d = new FloatWritable(0.0f);
     final FileStatus[] theFiles = files;
     final Configuration theConf = conf;
     final FileSystem fs = theFS;

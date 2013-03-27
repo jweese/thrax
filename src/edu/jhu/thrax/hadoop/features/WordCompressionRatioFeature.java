@@ -2,7 +2,7 @@ package edu.jhu.thrax.hadoop.features;
 
 import java.util.Map;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -24,7 +24,7 @@ public class WordCompressionRatioFeature implements SimpleFeature {
     if (src_count == 0 || tgt_count == 0) {
       map.put(LABEL, ZERO);
     } else {
-      map.put(LABEL, new DoubleWritable(Math.log((double) tgt_count / src_count)));
+      map.put(LABEL, new FloatWritable((float) Math.log((float) tgt_count / src_count)));
     }
     return;
   }

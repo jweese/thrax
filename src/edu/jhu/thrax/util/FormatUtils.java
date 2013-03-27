@@ -3,7 +3,7 @@ package edu.jhu.thrax.util;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
@@ -124,13 +124,13 @@ public class FormatUtils {
     for (Text t : fs.keySet()) {
       String score;
       Writable val = fs.get(t);
-      if (val instanceof DoubleWritable) {
-        double value = ((DoubleWritable) fs.get(t)).get();
+      if (val instanceof FloatWritable) {
+        float value = ((FloatWritable) fs.get(t)).get();
         if (value == -0.0 || Math.abs(value) < 0.000005)
           score = "0";
         else
           score = String.format("%.5f", value);
-        if (sparse && Double.parseDouble(score) == 0) continue;
+        if (sparse && Float.parseFloat(score) == 0) continue;
       } else if (val instanceof IntWritable) {
         score = String.format("%d", ((IntWritable) fs.get(t)).get());
         if (sparse && Integer.parseInt(score) == 0) continue;
@@ -139,7 +139,7 @@ public class FormatUtils {
       } else if (val instanceof AlignmentWritable) {
         score = ((AlignmentWritable) val).toString(":");
       } else {
-        throw new RuntimeException("Expecting double, integer, or string feature values.");
+        throw new RuntimeException("Expecting float, integer, or string feature values.");
       }
       if (label)
         sb.append(String.format("%s=%s ", t, score));

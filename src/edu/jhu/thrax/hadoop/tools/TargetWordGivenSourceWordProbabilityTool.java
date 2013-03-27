@@ -5,7 +5,7 @@ import java.util.Map;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -62,7 +62,7 @@ public class TargetWordGivenSourceWordProbabilityTool extends Configured impleme
         job.setMapOutputValueClass(IntWritable.class);
 
         job.setOutputKeyClass(TextPair.class);
-        job.setOutputValueClass(DoubleWritable.class);
+        job.setOutputValueClass(FloatWritable.class);
 
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 

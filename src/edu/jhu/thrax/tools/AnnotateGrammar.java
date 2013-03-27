@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
-import org.apache.hadoop.io.DoubleWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
@@ -66,13 +66,13 @@ public class AnnotateGrammar {
           boolean labeled_input = feature_entries[0].contains("=");
           for (i = 0; i < feature_entries.length; i++) {
             Text label = new Text(String.valueOf(i));
-            DoubleWritable value;
+            FloatWritable value;
             if (labeled_input) {
               String[] parts = FormatUtils.P_EQUAL.split(feature_entries[i]);
               if (labeled) label = new Text(parts[0]);
-              value = new DoubleWritable(Float.parseFloat(parts[1]));
+              value = new FloatWritable(Float.parseFloat(parts[1]));
             } else {
-              value = new DoubleWritable(Float.parseFloat(feature_entries[i]));
+              value = new FloatWritable(Float.parseFloat(feature_entries[i]));
             }
             feature_map.put(label, value);
           }
