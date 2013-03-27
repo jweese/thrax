@@ -24,6 +24,7 @@ import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
 import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
 import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.FormatUtils;
+import edu.jhu.thrax.util.Vocabulary;
 
 public class AggregationReducer extends Reducer<RuleWritable, FeatureMap, Text, NullWritable> {
 
@@ -36,6 +37,9 @@ public class AggregationReducer extends Reducer<RuleWritable, FeatureMap, Text, 
 
   protected void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
+    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+    Vocabulary.read(conf, vocabulary_path);
+    
     label = conf.getBoolean("thrax.label-feature-scores", true);
     sparse = conf.getBoolean("thrax.sparse-feature-vectors", false);
 
