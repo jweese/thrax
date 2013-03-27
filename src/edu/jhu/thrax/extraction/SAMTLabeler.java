@@ -74,7 +74,7 @@ public class SAMTLabeler implements SpanLabeler {
     for (int mid = from + 1; mid < to; mid++) {
       int a = constituentLabel(from, mid);
       int b = constituentLabel(mid, to);
-      if (a != 0 && b != 0) return join(a, b, "+");
+      if (a != 0 && b != 0) return LabelCache.PLUS.get(a, b);
     }
     return 0;
   }
@@ -83,7 +83,7 @@ public class SAMTLabeler implements SpanLabeler {
     for (int end = to + 1; end <= tree.numLeaves(); end++) {
       int a = constituentLabel(from, end);
       int b = constituentLabel(to, end);
-      if (a != 0 && b != 0) return join(a, b, "/");
+      if (a != 0 && b != 0) return LabelCache.SLASH.get(a, b);
     }
     return 0;
   }
@@ -92,7 +92,7 @@ public class SAMTLabeler implements SpanLabeler {
     for (int start = from - 1; start >= 0; start--) {
       int a = constituentLabel(start, to);
       int b = constituentLabel(start, from);
-      if (a != 0 && b != 0) return join(b, a, "\\");
+      if (a != 0 && b != 0) return LabelCache.BACKSLASH.get(b, a);
     }
     return 0;
   }
@@ -103,17 +103,10 @@ public class SAMTLabeler implements SpanLabeler {
         int a = constituentLabel(from, mid1);
         int b = constituentLabel(mid1, mid2);
         int c = constituentLabel(mid2, to);
-        if (a != 0 && b != 0 && c != 0) return join(join(a, b, "+"), c, "+");
+        if (a != 0 && b != 0 && c != 0) return LabelCache.PLUS.get(LabelCache.PLUS.get(a, b), c);
       }
     }
     return 0;
-  }
-
-  private static int join(int a, int b, String glue) {
-    String word_a = Vocabulary.word(a);
-    String word_b = Vocabulary.word(b);
-    return Vocabulary.id(word_a.substring(0, word_a.length() - 1) + glue
-        + word_b.substring(1));
   }
 
   private enum UnaryCategoryHandler {
