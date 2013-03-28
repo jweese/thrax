@@ -1,28 +1,26 @@
 package edu.jhu.thrax.hadoop.tools;
 
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
-import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.conf.Configuration;
+import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.NullWritable;
-
-import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
-
 import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
-import edu.jhu.thrax.hadoop.jobs.FeatureJobFactory;
-
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
 import edu.jhu.thrax.hadoop.output.OutputReducer;
-
-import java.util.Map;
+import edu.jhu.thrax.util.BackwardsCompatibility;
+import edu.jhu.thrax.util.ConfFileParser;
+import edu.jhu.thrax.util.FormatUtils;
 
 public class OutputTool extends Configured implements Tool
 {
@@ -61,8 +59,9 @@ public class OutputTool extends Configured implements Tool
         job.setOutputKeyClass(RuleWritable.class);
         job.setOutputValueClass(NullWritable.class);
 
-        for (String feature : conf.get("thrax.features", "").split("\\s+")) {
-            if (FeatureJobFactory.get(feature) instanceof MapReduceFeature) {
+        String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
+        for (String feature : FormatUtils.P_SPACE.split(features)) {
+            if (MapReduceFeatureFactory.get(feature) instanceof MapReduceFeature) {
                 FileInputFormat.addInputPath(job, new Path(workDir + feature));
             }
         }

@@ -1,117 +1,124 @@
 package edu.jhu.thrax.extraction;
 
+import java.util.List;
+
+import edu.jhu.thrax.syntax.ParseTree;
 import edu.jhu.thrax.util.Vocabulary;
-import edu.jhu.thrax.ThraxConfig;
-import edu.jhu.thrax.syntax.LatticeArray;
-import edu.jhu.thrax.datatypes.*;
-import edu.jhu.thrax.util.exceptions.*;
-import edu.jhu.thrax.util.io.InputUtilities;
-import edu.jhu.thrax.util.ConfFileParser;
 
-import java.util.Map;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.Collection;
-import java.util.ArrayList;
+public class SAMTLabeler implements SpanLabeler {
 
-import java.io.IOException;
+  private boolean allowConstituent = true;
+  private boolean allowCCG = true;
+  private boolean allowConcat = true;
+  private boolean allowDoubleConcat = true;
+  private UnaryCategoryHandler unaryCategoryHandler;
 
-import org.apache.hadoop.conf.Configuration;
+  private ParseTree tree;
+  private int defaultLabel;
 
-public class SAMTLabeler extends ConfiguredSpanLabeler {
+  public SAMTLabeler(String parse, boolean constituent, boolean ccg, boolean concat,
+      boolean doubleConcat, String unary, int def) {
+    allowConstituent = constituent;
+    allowCCG = ccg;
+    allowConcat = concat;
+    allowDoubleConcat = doubleConcat;
+    defaultLabel = def;
+    unaryCategoryHandler = UnaryCategoryHandler.fromString(unary);
+    tree = ParseTree.fromPennFormat(parse);
+    if (tree == null) System.err.printf("WARNING: SAMT labeler: %s is not a parse tree\n", parse);
+  }
 
-    public static String name = "samt";
-
-    private static final String FULL_SENTENCE_SYMBOL = "_S";
-    private static final int FULL_SENTENCE_ID = Vocabulary.getId(FULL_SENTENCE_SYMBOL);
-
-    private boolean TARGET_IS_SAMT_SYNTAX = true;
-    private boolean ALLOW_CONSTITUENT_LABEL = true;
-    private boolean ALLOW_CCG_LABEL = true;
-    private boolean ALLOW_CONCAT_LABEL = true;
-    private boolean ALLOW_DOUBLE_CONCAT = true;
-    private String UNARY_CATEGORY_HANDLER = "all";
-    private boolean SOURCE_IS_PARSED = false;
-    private boolean TARGET_IS_PARSED = false;
-    private boolean REVERSE = false;
-
-    private LatticeArray lattice;
-    private int targetLength;
-
-    public SAMTLabeler(Configuration conf)
-    {
-        super(conf);
-        TARGET_IS_SAMT_SYNTAX = conf.getBoolean("thrax.target-is-samt-syntax", true);
-        ALLOW_CONSTITUENT_LABEL = conf.getBoolean("thrax.allow-constituent-label", true);
-        ALLOW_CCG_LABEL = conf.getBoolean("thrax.allow-ccg-label", true);
-        ALLOW_CONCAT_LABEL = conf.getBoolean("thrax.allow-concat-label", true);
-        ALLOW_DOUBLE_CONCAT = conf.getBoolean("thrax.allow-double-plus", true);
-        UNARY_CATEGORY_HANDLER = conf.get("thrax.unary-category-handler", "all");
-        SOURCE_IS_PARSED = conf.getBoolean("thrax.source-is-parsed", false);
-        TARGET_IS_PARSED = conf.getBoolean("thrax.target-is-parsed", false);
-        REVERSE = conf.getBoolean("thrax.reverse", false);
+  public int getLabel(int from, int to) {
+    if (tree == null) return defaultLabel;
+    int label;
+    if (allowConstituent) {
+      label = constituentLabel(from, to);
+      if (label != 0) return label;
     }
-
-    public void setInput(String inp) throws MalformedInputException
-    {
-        String [] inputs = inp.split(ThraxConfig.DELIMITER_REGEX);
-        if (TARGET_IS_SAMT_SYNTAX)
-            lattice = new LatticeArray(inputs[1].trim(), UNARY_CATEGORY_HANDLER);
-        else
-            lattice = new LatticeArray(inputs[0].trim(), UNARY_CATEGORY_HANDLER);
-        String [] sourceWords = InputUtilities.getWords(inputs[0], SOURCE_IS_PARSED);
-        String [] targetWords = InputUtilities.getWords(inputs[1], TARGET_IS_PARSED);
-        if (REVERSE)
-            targetLength = sourceWords.length;
-        else
-            targetLength = targetWords.length;
+    if (allowConcat) {
+      label = concatenatedLabel(from, to);
+      if (label != 0) return label;
     }
- 
-
-    public Collection<Integer> getLabels(IntPair span)
-    {
-        int from = span.fst;
-        int to = span.snd;
-        Collection<Integer> c = new HashSet<Integer>();
-        if (from == 0 && to == targetLength)
-            c.add(FULL_SENTENCE_ID);
-        int x;
-        if (ALLOW_CONSTITUENT_LABEL) {
-            x = lattice.getOneConstituent(from, to);
-            if (x >= 0) {
-                c.add(x);
-                return c;
-            }
-        }
-        if (ALLOW_CONCAT_LABEL) {
-            x = lattice.getOneSingleConcatenation(from, to);
-            if (x >= 0) {
-                c.add(x);
-                return c;
-            }
-        }
-        if (ALLOW_CCG_LABEL) {
-            x = lattice.getOneRightSideCCG(from, to);
-            if (x >= 0) {
-                c.add(x);
-                return c;
-            }
-            x = lattice.getOneLeftSideCCG(from, to);
-            if (x >= 0) {
-                c.add(x);
-                return c;
-            }
-        }
-        if (ALLOW_DOUBLE_CONCAT) {
-            x = lattice.getOneDoubleConcatenation(from, to);
-            if (x >= 0) {
-                c.add(x);
-                return c;
-            }
-        }
-        //                c = HieroRuleExtractor.HIERO_LABELS;
-        return c;
+    if (allowCCG) {
+      label = forwardSlashLabel(from, to);
+      if (label != 0) return label;
+      label = backwardSlashLabel(from, to);
+      if (label != 0) return label;
     }
+    if (allowDoubleConcat) {
+      label = doubleConcatenatedLabel(from, to);
+      if (label != 0) return label;
+    }
+    return defaultLabel;
+  }
 
+  private int constituentLabel(int from, int to) {
+    List<ParseTree.Node> nodes = tree.internalNodesWithSpan(from, to);
+    if (nodes.isEmpty()) return 0;
+    switch (unaryCategoryHandler) {
+      case TOP:
+        return nodes.get(0).label();
+      case BOTTOM:
+        return nodes.get(nodes.size() - 1).label();
+      case ALL:
+        // TODO: currently broken.
+        String result = Vocabulary.word(nodes.get(0).label());
+        for (int i = 1; i < nodes.size(); i++)
+          result += ":" + Vocabulary.word(nodes.get(i).label());
+        return Vocabulary.id(result);
+    }
+    return 0;
+  }
+
+  private int concatenatedLabel(int from, int to) {
+    for (int mid = from + 1; mid < to; mid++) {
+      int a = constituentLabel(from, mid);
+      int b = constituentLabel(mid, to);
+      if (a != 0 && b != 0) return LabelCache.PLUS.get(a, b);
+    }
+    return 0;
+  }
+
+  private int forwardSlashLabel(int from, int to) {
+    for (int end = to + 1; end <= tree.numLeaves(); end++) {
+      int a = constituentLabel(from, end);
+      int b = constituentLabel(to, end);
+      if (a != 0 && b != 0) return LabelCache.SLASH.get(a, b);
+    }
+    return 0;
+  }
+
+  private int backwardSlashLabel(int from, int to) {
+    for (int start = from - 1; start >= 0; start--) {
+      int a = constituentLabel(start, to);
+      int b = constituentLabel(start, from);
+      if (a != 0 && b != 0) return LabelCache.BACKSLASH.get(b, a);
+    }
+    return 0;
+  }
+
+  private int doubleConcatenatedLabel(int from, int to) {
+    for (int mid1 = from + 1; mid1 < to - 1; mid1++) {
+      for (int mid2 = mid1 + 1; mid2 < to; mid2++) {
+        int a = constituentLabel(from, mid1);
+        int b = constituentLabel(mid1, mid2);
+        int c = constituentLabel(mid2, to);
+        if (a != 0 && b != 0 && c != 0) return LabelCache.PLUS.get(LabelCache.PLUS.get(a, b), c);
+      }
+    }
+    return 0;
+  }
+
+  private enum UnaryCategoryHandler {
+    TOP, BOTTOM, ALL;
+
+    public static UnaryCategoryHandler fromString(String s) {
+      if (s.equalsIgnoreCase("top"))
+        return TOP;
+      else if (s.equalsIgnoreCase("bottom"))
+        return BOTTOM;
+      else
+        return ALL;
+    }
+  }
 }
-

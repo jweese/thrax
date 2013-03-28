@@ -1,8 +1,8 @@
 package edu.jhu.thrax.hadoop.comparators;
 
+import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableUtils;
-import org.apache.hadoop.io.Text;
 
 /**
  * Compares two Text objects lexicographically, except the Text "/MARGINAL/"

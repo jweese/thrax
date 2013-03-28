@@ -3,34 +3,47 @@ package edu.jhu.thrax.hadoop.features.pivot;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
 
-public class PivotedSourcePhraseGivenTargetAndLHSFeature extends
-		PivotedNegLogProbFeature {
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 
-	private static final Text LABEL = new Text("p(f|e,LHS)");
+public class PivotedSourcePhraseGivenTargetAndLHSFeature extends PivotedNegLogProbFeature {
 
-	public String getName() {
-		return "f_given_e_and_lhs";
-	}
+  private static final Text LABEL = new Text("p(f|e,LHS)");
 
-	public Text getFeatureLabel() {
-		return LABEL;
-	}
+  public String getName() {
+    return "f_given_e_and_lhs";
+  }
 
-	public Set<String> getPrerequisites() {
-		Set<String> prereqs = new HashSet<String>();
-		prereqs.add("e_given_f_and_lhs");
-		prereqs.add("f_given_e_and_lhs");
-		return prereqs;
-	}
+  public Text getFeatureLabel() {
+    return LABEL;
+  }
 
-	public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
-		double fge = ((DoubleWritable) src.get(new Text("p(e|f,LHS)"))).get();
-		double egf = ((DoubleWritable) tgt.get(new Text("p(f|e,LHS)"))).get();
+  public Set<String> getPrerequisites() {
+    Set<String> prereqs = new HashSet<String>();
+    prereqs.add("e_given_f_and_lhs");
+    prereqs.add("f_given_e_and_lhs");
+    return prereqs;
+  }
 
-		return new DoubleWritable(egf + fge);
-	}
+  public FloatWritable pivot(FeatureMap src, FeatureMap tgt) {
+    float fge = ((FloatWritable) src.get(new Text("p(e|f,LHS)"))).get();
+    float egf = ((FloatWritable) tgt.get(new Text("p(f|e,LHS)"))).get();
+
+    return new FloatWritable(egf + fge);
+  }
+
+  @Override
+  public Set<Text> getLowerBoundLabels() {
+    Set<Text> lower_bound_labels = new HashSet<Text>();
+    lower_bound_labels.add(new Text("p(e|f,LHS)"));
+    lower_bound_labels.add(new Text("p(f|e,LHS)"));
+    return lower_bound_labels;
+  }
+
+  @Override
+  public Set<Text> getUpperBoundLabels() {
+    return null;
+  }
 }

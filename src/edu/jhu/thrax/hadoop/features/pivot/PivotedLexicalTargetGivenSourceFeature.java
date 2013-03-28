@@ -3,9 +3,10 @@ package edu.jhu.thrax.hadoop.features.pivot;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
+import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.Text;
+
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 
 public class PivotedLexicalTargetGivenSourceFeature extends
 		PivotedNegLogProbFeature {
@@ -22,14 +23,28 @@ public class PivotedLexicalTargetGivenSourceFeature extends
 
 	public Set<String> getPrerequisites() {
 		Set<String> prereqs = new HashSet<String>();
-		prereqs.add("lexprob");
+		prereqs.add("f_given_e_lex");
+		prereqs.add("e_given_f_lex");
 		return prereqs;
 	}
 
-	public DoubleWritable pivot(MapWritable src, MapWritable tgt) {
-		double egf = ((DoubleWritable) src.get(new Text("Lex(e|f)"))).get();
-		double fge = ((DoubleWritable) tgt.get(new Text("Lex(f|e)"))).get();
+	public FloatWritable pivot(FeatureMap src, FeatureMap tgt) {
+		float egf = ((FloatWritable) src.get(new Text("Lex(e|f)"))).get();
+		float fge = ((FloatWritable) tgt.get(new Text("Lex(f|e)"))).get();
 
-		return new DoubleWritable(egf + fge);
+		return new FloatWritable(egf + fge);
+	}
+
+	@Override
+	public Set<Text> getLowerBoundLabels() {
+		Set<Text> lower_bound_labels = new HashSet<Text>();
+		lower_bound_labels.add(new Text("Lex(e|f)"));
+		lower_bound_labels.add(new Text("Lex(f|e)"));
+		return lower_bound_labels;
+	}
+
+	@Override
+	public Set<Text> getUpperBoundLabels() {
+		return null;
 	}
 }

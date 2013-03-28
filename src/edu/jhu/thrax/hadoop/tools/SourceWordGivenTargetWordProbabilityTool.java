@@ -1,26 +1,24 @@
 package edu.jhu.thrax.hadoop.tools;
 
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
-import org.apache.hadoop.conf.Configured;
-import org.apache.hadoop.conf.Configuration;
+import java.util.Map;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.FloatWritable;
+import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.DoubleWritable;
-
-import edu.jhu.thrax.util.ConfFileParser;
 import edu.jhu.thrax.hadoop.datatypes.TextPair;
-
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
-
-import java.util.Map;
+import edu.jhu.thrax.hadoop.jobs.WordLexprobJob;
+import edu.jhu.thrax.util.ConfFileParser;
 
 public class SourceWordGivenTargetWordProbabilityTool extends Configured implements Tool
 {
@@ -50,10 +48,11 @@ public class SourceWordGivenTargetWordProbabilityTool extends Configured impleme
             workDir += Path.SEPARATOR;
             conf.set("thrax.work-dir", workDir);
         }
+		conf.setBoolean(WordLexprobJob.SOURCE_GIVEN_TARGET, true);
         Job job = new Job(conf, "thrax-sgt-word-lexprob");
 
         job.setJarByClass(WordLexicalProbabilityCalculator.class);
-        job.setMapperClass(WordLexicalProbabilityCalculator.SourceGivenTargetMap.class);
+        job.setMapperClass(WordLexicalProbabilityCalculator.Map.class);
         job.setCombinerClass(IntSumReducer.class);
         job.setSortComparatorClass(TextPair.SndMarginalComparator.class);
         job.setPartitionerClass(WordLexicalProbabilityCalculator.Partition.class);
@@ -63,12 +62,12 @@ public class SourceWordGivenTargetWordProbabilityTool extends Configured impleme
         job.setMapOutputValueClass(IntWritable.class);
 
         job.setOutputKeyClass(TextPair.class);
-        job.setOutputValueClass(DoubleWritable.class);
+        job.setOutputValueClass(FloatWritable.class);
 
         job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
         FileInputFormat.setInputPaths(job, new Path(input));
-        FileOutputFormat.setOutputPath(job, new Path(workDir + "lexprobse2f"));
+        FileOutputFormat.setOutputPath(job, new Path(workDir + "lexprobs_sgt"));
 
         job.submit();
         return 0;

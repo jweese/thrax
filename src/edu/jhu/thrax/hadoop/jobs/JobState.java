@@ -7,6 +7,7 @@ public enum JobState
     READY,
     RUNNING,
     SUCCESS,
-    WAITING
+    WAITING,
+    PLANNED
 }
 

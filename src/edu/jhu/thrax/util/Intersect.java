@@ -1,14 +1,14 @@
 package edu.jhu.thrax.util;
 
-import java.util.Scanner;
-import java.util.zip.GZIPInputStream;
-import java.util.HashMap;
-import java.util.ArrayList;
-import java.io.IOException;
-import java.io.PrintStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.File;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.zip.GZIPInputStream;
 
 public class Intersect
 {
@@ -50,6 +50,7 @@ public class Intersect
                 rules.get(r).clear();
             }
         }
+        scanner.close();
         firstGrammar.close();
         secondGrammar.close();
         return;
@@ -84,6 +85,7 @@ public class Intersect
                 rules.put(r, al);
             }
         }
+        scanner.close();
         return;
     }
 }

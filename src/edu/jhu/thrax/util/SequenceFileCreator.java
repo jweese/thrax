@@ -1,14 +1,14 @@
 package edu.jhu.thrax.util;
 
-import org.apache.hadoop.io.SequenceFile;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.LongWritable;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.conf.Configuration;
-
 import java.net.URI;
 import java.util.Scanner;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.SequenceFile;
+import org.apache.hadoop.io.Text;
 
 public class SequenceFileCreator
 {
@@ -32,6 +32,7 @@ public class SequenceFileCreator
 			writer.append(k, v);
 			current++;
 		}
+		scanner.close();
 		writer.close();
 		return;
 	}

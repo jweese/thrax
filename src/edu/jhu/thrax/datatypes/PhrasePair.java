@@ -1,27 +1,31 @@
 package edu.jhu.thrax.datatypes;
 
+import java.util.Iterator;
+
+import edu.jhu.thrax.extraction.SpanLabeler;
+
 /**
  * This class represents a phrase pair. Essentially it is four integers
  * describing the boundaries of the source and target sides of the phrase pair.
  */
-public class PhrasePair implements Cloneable {
-
+public class PhrasePair 
+{
     /**
      * The index of the start of the source side of this PhrasePair.
      */
-    public int sourceStart;
+    public final int sourceStart;
     /**
      * One plus the index of the end of the source side of this PhrasePair.
      */
-    public int sourceEnd;
+    public final int sourceEnd;
     /**
      * The index of the start of the target side of this PhrasePair.
      */
-    public int targetStart;
+    public final int targetStart;
     /**
      * One plus the index of the end of the target side of this PhrasePair.
      */
-    public int targetEnd;
+    public final int targetEnd;
 
     /**
      * Constructor.
@@ -39,46 +43,111 @@ public class PhrasePair implements Cloneable {
         targetEnd = te;
     }
 
-    /**
-     * Determines whether this PhrasePair is consistent with the given
-     * Alignment. A PhrasePair is consistent if no source word is aligned to
-     * a target word outside of the target span, and no target word is aligned
-     * to a source word outside of the source span.
-     *
-     * @param a an Alignment
-     * @return true if this PhrasePair is consistent, false otherwise
-     */
-    public boolean consistentWith(Alignment a)
-    {
-        for (int i = sourceStart; i < sourceEnd; i++) {
-            if (i >= a.f2e.length)
-                break;
-            for (int x : a.f2e[i]) {
-                if (x < targetStart || x >= targetEnd)
-                    return false;
-            }
-        }
+	/**
+	 * Determines if another PhrasePair is contained (non-strictly) within
+	 * this PhrasePair. Another PhrasePair is contained non-strictly if none
+	 * of its boundary points lie outside of this PhrasePair.
+	 *
+	 * @param other the other PhrasePair
+	 * @return true if other is contained non-strictly in this PhrasePar,
+	 * false if at least one point lies outside
+	 */
+	public boolean contains(PhrasePair other)
+	{
+		return other.sourceStart >= sourceStart
+			&& other.sourceEnd <= sourceEnd
+			&& other.targetStart >= targetStart
+			&& other.targetEnd <= targetEnd;
+	}
 
-        for (int j = targetStart; j < targetEnd; j++) {
-            if (j >= a.e2f.length)
-                break;
-            for (int x : a.e2f[j]) {
-                if (x < sourceStart || x >= sourceEnd)
-                    return false;
-            }
-        }
+	/**
+	 * Determine if this PhrasePair can be considered as an initial phrase
+	 * pair according to a particular alignment. A phrase pair is called an
+	 * initial phrase pair if the following conditions are satisfied:
+	 * <p>
+	 * 1) no source words are aligned outside the target span of the phrase
+	 * 2) no target words are aligned outside the source span of the phrase
+	 * 3) a certain number of alignment points are present in the phrase pair
+	 * <p>
+	 * In addition, we may optionally specify that only the smallest phrase
+	 * pair with the same alignment is kept: that is, we may disallow the
+	 * presence of unaligned words at the edges of the PhrasePair.
+	 *
+	 * @param a the Alignment
+	 * @param allowUnaligned whether to allow unaligned words at the edges of
+	 * initial phrase pairs
+	 * @param minimumAligned the minimum number of alignment points needed
+	 * @return true if this is an initial phrase pair, false otherwise
+	 */
+	public boolean isInitialPhrasePair(Alignment a, boolean allowUnaligned, int minimumAligned)
+	{
+		int numLinks = 0;
+		for (int i = sourceStart; i < sourceEnd; i++) {
+			Iterator<Integer> js = a.targetIndicesAlignedTo(i);
+			while (js.hasNext()) {
+				numLinks++;
+				int j = js.next();
+				if (j < targetStart || j >= targetEnd)
+					return false;
+			}
+		}
+		for (int j = targetStart; j < targetEnd; j++) {
+			Iterator<Integer> is = a.sourceIndicesAlignedTo(j);
+			while (is.hasNext()) {
+				numLinks++;
+				int i = is.next();
+				if (i < sourceStart || i >= sourceEnd)
+					return false;
+			}
+		}
+		return numLinks >= minimumAligned && (allowUnaligned || isMinimal(a));
+	}
 
-        return true;
-    }
+	private boolean isMinimal(Alignment a)
+	{
+		return a.sourceIndexIsAligned(sourceStart)
+			&& a.sourceIndexIsAligned(sourceEnd - 1)
+			&& a.targetIndexIsAligned(targetStart)
+			&& a.targetIndexIsAligned(targetEnd - 1);
+	}
+
+	public int sourceLength()
+	{
+		return sourceEnd - sourceStart;
+	}
+
+	public int targetLength()
+	{
+		return targetEnd - targetStart;
+	}
+
+	public int numAlignmentPoints(Alignment a)
+	{
+		if (sourceLength() < targetLength())
+			return countAlignmentPointsSource(a);
+		else
+			return countAlignmentPointsTarget(a);
+	}
+
+	private int countAlignmentPointsSource(Alignment a)
+	{
+		int result = 0;
+		for (int i = sourceStart; i < sourceEnd; i++)
+			result += a.numTargetWordsAlignedTo(i);
+		return result;
+	}
+
+	private int countAlignmentPointsTarget(Alignment a)
+	{
+		int result = 0;
+		for (int j = targetStart; j < targetEnd; j++)
+			result += a.numSourceWordsAlignedTo(j);
+		return result;
+	}
 
     public String toString()
     {
         return String.format("[%d,%d)+[%d,%d)", sourceStart, sourceEnd, targetStart, targetEnd);
-    }
-
-    public Object clone()
-    {
-        return new PhrasePair(sourceStart, sourceEnd, targetStart, targetEnd);
     }
 
     public boolean equals(Object o)
@@ -103,4 +172,26 @@ public class PhrasePair implements Cloneable {
         result *= 163 + targetEnd;
         return result;
     }
+
+	public int getLabel(SpanLabeler labeler, boolean useSource)
+	{
+		if (useSource)
+			return labeler.getLabel(sourceStart, sourceEnd);
+		else
+			return labeler.getLabel(targetStart, targetEnd);
+	}
+
+	public boolean sourceIsDisjointFrom(PhrasePair other)
+	{
+		if (other.sourceStart < sourceStart)
+			return other.sourceEnd <= sourceStart;
+		return other.sourceStart >= sourceEnd;
+	}
+
+	public boolean targetIsDisjointFrom(PhrasePair other)
+	{
+		if (other.targetStart < targetStart)
+			return other.targetEnd <= targetStart;
+		return other.targetStart >= targetEnd;
+	}
 }

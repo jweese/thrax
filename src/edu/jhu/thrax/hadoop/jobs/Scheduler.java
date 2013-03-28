@@ -1,16 +1,29 @@
 package edu.jhu.thrax.hadoop.jobs;
 
 import java.util.HashMap;
-import java.util.Set;
 import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.hadoop.conf.Configuration;
+
+import edu.jhu.thrax.util.FormatUtils;
 
 public class Scheduler
 {
+		private HashSet<String> faked;
     private HashMap<Class<? extends ThraxJob>,JobState> jobs;
 
-    public Scheduler()
+    public Scheduler(Configuration config)
     {
-        jobs = new HashMap<Class<? extends ThraxJob>,JobState>();
+    		jobs = new HashMap<Class<? extends ThraxJob>,JobState>();
+    		faked = new HashSet<String>();
+    		
+    		String faked_line = config.get("thrax.fake");
+    		if (faked_line != null) {
+    			String[] faked_jobs = FormatUtils.P_SPACE.split(faked_line);
+    			for (String faked_job : faked_jobs)
+    				faked.add(faked_job);
+    		}
     }
 
     public boolean schedule(Class<? extends ThraxJob> jobClass) throws SchedulerException
@@ -22,24 +35,22 @@ public class Scheduler
             job = jobClass.newInstance();
         }
         catch (Exception e) {
+          e.printStackTrace();
             throw new SchedulerException(e.getMessage());
         }
         for (Class<? extends ThraxJob> c : job.getPrerequisites()) {
             schedule(c);
         }
-        if (job.getPrerequisites().size() == 0)
-            jobs.put(jobClass, JobState.READY);
-        else
-            jobs.put(jobClass, JobState.WAITING);
-        System.err.println("[SCHED] scheduled job for " + jobClass);
+        jobs.put(jobClass, JobState.PLANNED);
+        System.err.println("[SCHED] planned job for " + jobClass);
         return true;
     }
 
-    public boolean setState(Class<? extends ThraxJob> jobClass, JobState state) throws SchedulerException
+    public boolean setState(Class<? extends ThraxJob> job_class, JobState state) throws SchedulerException
     {
-        if (jobs.containsKey(jobClass)) {
-            jobs.put(jobClass, state);
-            System.err.println(String.format("[SCHED] %s in state %s", jobClass, state));
+        if (jobs.containsKey(job_class)) {
+            jobs.put(job_class, state);
+            System.err.println(String.format("[SCHED] %s in state %s", job_class, state));
             updateAllStates();
             return true;
         }
@@ -63,6 +74,25 @@ public class Scheduler
             }
         }
     }
+    
+	public void percolate(Class<? extends ThraxJob> job_class) throws SchedulerException {
+		ThraxJob job;
+		try {
+			job = job_class.newInstance();
+		} catch (Exception e) {
+			throw new SchedulerException(e.getMessage());
+		}
+		Set<Class<? extends ThraxJob>> prereqs = job.getPrerequisites();
+		
+		if (faked.contains(job.getName())) {
+			setState(job_class, JobState.SUCCESS);
+		} else {
+			setState(job_class, JobState.WAITING);
+			if (prereqs != null)
+				for (Class<? extends ThraxJob> p : prereqs)
+					percolate(p);
+		}
+	}
 
     public void checkReady(Class<? extends ThraxJob> c) throws SchedulerException
     {
@@ -79,7 +109,7 @@ public class Scheduler
             if (!jobs.get(p).equals(JobState.SUCCESS))
                 return;
         }
-        // all prereqs are state SUCCESS
+        // All prereqs are in state SUCCESS.
         setState(c, JobState.READY);
     }
 

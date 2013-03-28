@@ -81,18 +81,28 @@ thrax_option $conf "input-file"
 input=$THRAX_OPT_RESULT
 choose_upload $input
 
-thrax_option $conf "amazon-bootstrap" "s3://elasticmapreduce/bootstrap-actions/configurations/latest/memory-intensive"
-bootstrap=$THRAX_OPT_RESULT
-choose_upload $bootstrap
+# thrax_option $conf "amazon-bootstrap" "s3://elasticmapreduce/bootstrap-actions/configurations/latest/memory-intensive"
+# bootstrap=$THRAX_OPT_RESULT
+# choose_upload $bootstrap
 
 elastic-mapreduce -c $cred \
     --create \
     --name $name \
     --log-uri $workdir/logs \
     --enable-debugging \
-    --bootstrap-action $bootstrap \
     --num-instances $instances \
     --instance-type $instance_type \
     --jar $thraxjar \
     --arg $remoteconf \
-    --arg $workdir
+    --arg $workdir \
+    --bootstrap-action s3://elasticmapreduce/bootstrap-actions/configure-hadoop \
+    --args "-m,mapred.tasktracker.map.tasks.maximum=14","-m,mapred.tasktracker.reduce.tasks.maximum=5","-m,mapred.child.java.opts=-Xmx1500m","-m,mapred.reduce.child.java.opts=-Xmx9g"
+
+
+# fr-en europarl    #"-m,mapred.tasktracker.map.tasks.maximum=3","-m,mapred.tasktracker.reduce.tasks.maximum=1","-m,mapred.child.java.opts=-Xmx1500m","-m,mapred.reduce.child.java.opts=-Xmx2300m"
+
+
+
+# ppdb v0.2
+#"-m,mapred.tasktracker.map.tasks.maximum=20","-m,mapred.tasktracker.reduce.tasks.maximum=2","-m,mapred.child.java.opts=-Xmx1500m","-m,mapred.reduce.child.java.opts=-Xmx17g"
+    

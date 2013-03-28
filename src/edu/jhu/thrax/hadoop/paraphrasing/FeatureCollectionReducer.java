@@ -2,54 +2,29 @@ package edu.jhu.thrax.hadoop.paraphrasing;
 
 import java.io.IOException;
 
-import org.apache.hadoop.io.DoubleWritable;
-import org.apache.hadoop.io.MapWritable;
-import org.apache.hadoop.io.NullWritable;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
+import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
+import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.Vocabulary;
 
-public class FeatureCollectionReducer extends
-		Reducer<RuleWritable, NullWritable, RuleWritable, MapWritable> {
+public class FeatureCollectionReducer
+    extends Reducer<RuleWritable, FeaturePair, RuleWritable, FeatureMap> {
 
-	private static final Text EMPTY = new Text("");
-	private static final DoubleWritable ZERO = new DoubleWritable(0.0);
+  protected void setup(Context context) throws IOException, InterruptedException {
+    Configuration conf = context.getConfiguration();
+    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+    Vocabulary.read(conf, vocabulary_path);
+  }
 
-	private RuleWritable currentRule;
-	private MapWritable features;
-
-	protected void setup(Context context) throws IOException,
-			InterruptedException {
-		currentRule = null;
-		features = new MapWritable();
-	}
-
-	protected void reduce(RuleWritable key, Iterable<NullWritable> values,
-			Context context) throws IOException, InterruptedException {
-		if (currentRule == null || !key.sameYield(currentRule)) {
-			if (currentRule == null)
-				currentRule = new RuleWritable();
-			else {
-				currentRule.featureLabel = EMPTY;
-				currentRule.featureScore = ZERO;
-				context.write(currentRule, features);
-			}
-			currentRule.set(key);
-			features.clear();
-		}
-		Text curr_label = new Text(key.featureLabel);
-		DoubleWritable curr_score = new DoubleWritable(key.featureScore.get());
-		if (!curr_label.equals(EMPTY))
-			features.put(curr_label, curr_score);
-	}
-
-	protected void cleanup(Context context) throws IOException,
-			InterruptedException {
-		if (currentRule != null) {
-			currentRule.featureLabel = EMPTY;
-			currentRule.featureScore = ZERO;
-			context.write(currentRule, features);
-		}
-	}
+  protected void reduce(RuleWritable key, Iterable<FeaturePair> values, Context context)
+      throws IOException, InterruptedException {
+    FeatureMap features = new FeatureMap();
+    for (FeaturePair fp : values)
+      features.put(new Text(fp.key), fp.val.get());
+    context.write(key, features);
+  }
 }
