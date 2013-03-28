@@ -1,4 +1,6 @@
-Copyright (c) 2010-11 Jonny Weese <jonny@cs.jhu.edu>
+Copyright (c) 2010-13 the Thrax team
+    Jonny Weese <jonny@cs.jhu.edu>
+    Juri Ganitkevitch <juri@cs.jhu.edu>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
