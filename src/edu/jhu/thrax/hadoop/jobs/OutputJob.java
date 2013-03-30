@@ -67,6 +67,9 @@ public class OutputJob extends ThraxJob {
       if (AnnotationFeatureFactory.get(feature) != null) annotation_features = true;
     }
     if (annotation_features) FileInputFormat.addInputPath(job, new Path(workDir + "annotation"));
+    
+    int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
+    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 400);
 
     if (FileInputFormat.getInputPaths(job).length == 0) {
       // TODO: This is going to crash.

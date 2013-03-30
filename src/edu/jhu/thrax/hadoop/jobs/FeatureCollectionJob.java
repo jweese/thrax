@@ -64,7 +64,7 @@ public class FeatureCollectionJob extends ThraxJob {
     job.setNumReduceTasks(numReducers);
 
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
-    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 20);
+    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 400);
 
     for (String prereq_name : prereq_names)
       FileInputFormat.addInputPath(job, new Path(workDir + prereq_name));
