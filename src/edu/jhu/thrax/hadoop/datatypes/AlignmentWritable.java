@@ -98,12 +98,17 @@ public class AlignmentWritable implements WritableComparable<AlignmentWritable> 
     for (int i = 0; i < this.points.length / 2; ++i) {
       byte from = this.points[2 * i];
       byte to = this.points[2 * i + 1];
-      while (j < j_max && that.points[2 * j] <= from && that.points[2 * j + 1] < to)
-        j++;
+      while (j < j_max && that.points[2 * j] < from)
+        ++j;
+      if (j < j_max && that.points[2 * j] != from) continue;
+      int start = j;
+      while (j < j_max && that.points[2 * j] == from && that.points[2 * j + 1] != to)
+        ++j;
       if (j < j_max && that.points[2 * j] == from && that.points[2 * j + 1] == to) {
         common.add(from);
         common.add(to);
       }
+      j = start;
     }
     byte[] common_points = new byte[common.size()];
     for (int i = 0; i < common_points.length; ++i)
