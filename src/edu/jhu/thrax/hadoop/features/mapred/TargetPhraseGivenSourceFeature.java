@@ -49,7 +49,7 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
       Vocabulary.read(conf, vocabulary_path);
     }
 
@@ -79,7 +79,7 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
       Vocabulary.read(conf, vocabulary_path);
     }
 

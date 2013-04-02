@@ -8,15 +8,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
@@ -35,9 +34,8 @@ public class Vocabulary {
 
   private static final Logger logger;
 
-  private static TreeMap<Long, Integer> hashToId;
+  private static TreeMap<String, Integer> stringToId;
   private static ArrayList<String> idToString;
-  private static TreeMap<Long, String> hashToString;
 
   private static final Integer lock = new Integer(0);
 
@@ -94,23 +92,30 @@ public class Vocabulary {
    * @return Returns true if vocabulary was read without mismatches or collisions.
    * @throws IOException
    */
-  public static boolean read(Configuration conf, String file) throws IOException {
+  public static boolean read(Configuration conf, String file_glob) throws IOException {
     synchronized (lock) {
-      FileSystem file_system = FileSystem.get(URI.create(file), conf);
-      SequenceFile.Reader reader = new SequenceFile.Reader(file_system, new Path(file), conf);
+      FileSystem file_system = FileSystem.get(URI.create(file_glob), conf);
+      FileStatus[] files = file_system.globStatus(new Path(file_glob));
+      if (files.length == 0)
+        throw new IOException("No files found in vocabulary glob: " + file_glob);
+
       clear();
-      Text h_token = new Text();
-      IntWritable h_id = new IntWritable();
-      while (reader.next(h_id, h_token)) {
-        int id = h_id.get();
-        String token = h_token.toString();
-        if (id != Math.abs(id(token))) {
-          System.err.println("MISMATCH: " + id + "\t" + Vocabulary.word(id) + "\t" + token);
-          reader.close();
-          return false;
+      for (FileStatus file : files) {
+        SequenceFile.Reader reader = new SequenceFile.Reader(file_system, file.getPath(), conf);
+        Text h_token = new Text();
+        IntWritable h_id = new IntWritable();
+        while (reader.next(h_id, h_token)) {
+          int id = h_id.get();
+          String token = h_token.toString();
+          if (!insert(token, id)) {
+            System.err.println("Error inserting: " + token + " as " + id + ": conflict with "
+                + Vocabulary.word(id));
+            reader.close();
+            return false;
+          }
         }
+        reader.close();
       }
-      reader.close();
       return true;
     }
   }
@@ -130,48 +135,33 @@ public class Vocabulary {
     }
   }
 
-  public static void freeze() {
+  public static int id(String token) {
     synchronized (lock) {
-      int current_id = 1;
-
-      TreeMap<Long, Integer> hash_to_id = new TreeMap<Long, Integer>();
-      ArrayList<String> id_to_string = new ArrayList<String>(idToString.size() + 1);
-      id_to_string.add(UNKNOWN_ID, UNKNOWN_WORD);
-
-      Map.Entry<Long, Integer> walker = hashToId.firstEntry();
-      while (walker != null) {
-        String word = hashToString.get(walker.getKey());
-        hash_to_id.put(walker.getKey(), (walker.getValue() < 0 ? -current_id : current_id));
-        id_to_string.add(current_id, word);
-        current_id++;
-        walker = hashToId.higherEntry(walker.getKey());
+      Integer id = stringToId.get(token);
+      if (id != null) {
+        return id;
+      } else {
+        int new_id = idToString.size() * (nt(token) ? -1 : 1);
+        idToString.add(token);
+        stringToId.put(token, new_id);
+        return new_id;
       }
-      idToString = id_to_string;
-      hashToId = hash_to_id;
     }
   }
 
-  public static int id(String token) {
+  private static boolean insert(String token, int set_id) {
     synchronized (lock) {
-      long hash = 0;
-      try {
-        hash = MurmurHash.hash64(token);
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
-      }
-      String hash_word = hashToString.get(hash);
-      if (hash_word != null) {
-        if (!token.equals(hash_word)) {
-          logger.warning("MurmurHash for the following symbols collides: '" + hash_word + "', '"
-              + token + "'");
-        }
-        return hashToId.get(hash);
+      Integer id = stringToId.get(token);
+      if (id != null) {
+        return (set_id == id);
       } else {
-        int id = idToString.size() * (nt(token) ? -1 : 1);
-        idToString.add(token);
-        hashToString.put(hash, token);
-        hashToId.put(hash, id);
-        return id;
+        if (nt(token) && set_id > 0) set_id = -set_id;
+        idToString.ensureCapacity(Math.abs(set_id) + 1);
+        for (int i = idToString.size(); i <= Math.abs(set_id); ++i)
+          idToString.add(null);
+        idToString.set(Math.abs(set_id), token);
+        stringToId.put(token, set_id);
+        return true;
       }
     }
   }
@@ -247,8 +237,7 @@ public class Vocabulary {
   }
 
   private static void clear() {
-    hashToId = new TreeMap<Long, Integer>();
-    hashToString = new TreeMap<Long, String>();
+    stringToId = new TreeMap<String, Integer>();
     idToString = new ArrayList<String>();
 
     idToString.add(UNKNOWN_ID, UNKNOWN_WORD);

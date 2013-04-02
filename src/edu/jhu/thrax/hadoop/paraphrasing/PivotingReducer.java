@@ -48,7 +48,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
 
   protected void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
-    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
+    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
     Vocabulary.read(conf, vocabulary_path);
 
     String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
@@ -202,9 +202,6 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
         continue;
       }
       Float threshold = Float.parseFloat(f[1]);
-
-      System.err.println("FEAT: " + f[0]);
-
       Set<Text> lower_bound_labels = PivotedFeatureFactory.get(f[0]).getLowerBoundLabels();
       if (lower_bound_labels != null) for (Text label : lower_bound_labels)
         rules.put(label, new PruningRule(smaller, threshold));

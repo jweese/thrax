@@ -9,8 +9,10 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Partitioner;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -29,6 +31,7 @@ public class VocabularyJob extends ThraxJob {
     job.setJarByClass(VocabularyJob.class);
 
     job.setMapperClass(VocabularyJob.Map.class);
+    job.setCombinerClass(VocabularyJob.Combine.class);
     job.setReducerClass(VocabularyJob.Reduce.class);
 
     job.setMapOutputKeyClass(Text.class);
@@ -47,7 +50,8 @@ public class VocabularyJob extends ThraxJob {
 
     FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "vocabulary"));
 
-    job.setNumReduceTasks(1);
+    int num_reducers = conf.getInt("thrax.reducers", 4);
+    job.setNumReduceTasks(num_reducers);
 
     return job;
   }
@@ -162,7 +166,25 @@ public class VocabularyJob extends ThraxJob {
     }
   }
 
+  public static class VocabularyPartitioner extends Partitioner<Text, Writable> {
+    public int getPartition(Text key, Writable value, int numPartitions) {
+      if (key.charAt(0) == '[') return 0;
+      return (key.hashCode() & Integer.MAX_VALUE) % numPartitions;
+    }
+  }
+
+  private static class Combine extends Reducer<Text, NullWritable, Text, NullWritable> {
+
+    protected void reduce(Text key, Iterable<NullWritable> values, Context context)
+        throws IOException, InterruptedException {
+      context.write(key, NullWritable.get());
+    }
+  }
+
   private static class Reduce extends Reducer<Text, NullWritable, IntWritable, Text> {
+
+    private int reducerNumber;
+    private int numReducers;
 
     private ArrayList<String> nonterminals;
 
@@ -173,6 +195,9 @@ public class VocabularyJob extends ThraxJob {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
+
+      numReducers = context.getNumReduceTasks();
+      reducerNumber = context.getTaskAttemptID().getTaskID().getId();
 
       nonterminals = new ArrayList<String>();
 
@@ -186,7 +211,7 @@ public class VocabularyJob extends ThraxJob {
         throws IOException, InterruptedException {
       String token = key.toString();
       if (token == null || token.isEmpty()) throw new RuntimeException("Unexpected empty token.");
-      if (token.charAt(0) == '[')
+      if (reducerNumber == 0 && token.charAt(0) == '[')
         nonterminals.add(token);
       else
         Vocabulary.id(token);
@@ -195,10 +220,11 @@ public class VocabularyJob extends ThraxJob {
 
     protected void cleanup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-      combineNonterminals(conf);
+      if (reducerNumber == 0) combineNonterminals(conf);
       int size = Vocabulary.size();
       for (int i = 1; i < size; ++i)
-        context.write(new IntWritable(i), new Text(Vocabulary.word(i)));
+        context.write(new IntWritable((i - 1) * numReducers + reducerNumber + 1), new Text(
+            Vocabulary.word(i)));
     }
 
     private void combineNonterminals(Configuration conf) {
