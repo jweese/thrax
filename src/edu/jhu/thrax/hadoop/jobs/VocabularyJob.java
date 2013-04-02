@@ -182,21 +182,21 @@ public class VocabularyJob extends ThraxJob {
 
     private void combineNonterminals(Context context, Set<String> nonterminals) throws IOException,
         InterruptedException {
-      if (allowConstituent) addNonterminals(nonterminals, context);
+      if (allowConstituent) writeNonterminals(nonterminals, context);
       if (allowConcat) {
         Set<String> concatenated = joinNonterminals("+", nonterminals, nonterminals);
-        addNonterminals(concatenated, context);
+        writeNonterminals(concatenated, context);
       }
       if (allowCCG) {
         Set<String> forward = joinNonterminals("/", nonterminals, nonterminals);
-        addNonterminals(forward, context);
+        writeNonterminals(forward, context);
         Set<String> backward = joinNonterminals("\\", nonterminals, nonterminals);
-        addNonterminals(backward, context);
+        writeNonterminals(backward, context);
       }
       if (allowDoubleConcat) {
         Set<String> concat = joinNonterminals("+", nonterminals, nonterminals);
         Set<String> double_concat = joinNonterminals("+", concat, nonterminals);
-        addNonterminals(double_concat, context);
+        writeNonterminals(double_concat, context);
       }
     }
 
@@ -208,7 +208,7 @@ public class VocabularyJob extends ThraxJob {
       return joined;
     }
 
-    private static void addNonterminals(Set<String> nts, Context context) throws IOException,
+    private static void writeNonterminals(Set<String> nts, Context context) throws IOException,
         InterruptedException {
       for (String nt : nts)
         context.write(new Text(nt + "]"), NullWritable.get());
@@ -246,17 +246,9 @@ public class VocabularyJob extends ThraxJob {
       if (token == null || token.isEmpty()) throw new RuntimeException("Unexpected empty token.");
       Vocabulary.id(token);
       context.progress();
-      
-      System.err.println("I'M NUMBER " + reducerNumber);
     }
 
     protected void cleanup(Context context) throws IOException, InterruptedException {
-      Configuration conf = context.getConfiguration();
-      if (reducerNumber == 0) {
-        Vocabulary.id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
-        Vocabulary.id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
-      }
-
       int size = Vocabulary.size();
       for (int i = 1; i < size; ++i)
         context.write(new IntWritable((i - 1) * numReducers + reducerNumber + 1), new Text(

@@ -98,7 +98,6 @@ public class Vocabulary {
       FileStatus[] files = file_system.globStatus(new Path(file_glob));
       if (files.length == 0)
         throw new IOException("No files found in vocabulary glob: " + file_glob);
-
       clear();
       for (FileStatus file : files) {
         SequenceFile.Reader reader = new SequenceFile.Reader(file_system, file.getPath(), conf);
@@ -108,14 +107,17 @@ public class Vocabulary {
           int id = h_id.get();
           String token = h_token.toString();
           if (!insert(token, id)) {
-            System.err.println("Error inserting: " + token + " as " + id + ": conflict with "
-                + Vocabulary.word(id));
             reader.close();
-            return false;
+            throw new RuntimeException("Error inserting: " + token + " as " + id + ". Conflict: "
+                + id + " => " + Vocabulary.word(id) + " and " + token + " => "
+                + stringToId.get(token));
           }
         }
         reader.close();
       }
+      // Add default symbols.
+      id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
+      id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
       return true;
     }
   }
