@@ -1,7 +1,8 @@
 package edu.jhu.thrax.hadoop.jobs;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -71,10 +72,21 @@ public class VocabularyJob extends ThraxJob {
     private boolean targetParsed;
     private Labeling labeling;
 
+    private boolean allowConstituent = true;
+    private boolean allowCCG = true;
+    private boolean allowConcat = true;
+    private boolean allowDoubleConcat = true;
+
     protected void setup(Context context) {
       Configuration conf = context.getConfiguration();
       sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
       targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
+
+      allowConstituent = conf.getBoolean("thrax.allow-constituent-label", true);
+      allowCCG = conf.getBoolean("thrax.allow-ccg-label", true);
+      allowConcat = conf.getBoolean("thrax.allow-concat-label", true);
+      allowDoubleConcat = conf.getBoolean("thrax.allow-double-plus", true);
+
       if (conf.get("thrax.grammar", "hiero").equalsIgnoreCase("samt")) {
         labeling = Labeling.SYNTAX;
       } else if (conf.get("thrax.grammar", "hiero").equalsIgnoreCase("manual")) {
@@ -110,7 +122,6 @@ public class VocabularyJob extends ThraxJob {
     protected void extractTokens(String input, Context context) throws IOException,
         InterruptedException {
       if (input == null || input.isEmpty()) return;
-
       String[] tokens = FormatUtils.P_SPACE.split(input);
       for (String token : tokens)
         if (!token.isEmpty()) context.write(new Text(token), NullWritable.get());
@@ -122,6 +133,8 @@ public class VocabularyJob extends ThraxJob {
       boolean seeking = true;
       boolean nonterminal = false;
       char current;
+
+      Set<String> nonterminals = new HashSet<String>();
 
       if (input == null || input.isEmpty() || input.charAt(0) != '(') return;
 
@@ -151,7 +164,7 @@ public class VocabularyJob extends ThraxJob {
               if (nonterminal) {
                 String nt = input.substring(from, to);
                 if (nt.equals(",")) nt = "COMMA";
-                context.write(new Text("[" + nt), NullWritable.get());
+                nonterminals.add("[" + nt);
               } else {
                 context.write(new Text(input.substring(from, to)), NullWritable.get());
               }
@@ -163,12 +176,48 @@ public class VocabularyJob extends ThraxJob {
           }
         }
       }
+      if (!terminals_only) combineNonterminals(context, nonterminals);
     }
+
+
+    private void combineNonterminals(Context context, Set<String> nonterminals) throws IOException,
+        InterruptedException {
+      if (allowConstituent) addNonterminals(nonterminals, context);
+      if (allowConcat) {
+        Set<String> concatenated = joinNonterminals("+", nonterminals, nonterminals);
+        addNonterminals(concatenated, context);
+      }
+      if (allowCCG) {
+        Set<String> forward = joinNonterminals("/", nonterminals, nonterminals);
+        addNonterminals(forward, context);
+        Set<String> backward = joinNonterminals("\\", nonterminals, nonterminals);
+        addNonterminals(backward, context);
+      }
+      if (allowDoubleConcat) {
+        Set<String> concat = joinNonterminals("+", nonterminals, nonterminals);
+        Set<String> double_concat = joinNonterminals("+", concat, nonterminals);
+        addNonterminals(double_concat, context);
+      }
+    }
+
+    private Set<String> joinNonterminals(String glue, Set<String> prefixes, Set<String> nonterminals) {
+      Set<String> joined = new HashSet<String>();
+      for (String prefix : prefixes)
+        for (String nt : nonterminals)
+          joined.add(prefix + glue + nt.substring(1));
+      return joined;
+    }
+
+    private static void addNonterminals(Set<String> nts, Context context) throws IOException,
+        InterruptedException {
+      for (String nt : nts)
+        context.write(new Text(nt + "]"), NullWritable.get());
+    }
+
   }
 
   public static class VocabularyPartitioner extends Partitioner<Text, Writable> {
     public int getPartition(Text key, Writable value, int numPartitions) {
-      if (key.charAt(0) == '[') return 0;
       return (key.hashCode() & Integer.MAX_VALUE) % numPartitions;
     }
   }
@@ -186,79 +235,32 @@ public class VocabularyJob extends ThraxJob {
     private int reducerNumber;
     private int numReducers;
 
-    private ArrayList<String> nonterminals;
-
-    private boolean allowConstituent = true;
-    private boolean allowCCG = true;
-    private boolean allowConcat = true;
-    private boolean allowDoubleConcat = true;
-
     protected void setup(Context context) throws IOException, InterruptedException {
-      Configuration conf = context.getConfiguration();
-
       numReducers = context.getNumReduceTasks();
       reducerNumber = context.getTaskAttemptID().getTaskID().getId();
-
-      nonterminals = new ArrayList<String>();
-
-      allowConstituent = conf.getBoolean("thrax.allow-constituent-label", true);
-      allowCCG = conf.getBoolean("thrax.allow-ccg-label", true);
-      allowConcat = conf.getBoolean("thrax.allow-concat-label", true);
-      allowDoubleConcat = conf.getBoolean("thrax.allow-double-plus", true);
     }
 
     protected void reduce(Text key, Iterable<NullWritable> values, Context context)
         throws IOException, InterruptedException {
       String token = key.toString();
       if (token == null || token.isEmpty()) throw new RuntimeException("Unexpected empty token.");
-      if (reducerNumber == 0 && token.charAt(0) == '[')
-        nonterminals.add(token);
-      else
-        Vocabulary.id(token);
+      Vocabulary.id(token);
       context.progress();
+      
+      System.err.println("I'M NUMBER " + reducerNumber);
     }
 
     protected void cleanup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-      if (reducerNumber == 0) combineNonterminals(conf);
+      if (reducerNumber == 0) {
+        Vocabulary.id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
+        Vocabulary.id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
+      }
+
       int size = Vocabulary.size();
       for (int i = 1; i < size; ++i)
         context.write(new IntWritable((i - 1) * numReducers + reducerNumber + 1), new Text(
             Vocabulary.word(i)));
-    }
-
-    private void combineNonterminals(Configuration conf) {
-      if (allowConstituent) addNonterminals(nonterminals);
-      if (allowConcat) {
-        ArrayList<String> concatenated = joinNonterminals("+", nonterminals);
-        addNonterminals(concatenated);
-      }
-      if (allowCCG) {
-        ArrayList<String> forward = joinNonterminals("/", nonterminals);
-        addNonterminals(forward);
-        ArrayList<String> backward = joinNonterminals("\\", nonterminals);
-        addNonterminals(backward);
-      }
-      if (allowDoubleConcat) {
-        ArrayList<String> concat = joinNonterminals("+", nonterminals);
-        ArrayList<String> double_concat = joinNonterminals("+", concat);
-        addNonterminals(double_concat);
-      }
-      Vocabulary.id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
-      Vocabulary.id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
-    }
-
-    private ArrayList<String> joinNonterminals(String glue, ArrayList<String> prefixes) {
-      ArrayList<String> joined = new ArrayList<String>();
-      for (String prefix : prefixes)
-        for (String nt : nonterminals)
-          joined.add(prefix + glue + nt.substring(1));
-      return joined;
-    }
-
-    private static void addNonterminals(ArrayList<String> nts) {
-      for (String nt : nts)
-        Vocabulary.id(nt + "]");
     }
   }
 }
