@@ -10,7 +10,6 @@ import org.apache.hadoop.io.NullWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.mapreduce.Job;
-import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
 import org.apache.hadoop.mapreduce.lib.input.SequenceFileInputFormat;
 import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
@@ -18,6 +17,7 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.paraphrasing.AggregationCombiner;
+import edu.jhu.thrax.hadoop.paraphrasing.AggregationMapper;
 import edu.jhu.thrax.hadoop.paraphrasing.AggregationReducer;
 
 public class ParaphraseAggregationJob implements ThraxJob {
@@ -30,7 +30,7 @@ public class ParaphraseAggregationJob implements ThraxJob {
 
     job.setJarByClass(AggregationReducer.class);
 
-    job.setMapperClass(Mapper.class);
+    job.setMapperClass(AggregationMapper.class);
     job.setCombinerClass(AggregationCombiner.class);
     job.setReducerClass(AggregationReducer.class);
 
