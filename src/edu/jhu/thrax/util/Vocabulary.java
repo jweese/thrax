@@ -49,6 +49,8 @@ public class Vocabulary {
   private static TreeMap<String, Integer> stringToId;
   private static ArrayList<String> idToString;
 
+  private static int head;
+  
   private static final Integer lock = new Integer(0);
 
   private static final int UNKNOWN_ID;
@@ -56,6 +58,7 @@ public class Vocabulary {
 
   public static final String START_SYM = "<s>";
   public static final String STOP_SYM = "</s>";
+
 
   static {
     logger = Logger.getLogger(Vocabulary.class.getName());
@@ -102,6 +105,10 @@ public class Vocabulary {
   public static boolean initialize(Configuration conf) {
     synchronized (lock) {
       clear();
+      // Add default symbols.
+      id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
+      id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
+      
       // Add feature names.
       String type = conf.get("thrax.type", "translation");
       String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
@@ -134,10 +141,7 @@ public class Vocabulary {
         id(f.getLabel());
       for (SimpleFeature f : SimpleFeatureFactory.getAll(features))
         id(f.getLabel());
-
-      // Add default symbols.
-      id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
-      id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
+      head = size();      
       return true;
     }
   }
@@ -291,6 +295,12 @@ public class Vocabulary {
   public static int size() {
     synchronized (lock) {
       return idToString.size();
+    }
+  }
+  
+  public static int head() {
+    synchronized (lock) {
+      return head;
     }
   }
 

@@ -251,8 +251,7 @@ public class VocabularyJob implements ThraxJob {
     }
 
     protected void cleanup(Context context) throws IOException, InterruptedException {
-      int size = Vocabulary.size();
-      for (int i = 1; i < size; ++i)
+      for (int i = Vocabulary.head(); i < Vocabulary.size(); ++i)
         context.write(new IntWritable((i - 1) * numReducers + reducerNumber + 1), new Text(
             Vocabulary.word(i)));
     }

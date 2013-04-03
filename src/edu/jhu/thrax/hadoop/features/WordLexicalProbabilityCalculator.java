@@ -34,7 +34,6 @@ public class WordLexicalProbabilityCalculator extends Configured {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
       Vocabulary.initialize(conf, vocabulary_path);
 
