@@ -19,7 +19,7 @@ import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
-public class AnnotationFeatureJob extends ThraxJob {
+public class AnnotationFeatureJob implements ThraxJob {
 
   public AnnotationFeatureJob() {}
 

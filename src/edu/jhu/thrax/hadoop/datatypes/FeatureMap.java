@@ -4,54 +4,79 @@ import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableUtils;
 
 import edu.jhu.thrax.hadoop.features.annotation.AnnotationPassthroughFeature;
+import edu.jhu.thrax.util.Vocabulary;
 
-public class FeatureMap extends HashMap<Text, Writable> implements Writable {
+public class FeatureMap implements Writable {
 
-  private static final long serialVersionUID = 219677543309018120L;
+  private Map<Integer, Writable> map;
 
   public FeatureMap() {
-    super();
+    map = new HashMap<Integer, Writable>();
   }
-  
+
   public FeatureMap(FeatureMap fm) {
-    super();
-    for (Text key : fm.keySet())
-      this.put(key, fm.get(key));
+    this();
+    for (int key : fm.map.keySet())
+      this.map.put(key, fm.map.get(key));
+  }
+
+  public Writable get(int key) {
+    return map.get(key);
+  }
+
+  public Writable get(String key) {
+    return map.get(Vocabulary.id(key));
+  }
+
+  public void put(int key, Writable val) {
+    map.put(key, val);
   }
   
+  public void put(String key, Writable val) {
+    map.put(Vocabulary.id(key), val);
+  }
+  
+  public boolean containsKey(int key) {
+    return map.containsKey(key);
+  }
+  
+  public Set<Integer> keySet() {
+    return map.keySet();
+  }
   
   @Override
   public void readFields(DataInput in) throws IOException {
-    this.clear();
+    map.clear();
     int size = WritableUtils.readVInt(in);
     for (int i = 0; i < size; ++i) {
-      Text key = new Text();
+      int key = 0;
       Writable val = null;
-      key.readFields(in);
-      if (key.equals(AnnotationPassthroughFeature.LABEL)) {
+      key = WritableUtils.readVInt(in);
+      if (key == Vocabulary.id(AnnotationPassthroughFeature.LABEL)) {
         val = new Annotation();
         val.readFields(in);
       } else {
         val = new FloatWritable();
         val.readFields(in);
       }
-      this.put(key, val);
+      map.put(key, val);
     }
   }
 
   @Override
   public void write(DataOutput out) throws IOException {
-    WritableUtils.writeVInt(out, this.size());
-    for (Text key : this.keySet()) {
-      key.write(out);
-      if (key.equals(AnnotationPassthroughFeature.LABEL)) {
+    WritableUtils.writeVInt(out, map.size());
+    for (int key : map.keySet()) {
+      WritableUtils.writeVInt(out, key);
+      if (key == Vocabulary.id(AnnotationPassthroughFeature.LABEL)) {
         ((Annotation) this.get(key)).write(out);
       } else {
         ((FloatWritable) this.get(key)).write(out);

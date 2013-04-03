@@ -36,7 +36,7 @@ public class WordLexicalProbabilityCalculator extends Configured {
       Configuration conf = context.getConfiguration();
 
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
-      Vocabulary.read(conf, vocabulary_path);
+      Vocabulary.initialize(conf, vocabulary_path);
 
       sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
       targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
@@ -94,7 +94,7 @@ public class WordLexicalProbabilityCalculator extends Configured {
       
       // TODO: remove unnecessary vocabulary loads?
       String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
-      Vocabulary.read(conf, vocabulary_path);
+      Vocabulary.initialize(conf, vocabulary_path);
     }
 
     protected void reduce(LongWritable key, Iterable<IntWritable> values, Context context)

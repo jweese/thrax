@@ -8,21 +8,21 @@ import edu.jhu.thrax.util.FormatUtils;
 public class AnnotationFeatureFactory {
 
   public static AnnotationFeature get(String name) {
-    if (name.equals("unaligned-source"))
+    if (name.equals(UnalignedSourceCounterFeature.NAME))
       return new UnalignedSourceCounterFeature();
-    else if (name.equals("unaligned-target"))
+    else if (name.equals(UnalignedTargetCounterFeature.NAME))
       return new UnalignedTargetCounterFeature();
-    else if (name.equals("rarity"))
+    else if (name.equals(RarityPenaltyFeature.NAME))
       return new RarityPenaltyFeature();
-    else if (name.equals("count"))
+    else if (name.equals(CountFeature.NAME))
       return new CountFeature();
-    else if (name.equals("logcount"))
-      return new CountFeature();
-    else if (name.equals("f_given_e_lex"))
+    else if (name.equals(LogCountFeature.NAME))
+      return new LogCountFeature();
+    else if (name.equals(SourceGivenTargetLexicalProbabilityFeature.NAME))
       return new SourceGivenTargetLexicalProbabilityFeature();
-    else if (name.equals("e_given_f_lex"))
+    else if (name.equals(TargetGivenSourceLexicalProbabilityFeature.NAME))
       return new TargetGivenSourceLexicalProbabilityFeature();
-    else if (name.equals("alignment")) return new AlignmentFeature();
+    else if (name.equals(AlignmentFeature.NAME)) return new AlignmentFeature();
 
     return null;
   }

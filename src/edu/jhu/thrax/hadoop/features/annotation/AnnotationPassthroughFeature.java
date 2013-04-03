@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
@@ -14,9 +13,15 @@ import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
 @SuppressWarnings("rawtypes")
 public class AnnotationPassthroughFeature implements AnnotationFeature {
-  public static final Text LABEL = new Text("Annotation");
+  
+  public static final String NAME = "annotation";
+  public static final String LABEL = "Annotation";
 
-  public Text getName() {
+  public String getName() {
+    return NAME;
+  }
+  
+  public String getLabel() {
     return LABEL;
   }
 
@@ -24,10 +29,10 @@ public class AnnotationPassthroughFeature implements AnnotationFeature {
     return annotation;
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
   }
 
   @Override

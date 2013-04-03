@@ -25,7 +25,7 @@ import edu.jhu.thrax.hadoop.output.OutputReducer;
 import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.FormatUtils;
 
-public class OutputJob extends ThraxJob {
+public class OutputJob implements ThraxJob {
 
   protected static HashSet<Class<? extends ThraxJob>> prereqs =
       new HashSet<Class<? extends ThraxJob>>();

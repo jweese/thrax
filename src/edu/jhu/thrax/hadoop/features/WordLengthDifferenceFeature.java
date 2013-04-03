@@ -3,7 +3,6 @@ package edu.jhu.thrax.hadoop.features;
 import java.util.Map;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
@@ -11,10 +10,12 @@ import edu.jhu.thrax.util.Vocabulary;
 
 public class WordLengthDifferenceFeature implements SimpleFeature {
 
-  private static final Text LABEL = new Text("WordLenDiff");
+  public static final String NAME = "word-length-difference";
+  public static final String LABEL = "WordLenDiff";
+
   private static final FloatWritable ZERO = new FloatWritable(0);
 
-  public void score(RuleWritable r, Map<Text, Writable> map) {
+  public Writable score(RuleWritable r) {
     int src_length = 0;
     int src_count = 0;
     for (int tok : r.source) {
@@ -32,20 +33,27 @@ public class WordLengthDifferenceFeature implements SimpleFeature {
       }
     }
     if (src_count == 0 || tgt_count == 0) {
-      map.put(LABEL, ZERO);
+      return ZERO;
     } else {
       float avg_src_length = (float) src_length / src_count;
       float avg_tgt_length = (float) tgt_length / tgt_count;
-      map.put(LABEL, new FloatWritable(avg_tgt_length - avg_src_length));
+      return new FloatWritable(avg_tgt_length - avg_src_length);
     }
-    return;
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public String getName() {
+    return NAME;
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public String getLabel() {
+    return LABEL;
+  }
+
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
+  }
+
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 }

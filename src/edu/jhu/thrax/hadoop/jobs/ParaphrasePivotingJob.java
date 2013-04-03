@@ -17,7 +17,7 @@ import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.paraphrasing.PivotingReducer;
 
-public class ParaphrasePivotingJob extends ThraxJob {
+public class ParaphrasePivotingJob implements ThraxJob {
 
   private static HashSet<Class<? extends ThraxJob>> prereqs =
       new HashSet<Class<? extends ThraxJob>>();
@@ -50,7 +50,7 @@ public class ParaphrasePivotingJob extends ThraxJob {
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "collected"));
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
-    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 200);
+    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 20);
 
     int numReducers = conf.getInt("thrax.reducers", 4);
     job.setNumReduceTasks(numReducers);

@@ -3,29 +3,38 @@ package edu.jhu.thrax.hadoop.features;
 import java.util.Map;
 
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.Vocabulary;
 
 public class SourceWordCounterFeature implements SimpleFeature {
-  private static final Text LABEL = new Text("SourceWords");
+
+  public static final String NAME = "source-word-count";
+  private static final String LABEL = "SourceWords";
+
   private static final IntWritable ZERO = new IntWritable(0);
 
-  public void score(RuleWritable r, Map<Text, Writable> map) {
+  public Writable score(RuleWritable r) {
     int words = 0;
     for (int word : r.source)
       if (!Vocabulary.nt(word)) words++;
-    map.put(LABEL, new IntWritable(words));
-    return;
+    return new IntWritable(words);
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public String getName() {
+    return NAME;
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public String getLabel() {
+    return LABEL;
+  }
+
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
+  }
+
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 }

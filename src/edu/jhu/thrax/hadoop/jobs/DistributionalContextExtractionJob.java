@@ -1,6 +1,8 @@
 package edu.jhu.thrax.hadoop.jobs;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
@@ -17,7 +19,7 @@ import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextReducer;
 import edu.jhu.thrax.hadoop.distributional.SignatureWritable;
 
-public class DistributionalContextExtractionJob extends ThraxJob {
+public class DistributionalContextExtractionJob implements ThraxJob {
 
   public Job getJob(Configuration conf) throws IOException {
     Job job = new Job(conf, "distributional");
@@ -54,5 +56,10 @@ public class DistributionalContextExtractionJob extends ThraxJob {
 
   public String getOutputSuffix() {
     return null;
+  }
+
+  @Override
+  public Set<Class<? extends ThraxJob>> getPrerequisites() {
+    return new HashSet<Class<? extends ThraxJob>>();
   }
 }

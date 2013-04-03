@@ -3,9 +3,9 @@ package edu.jhu.thrax.hadoop.features.mapred;
 import java.io.IOException;
 import java.util.Arrays;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableUtils;
@@ -19,14 +19,22 @@ import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.PrimitiveUtils;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.Vocabulary;
 
 @SuppressWarnings("rawtypes")
 public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
 
+  public static final String NAME = "e_given_f_and_lhs";
+  public static final String LABEL = "p(e|f,LHS)";
+  
   public String getName() {
-    return "e_given_f_and_lhs";
+    return NAME;
   }
-
+  
+  public String getLabel() {
+    return LABEL;
+  }
+  
   public Class<? extends WritableComparator> sortComparatorClass() {
     return Comparator.class;
   }
@@ -44,8 +52,8 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
   }
 
   private static class Map extends Mapper<RuleWritable, Annotation, RuleWritable, IntWritable> {
-    protected void map(RuleWritable key, Annotation value, Context context)
-        throws IOException, InterruptedException {
+    protected void map(RuleWritable key, Annotation value, Context context) throws IOException,
+        InterruptedException {
       RuleWritable lhs_source_marginal = new RuleWritable(key);
       lhs_source_marginal.target = PrimitiveArrayMarginalComparator.MARGINAL;
       lhs_source_marginal.monotone = false;
@@ -57,10 +65,15 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
     }
   }
 
-  private static class Reduce
-      extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
+  private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
+
     private int marginal;
-    private static final Text NAME = new Text("p(e|f,LHS)");
+
+    protected void setup(Context context) throws IOException, InterruptedException {
+      Configuration conf = context.getConfiguration();
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+      Vocabulary.initialize(conf, vocabulary_path);
+    }
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
         throws IOException, InterruptedException {
@@ -79,7 +92,7 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
         count += x.get();
 
       FloatWritable prob = new FloatWritable((float) -Math.log(count / (float) marginal));
-      context.write(key, new FeaturePair(NAME, prob));
+      context.write(key, new FeaturePair(Vocabulary.id(LABEL), prob));
     }
 
   }
@@ -128,11 +141,11 @@ public class TargetPhraseGivenSourceandLHSFeature extends MapReduceFeature {
 
   private static final FloatWritable ZERO = new FloatWritable(0.0f);
 
-  public void unaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
-    map.put(Reduce.NAME, ZERO);
+  public void unaryGlueRuleScore(int nt, java.util.Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 
-  public void binaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
-    map.put(Reduce.NAME, ZERO);
+  public void binaryGlueRuleScore(int nt, java.util.Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 }

@@ -8,39 +8,39 @@ import edu.jhu.thrax.util.FormatUtils;
 public class SimpleFeatureFactory {
 
   public static SimpleFeature get(String name) {
-    if (name.equals("abstract"))
+    if (name.equals(AbstractnessFeature.NAME))
       return new AbstractnessFeature();
-    else if (name.equals("adjacent"))
+    else if (name.equals(AdjacentNonTerminalsFeature.NAME))
       return new AdjacentNonTerminalsFeature();
-    else if (name.equals("lexical"))
+    else if (name.equals(LexicalityFeature.NAME))
       return new LexicalityFeature();
-    else if (name.equals("x-rule"))
+    else if (name.equals(XRuleFeature.NAME))
       return new XRuleFeature();
-    else if (name.equals("monotonic"))
+    else if (name.equals(MonotonicFeature.NAME))
       return new MonotonicFeature();
-    else if (name.equals("phrase-penalty"))
+    else if (name.equals(PhrasePenaltyFeature.NAME))
       return new PhrasePenaltyFeature();
-    else if (name.equals("source-word-count"))
+    else if (name.equals(SourceWordCounterFeature.NAME))
       return new SourceWordCounterFeature();
-    else if (name.equals("target-word-count"))
+    else if (name.equals(TargetWordCounterFeature.NAME))
       return new TargetWordCounterFeature();
-    else if (name.equals("source-terminals-without-target"))
+    else if (name.equals(ConsumeSourceTerminalsFeature.NAME))
       return new ConsumeSourceTerminalsFeature();
-    else if (name.equals("target-terminals-without-source"))
+    else if (name.equals(ProduceTargetTerminalsFeature.NAME))
       return new ProduceTargetTerminalsFeature();
-    else if (name.equals("identity"))
+    else if (name.equals(IdentityFeature.NAME))
       return new IdentityFeature();
-    else if (name.equals("word-count-difference"))
+    else if (name.equals(WordCountDifferenceFeature.NAME))
       return new WordCountDifferenceFeature();
-    else if (name.equals("word-length-difference"))
+    else if (name.equals(WordLengthDifferenceFeature.NAME))
       return new WordLengthDifferenceFeature();
-    else if (name.equals("word-cr"))
+    else if (name.equals(WordCompressionRatioFeature.NAME))
       return new WordCompressionRatioFeature();
-    else if (name.equals("char-count-difference"))
+    else if (name.equals(CharacterCountDifferenceFeature.NAME))
       return new CharacterCountDifferenceFeature();
-    else if (name.equals("char-cr"))
+    else if (name.equals(CharacterCompressionRatioFeature.NAME))
       return new CharacterCompressionRatioFeature();
-    else if (name.equals("glue-rule")) return new GlueRuleFeature();
+    else if (name.equals(GlueRuleFeature.NAME)) return new GlueRuleFeature();
 
     return null;
   }

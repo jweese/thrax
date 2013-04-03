@@ -23,7 +23,7 @@ import edu.jhu.thrax.extraction.Labeling;
 import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.Vocabulary;
 
-public class VocabularyJob extends ThraxJob {
+public class VocabularyJob implements ThraxJob {
 
   public VocabularyJob() {}
 
@@ -238,6 +238,8 @@ public class VocabularyJob extends ThraxJob {
     protected void setup(Context context) throws IOException, InterruptedException {
       numReducers = context.getNumReduceTasks();
       reducerNumber = context.getTaskAttemptID().getTaskID().getId();
+      
+      Vocabulary.initialize(context.getConfiguration());
     }
 
     protected void reduce(Text key, Iterable<NullWritable> values, Context context)
@@ -254,5 +256,10 @@ public class VocabularyJob extends ThraxJob {
         context.write(new IntWritable((i - 1) * numReducers + reducerNumber + 1), new Text(
             Vocabulary.word(i)));
     }
+  }
+
+  @Override
+  public Set<Class<? extends ThraxJob>> getPrerequisites() {
+    return new HashSet<Class<? extends ThraxJob>>();
   }
 }

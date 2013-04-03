@@ -4,30 +4,39 @@ import java.util.Arrays;
 import java.util.Map;
 
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.Vocabulary;
 
 public class IdentityFeature implements SimpleFeature {
 
-  private static final Text LABEL = new Text("Identity");
+  public static final String NAME = "identity";
+  public static final String LABEL = "Identity";
+  
   private static final IntWritable ZERO = new IntWritable(0);
   private static final IntWritable ONE = new IntWritable(1);
 
-  public void score(RuleWritable r, Map<Text, Writable> map) {
+  public Writable score(RuleWritable r) {
     if (r.monotone && Arrays.equals(r.target, r.source))
-      map.put(LABEL, ONE);
+      return ONE;
     else
-      map.put(LABEL, ZERO);
-    return;
+      return ZERO;
+  }
+  
+  public String getName() {
+    return NAME;
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public String getLabel() {
+    return LABEL;
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
+  }
+
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 }

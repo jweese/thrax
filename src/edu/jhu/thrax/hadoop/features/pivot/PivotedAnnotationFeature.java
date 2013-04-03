@@ -4,42 +4,45 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.AlignmentWritable;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
+import edu.jhu.thrax.hadoop.features.annotation.AlignmentFeature;
 import edu.jhu.thrax.hadoop.features.annotation.AnnotationPassthroughFeature;
 
 public class PivotedAnnotationFeature implements PivotedFeature {
 
+  public static final String NAME = "annotation"; 
+  public static final String LABEL = AnnotationPassthroughFeature.LABEL;
+  
   private Annotation aggregated = null;
 
   public String getName() {
-    return "alignment";
+    return NAME;
   }
 
-  public Text getFeatureLabel() {
-    return AnnotationPassthroughFeature.LABEL;
+  public String getLabel() {
+    return LABEL;
   }
 
   public Set<String> getPrerequisites() {
     Set<String> prereqs = new HashSet<String>();
-    prereqs.add("alignment");
+    prereqs.add(AlignmentFeature.NAME);
     return prereqs;
   }
 
   public Annotation pivot(FeatureMap src, FeatureMap tgt) {
-    AlignmentWritable src_f2e = ((AlignmentWritable) src.get(new Text("Alignment")));
-    AlignmentWritable tgt_f2e = ((AlignmentWritable) tgt.get(new Text("Alignment")));
+    AlignmentWritable src_f2e = ((AlignmentWritable) src.get(AlignmentFeature.LABEL));
+    AlignmentWritable tgt_f2e = ((AlignmentWritable) tgt.get(AlignmentFeature.LABEL));
 
     return new Annotation(src_f2e.join(tgt_f2e));
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {}
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {}
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {}
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {}
 
   public void initializeAggregation() {
     aggregated = null;
@@ -60,12 +63,12 @@ public class PivotedAnnotationFeature implements PivotedFeature {
   }
 
   @Override
-  public Set<Text> getLowerBoundLabels() {
+  public Set<String> getLowerBoundLabels() {
     return null;
   }
 
   @Override
-  public Set<Text> getUpperBoundLabels() {
+  public Set<String> getUpperBoundLabels() {
     return null;
   }
 }

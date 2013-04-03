@@ -10,7 +10,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -21,6 +23,16 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
+
+import edu.jhu.thrax.hadoop.features.SimpleFeature;
+import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeature;
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureFactory;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedAnnotationFeature;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
 
 
 /**
@@ -84,21 +96,70 @@ public class Vocabulary {
   }
 
   /**
-   * Reads a vocabulary from a file on HDFS. This deletes any additions to the vocabulary made prior
-   * to reading the file.
+   * Initializes the vocabulary with the symbols defined by the config: feature labels and default
+   * symbols. This deletes any additions to the vocabulary made prior to this call.
+   */
+  public static boolean initialize(Configuration conf) {
+    synchronized (lock) {
+      clear();
+      // Add feature names.
+      String type = conf.get("thrax.type", "translation");
+      String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
+      if ("translation".equals(type)) {
+        for (MapReduceFeature f : MapReduceFeatureFactory.getAll(features))
+          id(f.getLabel());
+      } else if ("paraphrasing".equals(type)) {
+        Set<String> prereq_features = new HashSet<String>();
+        for (PivotedFeature f : PivotedFeatureFactory.getAll(features)) {
+          prereq_features.addAll(f.getPrerequisites());
+          id(f.getLabel());
+        }
+        id((new PivotedAnnotationFeature()).getLabel());
+        for (String prereq : prereq_features) {
+          MapReduceFeature mf = MapReduceFeatureFactory.get(prereq);
+          if (mf != null) {
+            id(mf.getLabel());
+          } else {
+            AnnotationFeature af = AnnotationFeatureFactory.get(prereq);
+            if (af != null) {
+              id(af.getLabel());
+            } else {
+              SimpleFeature sf = SimpleFeatureFactory.get(prereq);
+              if (sf != null) id(sf.getLabel());
+            }
+          }
+        }
+      }
+      for (AnnotationFeature f : AnnotationFeatureFactory.getAll(features))
+        id(f.getLabel());
+      for (SimpleFeature f : SimpleFeatureFactory.getAll(features))
+        id(f.getLabel());
+
+      // Add default symbols.
+      id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
+      id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
+      return true;
+    }
+  }
+
+  /**
+   * Initializes the vocabulary from a directory on HDFS. This deletes any additions to the
+   * vocabulary made prior to reading the file.
    * 
    * @param conf
    * @param file
    * @return Returns true if vocabulary was read without mismatches or collisions.
    * @throws IOException
    */
-  public static boolean read(Configuration conf, String file_glob) throws IOException {
+  public static boolean initialize(Configuration conf, String file_glob) throws IOException {
     synchronized (lock) {
       FileSystem file_system = FileSystem.get(URI.create(file_glob), conf);
       FileStatus[] files = file_system.globStatus(new Path(file_glob));
       if (files.length == 0)
         throw new IOException("No files found in vocabulary glob: " + file_glob);
-      clear();
+
+      initialize(conf);
+
       for (FileStatus file : files) {
         SequenceFile.Reader reader = new SequenceFile.Reader(file_system, file.getPath(), conf);
         Text h_token = new Text();
@@ -115,9 +176,6 @@ public class Vocabulary {
         }
         reader.close();
       }
-      // Add default symbols.
-      id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
-      id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
       return true;
     }
   }
@@ -155,7 +213,7 @@ public class Vocabulary {
     synchronized (lock) {
       Integer id = stringToId.get(token);
       if (id != null) {
-        return (set_id == id);
+        return (Math.abs(set_id) == Math.abs(id));
       } else {
         if (nt(token) && set_id > 0) set_id = -set_id;
         idToString.ensureCapacity(Math.abs(set_id) + 1);
@@ -176,11 +234,13 @@ public class Vocabulary {
   }
 
   public static int[] addAll(String sentence) {
-    String[] tokens = FormatUtils.P_SPACE.split(sentence);
-    int[] ids = new int[tokens.length];
-    for (int i = 0; i < tokens.length; i++)
-      ids[i] = id(tokens[i]);
-    return ids;
+    synchronized (lock) {
+      String[] tokens = FormatUtils.P_SPACE.split(sentence);
+      int[] ids = new int[tokens.length];
+      for (int i = 0; i < tokens.length; i++)
+        ids[i] = id(tokens[i]);
+      return ids;
+    }
   }
 
   public static String word(int id) {

@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
@@ -22,12 +21,18 @@ import edu.jhu.thrax.util.Vocabulary;
 @SuppressWarnings("rawtypes")
 public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFeature {
 
-  private TrieLexprobTable table;
-
+  public static final String NAME = "f_given_e_lex";
+  public static final String LABEL = "Lex(f|e)";
+  
   private static final float DEFAULT_PROB = 10e-7f;
-  private static final Text LABEL = new Text("Lex(f|e)");
-
-  public Text getName() {
+  
+  private TrieLexprobTable table;
+  
+  public String getName() {
+    return NAME;
+  }
+  
+  public String getLabel() {
     return LABEL;
   }
 
@@ -102,11 +107,11 @@ public class SourceGivenTargetLexicalProbabilityFeature implements AnnotationFea
 
   private static final FloatWritable ONE_PROB = new FloatWritable(0.0f);
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ONE_PROB);
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ONE_PROB);
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ONE_PROB);
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ONE_PROB);
   }
 }

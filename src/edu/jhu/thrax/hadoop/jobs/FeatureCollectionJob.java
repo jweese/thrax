@@ -18,7 +18,7 @@ import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.paraphrasing.FeatureCollectionReducer;
 
-public class FeatureCollectionJob extends ThraxJob {
+public class FeatureCollectionJob implements ThraxJob {
 
   private static HashSet<Class<? extends ThraxJob>> prereqs =
       new HashSet<Class<? extends ThraxJob>>();
@@ -64,7 +64,7 @@ public class FeatureCollectionJob extends ThraxJob {
     job.setNumReduceTasks(numReducers);
 
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
-    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 400);
+    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 20);
 
     for (String prereq_name : prereq_names)
       FileInputFormat.addInputPath(job, new Path(workDir + prereq_name));

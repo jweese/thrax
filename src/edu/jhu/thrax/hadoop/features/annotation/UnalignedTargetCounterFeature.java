@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
@@ -16,10 +15,17 @@ import edu.jhu.thrax.util.Vocabulary;
 
 @SuppressWarnings("rawtypes")
 public class UnalignedTargetCounterFeature implements AnnotationFeature {
-  private static final Text LABEL = new Text("UnalignedTarget");
+
+  public static final String NAME = "unaligned-target";
+  private static final String LABEL = "UnalignedTarget";
+
   private static final IntWritable ZERO = new IntWritable(0);
 
-  public Text getName() {
+  public String getName() {
+    return NAME;
+  }
+
+  public String getLabel() {
     return LABEL;
   }
 
@@ -38,12 +44,12 @@ public class UnalignedTargetCounterFeature implements AnnotationFeature {
     return new IntWritable(count);
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 
   @Override

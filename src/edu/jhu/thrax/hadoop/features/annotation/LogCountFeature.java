@@ -1,32 +1,39 @@
 package edu.jhu.thrax.hadoop.features.annotation;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer.Context;
 
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
+import edu.jhu.thrax.util.Vocabulary;
 
 @SuppressWarnings("rawtypes")
 public class LogCountFeature implements AnnotationFeature {
 
-  private static final Text LABEL = new Text("LogCount");
+  public static final String NAME = "logcount";
+  public static final String LABEL = "LogCount";
+
   private static final FloatWritable ZERO = new FloatWritable(0);
 
-  public Text getName() {
+  public String getName() {
+    return NAME;
+  }
+
+  public String getLabel() {
     return LABEL;
   }
 
-  public void unaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 
-  public void binaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
-    map.put(LABEL, ZERO);
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 
   @Override

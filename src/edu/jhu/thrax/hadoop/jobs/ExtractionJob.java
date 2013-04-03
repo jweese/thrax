@@ -18,7 +18,7 @@ import edu.jhu.thrax.hadoop.extraction.ExtractionCombiner;
 import edu.jhu.thrax.hadoop.extraction.ExtractionMapper;
 import edu.jhu.thrax.hadoop.extraction.ExtractionReducer;
 
-public class ExtractionJob extends ThraxJob {
+public class ExtractionJob implements ThraxJob {
 
   public Set<Class<? extends ThraxJob>> getPrerequisites() {
     Set<Class<? extends ThraxJob>> result = new HashSet<Class<? extends ThraxJob>>();

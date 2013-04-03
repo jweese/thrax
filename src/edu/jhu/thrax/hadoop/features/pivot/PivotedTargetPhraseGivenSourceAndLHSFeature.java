@@ -4,46 +4,48 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
+import edu.jhu.thrax.hadoop.features.mapred.SourcePhraseGivenTargetandLHSFeature;
+import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenSourceandLHSFeature;
 
 public class PivotedTargetPhraseGivenSourceAndLHSFeature extends PivotedNegLogProbFeature {
 
-  private static final Text LABEL = new Text("p(e|f,LHS)");
+  public static final String NAME = TargetPhraseGivenSourceandLHSFeature.NAME;
+  public static final String LABEL = TargetPhraseGivenSourceandLHSFeature.LABEL;
 
   public String getName() {
-    return "e_given_f_and_lhs";
+    return NAME;
   }
 
-  public Text getFeatureLabel() {
+  public String getLabel() {
     return LABEL;
   }
 
   public Set<String> getPrerequisites() {
     Set<String> prereqs = new HashSet<String>();
-    prereqs.add("e_given_f_and_lhs");
-    prereqs.add("f_given_e_and_lhs");
+    prereqs.add(TargetPhraseGivenSourceandLHSFeature.NAME);
+    prereqs.add(SourcePhraseGivenTargetandLHSFeature.NAME);
     return prereqs;
   }
 
   public FloatWritable pivot(FeatureMap src, FeatureMap tgt) {
-    float fge = ((FloatWritable) tgt.get(new Text("p(e|f,LHS)"))).get();
-    float egf = ((FloatWritable) src.get(new Text("p(f|e,LHS)"))).get();
+    float fge = ((FloatWritable) tgt.get(TargetPhraseGivenSourceandLHSFeature.LABEL)).get();
+    float egf = ((FloatWritable) src.get(SourcePhraseGivenTargetandLHSFeature.LABEL)).get();
 
     return new FloatWritable(egf + fge);
   }
 
   @Override
-  public Set<Text> getLowerBoundLabels() {
-    Set<Text> lower_bound_labels = new HashSet<Text>();
-    lower_bound_labels.add(new Text("p(e|f,LHS)"));
-    lower_bound_labels.add(new Text("p(f|e,LHS)"));
+  public Set<String> getLowerBoundLabels() {
+    Set<String> lower_bound_labels = new HashSet<String>();
+    lower_bound_labels.add(TargetPhraseGivenSourceandLHSFeature.LABEL);
+    lower_bound_labels.add(SourcePhraseGivenTargetandLHSFeature.LABEL);
     return lower_bound_labels;
   }
 
   @Override
-  public Set<Text> getUpperBoundLabels() {
+  public Set<String> getUpperBoundLabels() {
     return null;
   }
 }
