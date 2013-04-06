@@ -96,13 +96,16 @@ elastic-mapreduce -c $cred \
     --arg $remoteconf \
     --arg $workdir \
     --bootstrap-action s3://elasticmapreduce/bootstrap-actions/configure-hadoop \
-    --args "-m,mapred.tasktracker.map.tasks.maximum=14","-m,mapred.tasktracker.reduce.tasks.maximum=5","-m,mapred.child.java.opts=-Xmx1500m","-m,mapred.reduce.child.java.opts=-Xmx9g"
+    --args "-m,mapred.tasktracker.map.tasks.maximum=15","-m,mapred.tasktracker.reduce.tasks.maximum=2","-m,mapred.child.java.opts=-Xmx3g","-m,mapred.reduce.child.java.opts=-Xmx10g"
+
+
+# something
+#"-m,mapred.tasktracker.map.tasks.maximum=14","-m,mapred.tasktracker.reduce.tasks.maximum=5","-m,mapred.child.java.opts=-Xmx1500m","-m,mapred.reduce.child.java.opts=-Xmx9g"
 
 
 # fr-en europarl    #"-m,mapred.tasktracker.map.tasks.maximum=3","-m,mapred.tasktracker.reduce.tasks.maximum=1","-m,mapred.child.java.opts=-Xmx1500m","-m,mapred.reduce.child.java.opts=-Xmx2300m"
 
 
-
 # ppdb v0.2
 #"-m,mapred.tasktracker.map.tasks.maximum=20","-m,mapred.tasktracker.reduce.tasks.maximum=2","-m,mapred.child.java.opts=-Xmx1500m","-m,mapred.reduce.child.java.opts=-Xmx17g"
-    
+
