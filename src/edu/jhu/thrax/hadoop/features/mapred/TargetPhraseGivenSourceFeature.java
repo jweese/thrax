@@ -6,7 +6,6 @@ import java.util.Arrays;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.FloatWritable;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.io.WritableUtils;
@@ -25,8 +24,15 @@ import edu.jhu.thrax.util.Vocabulary;
 @SuppressWarnings("rawtypes")
 public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
 
+  public static final String NAME = "e_given_f_phrase";
+  public static final String LABEL = "p(e|f)";
+  
   public String getName() {
-    return "e_given_f_phrase";
+    return NAME;
+  }
+  
+  public String getLabel() {
+    return LABEL;
   }
 
   public Class<? extends WritableComparator> sortComparatorClass() {
@@ -49,8 +55,8 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
-      Vocabulary.read(conf, vocabulary_path);
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+      Vocabulary.initialize(conf, vocabulary_path);
     }
 
     protected void map(RuleWritable key, Annotation value, Context context) throws IOException,
@@ -75,12 +81,11 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
   private static class Reduce extends Reducer<RuleWritable, IntWritable, RuleWritable, FeaturePair> {
     private int marginal;
     private FloatWritable prob;
-    private static final Text NAME = new Text("p(e|f)");
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
-      Vocabulary.read(conf, vocabulary_path);
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+      Vocabulary.initialize(conf, vocabulary_path);
     }
 
     protected void reduce(RuleWritable key, Iterable<IntWritable> values, Context context)
@@ -98,7 +103,7 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
         prob = new FloatWritable((float) -Math.log(count / (float) marginal));
         return;
       }
-      context.write(key, new FeaturePair(NAME, prob));
+      context.write(key, new FeaturePair(Vocabulary.id(LABEL), prob));
     }
 
   }
@@ -138,11 +143,11 @@ public class TargetPhraseGivenSourceFeature extends MapReduceFeature {
 
   private static final FloatWritable ZERO = new FloatWritable(0.0f);
 
-  public void unaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
-    map.put(Reduce.NAME, ZERO);
+  public void unaryGlueRuleScore(int nt, java.util.Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 
-  public void binaryGlueRuleScore(Text nt, java.util.Map<Text, Writable> map) {
-    map.put(Reduce.NAME, ZERO);
+  public void binaryGlueRuleScore(int nt, java.util.Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ZERO);
   }
 }

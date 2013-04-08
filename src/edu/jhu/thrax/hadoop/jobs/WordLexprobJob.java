@@ -16,7 +16,7 @@ import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 
 import edu.jhu.thrax.hadoop.features.WordLexicalProbabilityCalculator;
 
-public abstract class WordLexprobJob extends ThraxJob {
+public abstract class WordLexprobJob implements ThraxJob {
   public static final String SOURCE_GIVEN_TARGET = "thrax.__wordlexprob_sgt";
   private boolean isSourceGivenTarget;
 

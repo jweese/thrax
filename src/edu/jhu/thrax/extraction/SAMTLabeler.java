@@ -92,7 +92,7 @@ public class SAMTLabeler implements SpanLabeler {
     for (int start = from - 1; start >= 0; start--) {
       int a = constituentLabel(start, to);
       int b = constituentLabel(start, from);
-      if (a != 0 && b != 0) return LabelCache.BACKSLASH.get(b, a);
+      if (a != 0 && b != 0) return LabelCache.BACKSLASH.get(a, b);
     }
     return 0;
   }

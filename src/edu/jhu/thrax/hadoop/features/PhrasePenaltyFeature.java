@@ -3,24 +3,35 @@ package edu.jhu.thrax.hadoop.features;
 import java.util.Map;
 
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.util.Vocabulary;
 
 public class PhrasePenaltyFeature implements SimpleFeature {
-  private static final Text LABEL = new Text("PhrasePenalty");
+
+  public static final String NAME = "phrase-penalty";
+  public static final String LABEL = "PhrasePenalty";
+
   private static final IntWritable ONE = new IntWritable(1);
 
-  public void score(RuleWritable r, Map<Text, Writable> map) {
-    map.put(LABEL, ONE);
+  public Writable score(RuleWritable r) {
+    return ONE;
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ONE);
+  public String getName() {
+    return NAME;
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(LABEL, ONE);
+  public String getLabel() {
+    return LABEL;
+  }
+
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ONE);
+  }
+
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(LABEL), ONE);
   }
 }

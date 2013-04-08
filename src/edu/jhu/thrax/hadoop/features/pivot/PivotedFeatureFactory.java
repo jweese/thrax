@@ -8,27 +8,27 @@ import edu.jhu.thrax.util.FormatUtils;
 public class PivotedFeatureFactory {
 
   public static PivotedFeature get(String name) {
-    if (name.equals("e_given_f_phrase"))
+    if (name.equals(PivotedTargetPhraseGivenSourceFeature.NAME))
       return new PivotedTargetPhraseGivenSourceFeature();
-    else if (name.equals("f_given_e_phrase"))
+    else if (name.equals(PivotedSourcePhraseGivenTargetFeature.NAME))
       return new PivotedSourcePhraseGivenTargetFeature();
-    else if (name.equals("rarity"))
+    else if (name.equals(PivotedRarityPenaltyFeature.NAME))
       return new PivotedRarityPenaltyFeature();
-    else if (name.equals("f_given_e_lex"))
+    else if (name.equals(PivotedLexicalSourceGivenTargetFeature.NAME))
       return new PivotedLexicalSourceGivenTargetFeature();
-    else if (name.equals("e_given_f_lex"))
+    else if (name.equals(PivotedLexicalTargetGivenSourceFeature.NAME))
       return new PivotedLexicalTargetGivenSourceFeature();
-    else if (name.equals("f_given_lhs"))
+    else if (name.equals(PivotedSourcePhraseGivenLHSFeature.NAME))
       return new PivotedSourcePhraseGivenLHSFeature();
-    else if (name.equals("lhs_given_f"))
+    else if (name.equals(PivotedLhsGivenSourcePhraseFeature.NAME))
       return new PivotedLhsGivenSourcePhraseFeature();
-    else if (name.equals("f_given_e_and_lhs"))
+    else if (name.equals(PivotedSourcePhraseGivenTargetAndLHSFeature.NAME))
       return new PivotedSourcePhraseGivenTargetAndLHSFeature();
-    else if (name.equals("e_given_lhs"))
+    else if (name.equals(PivotedTargetPhraseGivenLHSFeature.NAME))
       return new PivotedTargetPhraseGivenLHSFeature();
-    else if (name.equals("lhs_given_e"))
+    else if (name.equals(PivotedLhsGivenTargetPhraseFeature.NAME))
       return new PivotedLhsGivenTargetPhraseFeature();
-    else if (name.equals("e_given_f_and_lhs"))
+    else if (name.equals(PivotedTargetPhraseGivenSourceAndLHSFeature.NAME))
       return new PivotedTargetPhraseGivenSourceAndLHSFeature();
 
     return null;

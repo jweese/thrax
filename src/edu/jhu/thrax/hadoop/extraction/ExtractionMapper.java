@@ -16,8 +16,9 @@ public class ExtractionMapper extends Mapper<LongWritable, Text, AlignedRuleWrit
 
   protected void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
-    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
-    Vocabulary.read(conf, vocabulary_path);
+    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+    Vocabulary.initialize(conf, vocabulary_path);
+
     // TODO: static initializer call for what Annotation actually carries would go here.
     extractor = RuleWritableExtractorFactory.create(context);
     if (extractor == null) {

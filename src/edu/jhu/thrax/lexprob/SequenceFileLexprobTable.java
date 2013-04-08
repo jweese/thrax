@@ -30,9 +30,6 @@ public abstract class SequenceFileLexprobTable {
     fs = FileSystem.get(uri, conf);
     files = fs.globStatus(new Path(fileGlob));
     if (files.length == 0) throw new IOException("no files found in lexprob glob:" + fileGlob);
-
-    // Iterable<TableEntry> entries = getSequenceFileIterator(fs, conf, files);
-    // initialize(entries);
   }
 
   protected abstract void initialize(Iterable<TableEntry> entries);

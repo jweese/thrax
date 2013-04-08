@@ -3,11 +3,11 @@ package edu.jhu.thrax.hadoop.features.pivot;
 import java.util.Map;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
 import edu.jhu.thrax.util.NegLogMath;
+import edu.jhu.thrax.util.Vocabulary;
 
 public abstract class PivotedNegLogProbFeature implements PivotedFeature {
 
@@ -20,7 +20,7 @@ public abstract class PivotedNegLogProbFeature implements PivotedFeature {
   }
 
   public void aggregate(FeatureMap features) {
-    FloatWritable val = (FloatWritable) features.get(getFeatureLabel());
+    FloatWritable val = (FloatWritable) features.get(getLabel());
     aggregated = NegLogMath.logAdd(aggregated, val.get());
   }
 
@@ -28,11 +28,11 @@ public abstract class PivotedNegLogProbFeature implements PivotedFeature {
     return new FloatWritable(aggregated);
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(getFeatureLabel(), ONE_PROB);
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(getLabel()), ONE_PROB);
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(getFeatureLabel(), ONE_PROB);
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(getLabel()), ONE_PROB);
   }
 }

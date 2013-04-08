@@ -1,17 +1,28 @@
 package edu.jhu.thrax.util;
 
+import edu.jhu.thrax.hadoop.features.annotation.SourceGivenTargetLexicalProbabilityFeature;
+import edu.jhu.thrax.hadoop.features.annotation.TargetGivenSourceLexicalProbabilityFeature;
+import edu.jhu.thrax.hadoop.features.annotation.UnalignedSourceCounterFeature;
+import edu.jhu.thrax.hadoop.features.annotation.UnalignedTargetCounterFeature;
+import edu.jhu.thrax.hadoop.features.mapred.SourcePhraseGivenTargetFeature;
+import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenSourceFeature;
+
 public class BackwardsCompatibility {
 
   public static String equivalent(String features) {
-    features = features.replace("e2fphrase", "f_given_e_phrase");
-    features = features.replace("f2ephrase", "e_given_f_phrase");
+    features = features.replace("e2fphrase", SourcePhraseGivenTargetFeature.NAME);
+    features = features.replace("f2ephrase", TargetPhraseGivenSourceFeature.NAME);
 
-    features = features.replace("lexprob_tgs", "e_given_f_lex");
-    features = features.replace("lexprob_sgt", "f_given_e_lex");
-    
-    features = features.replace("lexprob", "e_given_f_lex f_given_e_lex");
-    
-    features = features.replace("unaligned-count", "unaligned-source unaligned-target");
+    features = features.replace("lexprob_tgs", TargetGivenSourceLexicalProbabilityFeature.NAME);
+    features = features.replace("lexprob_sgt", SourceGivenTargetLexicalProbabilityFeature.NAME);
+
+    features =
+        features.replace("lexprob", TargetGivenSourceLexicalProbabilityFeature.NAME + " "
+            + SourceGivenTargetLexicalProbabilityFeature.NAME);
+
+    features =
+        features.replace("unaligned-count", UnalignedSourceCounterFeature.NAME + " "
+            + UnalignedTargetCounterFeature.NAME);
 
     return features;
   }

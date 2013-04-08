@@ -11,8 +11,6 @@ import java.util.Set;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
-import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Reducer;
 
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
@@ -31,7 +29,7 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
 
   private static enum PivotingCounters {
     F_READ, EF_READ, EF_PRUNED, EE_PRUNED, EE_WRITTEN
-  };
+  }
 
   private int[] currentSrc;
   private int currentLhs;
@@ -43,13 +41,13 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
   private List<PivotedFeature> pivotedFeatures;
   private List<AnnotationFeature> annotationFeatures;
 
-  private Map<Text, PruningRule> translationPruningRules;
-  private Map<Text, PruningRule> pivotedPruningRules;
+  private Map<Integer, PruningRule> translationPruningRules;
+  private Map<Integer, PruningRule> pivotedPruningRules;
 
   protected void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
-    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
-    Vocabulary.read(conf, vocabulary_path);
+    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+    Vocabulary.initialize(conf, vocabulary_path);
 
     String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
     pivotedFeatures = PivotedFeatureFactory.getAll(features);
@@ -99,9 +97,10 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
         throw new RuntimeException("Multiple feature maps for one rule:" + key.toString());
       seen_first = true;
 
-      Annotation annotation = (Annotation) features.get(AnnotationPassthroughFeature.LABEL);
+      Annotation annotation =
+          (Annotation) features.get(AnnotationPassthroughFeature.LABEL);
       for (AnnotationFeature f : annotationFeatures)
-        features.put(f.getName(), f.score(key, annotation));
+        features.put(f.getLabel(), f.score(key, annotation));
 
       if (!prune(features, translationPruningRules))
         targets.add(new ParaphrasePattern(key.target, nts, lhs, key.monotone, features));
@@ -139,17 +138,15 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
     try {
       // Compute the features.
       for (PivotedFeature f : pivotedFeatures)
-        pivoted_features.put(f.getFeatureLabel(), f.pivot(src.features, tgt.features));
+        pivoted_features.put(f.getLabel(), f.pivot(src.features, tgt.features));
     } catch (Exception e) {
       StringBuilder src_f = new StringBuilder();
-      for (Writable w : src.features.keySet())
-        src_f.append(w.toString() + "=" + src.features.get(w) + " ");
+      for (int w : src.features.keySet())
+        src_f.append(Vocabulary.word(w) + "=" + src.features.get(w) + " ");
       StringBuilder tgt_f = new StringBuilder();
-      for (Writable w : tgt.features.keySet())
-        tgt_f.append(w.toString() + "=" + tgt.features.get(w) + " ");
-
+      for (int w : tgt.features.keySet())
+        tgt_f.append(Vocabulary.word(w) + "=" + tgt.features.get(w) + " ");
       e.printStackTrace();
-
       throw new RuntimeException(Vocabulary.getWords(src.rhs) + " \n "
           + Vocabulary.getWords(tgt.rhs) + " \n " + src_f.toString() + " \n " + tgt_f.toString()
           + " \n");
@@ -164,8 +161,8 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
     }
   }
 
-  protected Map<Text, PruningRule> getPivotedPruningRules(String conf_string) {
-    Map<Text, PruningRule> rules = new HashMap<Text, PruningRule>();
+  protected Map<Integer, PruningRule> getPivotedPruningRules(String conf_string) {
+    Map<Integer, PruningRule> rules = new HashMap<Integer, PruningRule>();
     // TODO: use patterns for this.
     String[] rule_strings = conf_string.split("\\s*,\\s*");
     for (String rule_string : rule_strings) {
@@ -180,14 +177,14 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
       } else {
         continue;
       }
-      Text label = PivotedFeatureFactory.get(f[0]).getFeatureLabel();
+      int label = Vocabulary.id(PivotedFeatureFactory.get(f[0]).getLabel());
       rules.put(label, new PruningRule(smaller, Float.parseFloat(f[1])));
     }
     return rules;
   }
 
-  protected Map<Text, PruningRule> getTranslationPruningRules(String conf_string) {
-    Map<Text, PruningRule> rules = new HashMap<Text, PruningRule>();
+  protected Map<Integer, PruningRule> getTranslationPruningRules(String conf_string) {
+    Map<Integer, PruningRule> rules = new HashMap<Integer, PruningRule>();
     String[] rule_strings = conf_string.split("\\s*,\\s*");
     for (String rule_string : rule_strings) {
       String[] f;
@@ -202,29 +199,26 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
         continue;
       }
       Float threshold = Float.parseFloat(f[1]);
+      Set<String> lower_bound_labels = PivotedFeatureFactory.get(f[0]).getLowerBoundLabels();
+      if (lower_bound_labels != null) for (String label : lower_bound_labels)
+        rules.put(Vocabulary.id(label), new PruningRule(smaller, threshold));
 
-      System.err.println("FEAT: " + f[0]);
-
-      Set<Text> lower_bound_labels = PivotedFeatureFactory.get(f[0]).getLowerBoundLabels();
-      if (lower_bound_labels != null) for (Text label : lower_bound_labels)
-        rules.put(label, new PruningRule(smaller, threshold));
-
-      Set<Text> upper_bound_labels = PivotedFeatureFactory.get(f[0]).getUpperBoundLabels();
-      if (upper_bound_labels != null) for (Text label : upper_bound_labels)
-        rules.put(label, new PruningRule(!smaller, threshold));
+      Set<String> upper_bound_labels = PivotedFeatureFactory.get(f[0]).getUpperBoundLabels();
+      if (upper_bound_labels != null) for (String label : upper_bound_labels)
+        rules.put(Vocabulary.id(label), new PruningRule(!smaller, threshold));
     }
     return rules;
   }
 
-  protected boolean prune(FeatureMap features, final Map<Text, PruningRule> rules) {
-    for (Map.Entry<Text, PruningRule> e : rules.entrySet()) {
+  protected static boolean prune(FeatureMap features, final Map<Integer, PruningRule> rules) {
+    for (Map.Entry<Integer, PruningRule> e : rules.entrySet()) {
       if (features.containsKey(e.getKey())
           && e.getValue().applies((FloatWritable) features.get(e.getKey()))) return true;
     }
     return false;
   }
 
-  protected int[] extractNonterminals(int[] source) {
+  protected static int[] extractNonterminals(int[] source) {
     int first_nt = 0;
     for (int token : source)
       if (Vocabulary.nt(token)) {
@@ -238,11 +232,11 @@ public class PivotingReducer extends Reducer<RuleWritable, FeatureMap, RuleWrita
 
   class ParaphrasePattern {
     int arity;
-    private int lhs;
-    private int[] rhs;
+    int lhs;
+    int[] rhs;
     boolean monotone;
 
-    private FeatureMap features;
+    FeatureMap features;
 
     public ParaphrasePattern(int[] target, int[] nts, int lhs, boolean mono, FeatureMap features) {
       this.arity = nts.length;

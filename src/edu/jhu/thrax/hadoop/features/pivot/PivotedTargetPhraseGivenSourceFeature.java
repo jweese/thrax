@@ -4,46 +4,48 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
+import edu.jhu.thrax.hadoop.features.mapred.SourcePhraseGivenTargetFeature;
+import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenSourceFeature;
 
 public class PivotedTargetPhraseGivenSourceFeature extends PivotedNegLogProbFeature {
 
-  private static final Text LABEL = new Text("p(e|f)");
+  public static final String NAME = TargetPhraseGivenSourceFeature.NAME;
+  public static final String LABEL = TargetPhraseGivenSourceFeature.LABEL;
 
   public String getName() {
-    return "e_given_f";
+    return NAME;
   }
 
-  public Text getFeatureLabel() {
+  public String getLabel() {
     return LABEL;
   }
 
   public Set<String> getPrerequisites() {
     Set<String> prereqs = new HashSet<String>();
-    prereqs.add("e2fphrase");
-    prereqs.add("f2ephrase");
+    prereqs.add(TargetPhraseGivenSourceFeature.NAME);
+    prereqs.add(SourcePhraseGivenTargetFeature.NAME);
     return prereqs;
   }
 
   public FloatWritable pivot(FeatureMap src, FeatureMap tgt) {
-    float tgt_f = ((FloatWritable) tgt.get(new Text("p(e|f)"))).get();
-    float f_src = ((FloatWritable) src.get(new Text("p(f|e)"))).get();
+    float tgt_f = ((FloatWritable) tgt.get(TargetPhraseGivenSourceFeature.LABEL)).get();
+    float f_src = ((FloatWritable) src.get(SourcePhraseGivenTargetFeature.LABEL)).get();
 
     return new FloatWritable(tgt_f + f_src);
   }
 
   @Override
-  public Set<Text> getLowerBoundLabels() {
-    Set<Text> lower_bound_labels = new HashSet<Text>();
-    lower_bound_labels.add(new Text("p(e|f)"));
-    lower_bound_labels.add(new Text("p(f|e)"));
+  public Set<String> getLowerBoundLabels() {
+    Set<String> lower_bound_labels = new HashSet<String>();
+    lower_bound_labels.add(TargetPhraseGivenSourceFeature.LABEL);
+    lower_bound_labels.add(SourcePhraseGivenTargetFeature.LABEL);
     return lower_bound_labels;
   }
 
   @Override
-  public Set<Text> getUpperBoundLabels() {
+  public Set<String> getUpperBoundLabels() {
     return null;
   }
 }

@@ -25,7 +25,7 @@ import edu.jhu.thrax.hadoop.output.OutputReducer;
 import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.FormatUtils;
 
-public class OutputJob extends ThraxJob {
+public class OutputJob implements ThraxJob {
 
   protected static HashSet<Class<? extends ThraxJob>> prereqs =
       new HashSet<Class<? extends ThraxJob>>();
@@ -67,6 +67,9 @@ public class OutputJob extends ThraxJob {
       if (AnnotationFeatureFactory.get(feature) != null) annotation_features = true;
     }
     if (annotation_features) FileInputFormat.addInputPath(job, new Path(workDir + "annotation"));
+    
+    int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
+    if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 20);
 
     if (FileInputFormat.getInputPaths(job).length == 0) {
       // TODO: This is going to crash.

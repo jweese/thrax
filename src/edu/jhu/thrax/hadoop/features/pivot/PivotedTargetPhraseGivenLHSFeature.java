@@ -4,41 +4,42 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
+import edu.jhu.thrax.hadoop.features.mapred.TargetPhraseGivenLHSFeature;
 
 public class PivotedTargetPhraseGivenLHSFeature extends NonAggregatingPivotedFeature {
 
-  private static final Text LABEL = new Text("p(e|LHS)");
+  public static final String NAME = TargetPhraseGivenLHSFeature.NAME;
+  public static final String LABEL = TargetPhraseGivenLHSFeature.LABEL;
 
   public String getName() {
-    return "e_given_lhs";
+    return NAME;
   }
 
-  public Text getFeatureLabel() {
+  public String getLabel() {
     return LABEL;
   }
 
   public Set<String> getPrerequisites() {
     Set<String> prereqs = new HashSet<String>();
-    prereqs.add("e_given_lhs");
+    prereqs.add(TargetPhraseGivenLHSFeature.NAME);
     return prereqs;
   }
 
   public FloatWritable pivot(FeatureMap src, FeatureMap tgt) {
-    return new FloatWritable(((FloatWritable) tgt.get(new Text("p(e|LHS)"))).get());
+    return new FloatWritable(((FloatWritable) tgt.get(TargetPhraseGivenLHSFeature.LABEL)).get());
   }
 
   @Override
-  public Set<Text> getLowerBoundLabels() {
-    Set<Text> lower_bound_labels = new HashSet<Text>();
-    lower_bound_labels.add(new Text("p(e|LHS)"));
+  public Set<String> getLowerBoundLabels() {
+    Set<String> lower_bound_labels = new HashSet<String>();
+    lower_bound_labels.add(TargetPhraseGivenLHSFeature.LABEL);
     return lower_bound_labels;
   }
 
   @Override
-  public Set<Text> getUpperBoundLabels() {
+  public Set<String> getUpperBoundLabels() {
     return null;
   }
 }

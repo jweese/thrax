@@ -1,18 +1,13 @@
 package edu.jhu.thrax.hadoop.features.pivot;
 
-import java.util.Map;
 import java.util.Set;
 
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
+import edu.jhu.thrax.hadoop.features.Feature;
 
-public interface PivotedFeature {
-
-	public String getName();
-	
-	public Text getFeatureLabel();
+public interface PivotedFeature extends Feature {
 
 	public Set<String> getPrerequisites();
 
@@ -24,12 +19,7 @@ public interface PivotedFeature {
 
 	public Writable finalizeAggregation();
 	
-	public Set<Text> getLowerBoundLabels();
+	public Set<String> getLowerBoundLabels();
 	
-	public Set<Text> getUpperBoundLabels();
-	
-	public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map);
-
-	public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map);
-
+	public Set<String> getUpperBoundLabels();
 }

@@ -3,10 +3,10 @@ package edu.jhu.thrax.hadoop.features.pivot;
 import java.util.Map;
 
 import org.apache.hadoop.io.FloatWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 
 import edu.jhu.thrax.hadoop.datatypes.FeatureMap;
+import edu.jhu.thrax.util.Vocabulary;
 
 public abstract class NonAggregatingPivotedFeature implements PivotedFeature {
 
@@ -19,7 +19,7 @@ public abstract class NonAggregatingPivotedFeature implements PivotedFeature {
   }
 
   public void aggregate(FeatureMap features) {
-    FloatWritable val = (FloatWritable) features.get(getFeatureLabel());
+    FloatWritable val = (FloatWritable) features.get(getLabel());
     if (value == Float.MAX_VALUE) {
       value = val.get();
     } else {
@@ -34,11 +34,11 @@ public abstract class NonAggregatingPivotedFeature implements PivotedFeature {
     return new FloatWritable(value);
   }
 
-  public void unaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(getFeatureLabel(), ZERO);
+  public void unaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(getLabel()), ZERO);
   }
 
-  public void binaryGlueRuleScore(Text nt, Map<Text, Writable> map) {
-    map.put(getFeatureLabel(), ZERO);
+  public void binaryGlueRuleScore(int nt, Map<Integer, Writable> map) {
+    map.put(Vocabulary.id(getLabel()), ZERO);
   }
 }

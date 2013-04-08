@@ -18,7 +18,7 @@ import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.hadoop.paraphrasing.FeatureCollectionReducer;
 
-public class FeatureCollectionJob extends ThraxJob {
+public class FeatureCollectionJob implements ThraxJob {
 
   private static HashSet<Class<? extends ThraxJob>> prereqs =
       new HashSet<Class<? extends ThraxJob>>();

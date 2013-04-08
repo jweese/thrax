@@ -8,20 +8,31 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.SequenceFile;
 import org.apache.hadoop.io.Text;
+
+import edu.jhu.thrax.hadoop.features.SimpleFeature;
+import edu.jhu.thrax.hadoop.features.SimpleFeatureFactory;
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeature;
+import edu.jhu.thrax.hadoop.features.annotation.AnnotationFeatureFactory;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeature;
+import edu.jhu.thrax.hadoop.features.mapred.MapReduceFeatureFactory;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedAnnotationFeature;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedFeature;
+import edu.jhu.thrax.hadoop.features.pivot.PivotedFeatureFactory;
 
 
 /**
@@ -35,10 +46,11 @@ public class Vocabulary {
 
   private static final Logger logger;
 
-  private static TreeMap<Long, Integer> hashToId;
+  private static TreeMap<String, Integer> stringToId;
   private static ArrayList<String> idToString;
-  private static TreeMap<Long, String> hashToString;
 
+  private static int head;
+  
   private static final Integer lock = new Integer(0);
 
   private static final int UNKNOWN_ID;
@@ -46,6 +58,7 @@ public class Vocabulary {
 
   public static final String START_SYM = "<s>";
   public static final String STOP_SYM = "</s>";
+
 
   static {
     logger = Logger.getLogger(Vocabulary.class.getName());
@@ -86,31 +99,87 @@ public class Vocabulary {
   }
 
   /**
-   * Reads a vocabulary from a file on HDFS. This deletes any additions to the vocabulary made prior
-   * to reading the file.
+   * Initializes the vocabulary with the symbols defined by the config: feature labels and default
+   * symbols. This deletes any additions to the vocabulary made prior to this call.
+   */
+  public static boolean initialize(Configuration conf) {
+    synchronized (lock) {
+      clear();
+      // Add default symbols.
+      id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
+      id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
+      
+      // Add feature names.
+      String type = conf.get("thrax.type", "translation");
+      String features = BackwardsCompatibility.equivalent(conf.get("thrax.features", ""));
+      if ("translation".equals(type)) {
+        for (MapReduceFeature f : MapReduceFeatureFactory.getAll(features))
+          id(f.getLabel());
+      } else if ("paraphrasing".equals(type)) {
+        Set<String> prereq_features = new HashSet<String>();
+        for (PivotedFeature f : PivotedFeatureFactory.getAll(features)) {
+          prereq_features.addAll(f.getPrerequisites());
+          id(f.getLabel());
+        }
+        id((new PivotedAnnotationFeature()).getLabel());
+        for (String prereq : prereq_features) {
+          MapReduceFeature mf = MapReduceFeatureFactory.get(prereq);
+          if (mf != null) {
+            id(mf.getLabel());
+          } else {
+            AnnotationFeature af = AnnotationFeatureFactory.get(prereq);
+            if (af != null) {
+              id(af.getLabel());
+            } else {
+              SimpleFeature sf = SimpleFeatureFactory.get(prereq);
+              if (sf != null) id(sf.getLabel());
+            }
+          }
+        }
+      }
+      for (AnnotationFeature f : AnnotationFeatureFactory.getAll(features))
+        id(f.getLabel());
+      for (SimpleFeature f : SimpleFeatureFactory.getAll(features))
+        id(f.getLabel());
+      head = size();      
+      return true;
+    }
+  }
+
+  /**
+   * Initializes the vocabulary from a directory on HDFS. This deletes any additions to the
+   * vocabulary made prior to reading the file.
    * 
    * @param conf
    * @param file
    * @return Returns true if vocabulary was read without mismatches or collisions.
    * @throws IOException
    */
-  public static boolean read(Configuration conf, String file) throws IOException {
+  public static boolean initialize(Configuration conf, String file_glob) throws IOException {
     synchronized (lock) {
-      FileSystem file_system = FileSystem.get(URI.create(file), conf);
-      SequenceFile.Reader reader = new SequenceFile.Reader(file_system, new Path(file), conf);
-      clear();
-      Text h_token = new Text();
-      IntWritable h_id = new IntWritable();
-      while (reader.next(h_id, h_token)) {
-        int id = h_id.get();
-        String token = h_token.toString();
-        if (id != Math.abs(id(token))) {
-          System.err.println("MISMATCH: " + id + "\t" + Vocabulary.word(id) + "\t" + token);
-          reader.close();
-          return false;
+      FileSystem file_system = FileSystem.get(URI.create(file_glob), conf);
+      FileStatus[] files = file_system.globStatus(new Path(file_glob));
+      if (files.length == 0)
+        throw new IOException("No files found in vocabulary glob: " + file_glob);
+
+      initialize(conf);
+
+      for (FileStatus file : files) {
+        SequenceFile.Reader reader = new SequenceFile.Reader(file_system, file.getPath(), conf);
+        Text h_token = new Text();
+        IntWritable h_id = new IntWritable();
+        while (reader.next(h_id, h_token)) {
+          int id = h_id.get();
+          String token = h_token.toString();
+          if (!insert(token, id)) {
+            reader.close();
+            throw new RuntimeException("Error inserting: " + token + " as " + id + ". Conflict: "
+                + id + " => " + Vocabulary.word(id) + " and " + token + " => "
+                + stringToId.get(token));
+          }
         }
+        reader.close();
       }
-      reader.close();
       return true;
     }
   }
@@ -130,48 +199,33 @@ public class Vocabulary {
     }
   }
 
-  public static void freeze() {
+  public static int id(String token) {
     synchronized (lock) {
-      int current_id = 1;
-
-      TreeMap<Long, Integer> hash_to_id = new TreeMap<Long, Integer>();
-      ArrayList<String> id_to_string = new ArrayList<String>(idToString.size() + 1);
-      id_to_string.add(UNKNOWN_ID, UNKNOWN_WORD);
-
-      Map.Entry<Long, Integer> walker = hashToId.firstEntry();
-      while (walker != null) {
-        String word = hashToString.get(walker.getKey());
-        hash_to_id.put(walker.getKey(), (walker.getValue() < 0 ? -current_id : current_id));
-        id_to_string.add(current_id, word);
-        current_id++;
-        walker = hashToId.higherEntry(walker.getKey());
+      Integer id = stringToId.get(token);
+      if (id != null) {
+        return id;
+      } else {
+        int new_id = idToString.size() * (nt(token) ? -1 : 1);
+        idToString.add(token);
+        stringToId.put(token, new_id);
+        return new_id;
       }
-      idToString = id_to_string;
-      hashToId = hash_to_id;
     }
   }
 
-  public static int id(String token) {
+  private static boolean insert(String token, int set_id) {
     synchronized (lock) {
-      long hash = 0;
-      try {
-        hash = MurmurHash.hash64(token);
-      } catch (UnsupportedEncodingException e) {
-        e.printStackTrace();
-      }
-      String hash_word = hashToString.get(hash);
-      if (hash_word != null) {
-        if (!token.equals(hash_word)) {
-          logger.warning("MurmurHash for the following symbols collides: '" + hash_word + "', '"
-              + token + "'");
-        }
-        return hashToId.get(hash);
+      Integer id = stringToId.get(token);
+      if (id != null) {
+        return (Math.abs(set_id) == Math.abs(id));
       } else {
-        int id = idToString.size() * (nt(token) ? -1 : 1);
-        idToString.add(token);
-        hashToString.put(hash, token);
-        hashToId.put(hash, id);
-        return id;
+        if (nt(token) && set_id > 0) set_id = -set_id;
+        idToString.ensureCapacity(Math.abs(set_id) + 1);
+        for (int i = idToString.size(); i <= Math.abs(set_id); ++i)
+          idToString.add(null);
+        idToString.set(Math.abs(set_id), token);
+        stringToId.put(token, set_id);
+        return true;
       }
     }
   }
@@ -184,11 +238,13 @@ public class Vocabulary {
   }
 
   public static int[] addAll(String sentence) {
-    String[] tokens = FormatUtils.P_SPACE.split(sentence);
-    int[] ids = new int[tokens.length];
-    for (int i = 0; i < tokens.length; i++)
-      ids[i] = id(tokens[i]);
-    return ids;
+    synchronized (lock) {
+      String[] tokens = FormatUtils.P_SPACE.split(sentence);
+      int[] ids = new int[tokens.length];
+      for (int i = 0; i < tokens.length; i++)
+        ids[i] = id(tokens[i]);
+      return ids;
+    }
   }
 
   public static String word(int id) {
@@ -241,14 +297,19 @@ public class Vocabulary {
       return idToString.size();
     }
   }
+  
+  public static int head() {
+    synchronized (lock) {
+      return head;
+    }
+  }
 
   public static int getTargetNonterminalIndex(int id) {
     return FormatUtils.getNonterminalIndex(word(id));
   }
 
   private static void clear() {
-    hashToId = new TreeMap<Long, Integer>();
-    hashToString = new TreeMap<Long, String>();
+    stringToId = new TreeMap<String, Integer>();
     idToString = new ArrayList<String>();
 
     idToString.add(UNKNOWN_ID, UNKNOWN_WORD);

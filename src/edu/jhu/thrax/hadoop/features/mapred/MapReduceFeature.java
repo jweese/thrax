@@ -8,7 +8,6 @@ import java.util.Set;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
-import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.mapreduce.Job;
@@ -23,11 +22,12 @@ import org.apache.hadoop.mapreduce.lib.reduce.IntSumReducer;
 
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.features.Feature;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
 @SuppressWarnings("rawtypes")
-public abstract class MapReduceFeature extends ThraxJob {
+public abstract class MapReduceFeature implements Feature, ThraxJob {
   
   public String getOutputSuffix() {
     return getName();
@@ -77,9 +77,9 @@ public abstract class MapReduceFeature extends ThraxJob {
     return result;
   }
 
-  public abstract void unaryGlueRuleScore(Text nt, Map<Text, Writable> map);
+  public abstract void unaryGlueRuleScore(int nt, Map<Integer, Writable> map);
 
-  public abstract void binaryGlueRuleScore(Text nt, Map<Text, Writable> map);
+  public abstract void binaryGlueRuleScore(int nt, Map<Integer, Writable> map);
   
   protected void setMapOutputFormat(Job job) {
     job.setMapOutputKeyClass(RuleWritable.class);

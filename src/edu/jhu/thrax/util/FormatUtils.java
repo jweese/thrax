@@ -96,7 +96,7 @@ public class FormatUtils {
   }
 
   // TODO: this isn't a good place for this method any more.
-  public static Text ruleToText(RuleWritable r, Map<Text, Writable> fs, boolean label,
+  public static Text ruleToText(RuleWritable r, Map<String, Writable> fs, boolean label,
       boolean sparse) {
     if (r == null) throw new IllegalArgumentException("Cannot convert a null rule to text.");
     StringBuilder sb = new StringBuilder();
@@ -121,7 +121,7 @@ public class FormatUtils {
     }
 
     sb.append(DELIM);
-    for (Text t : fs.keySet()) {
+    for (String t : fs.keySet()) {
       String score;
       Writable val = fs.get(t);
       if (val instanceof FloatWritable) {

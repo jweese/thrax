@@ -18,7 +18,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import edu.jhu.thrax.hadoop.distributional.DistributionalContextMapper;
 import edu.jhu.thrax.hadoop.distributional.SignatureWritable;
 
-public class DistributionalContextSortingJob extends ThraxJob {
+public class DistributionalContextSortingJob implements ThraxJob {
 
   private static HashSet<Class<? extends ThraxJob>> prereqs =
       new HashSet<Class<? extends ThraxJob>>();

@@ -28,9 +28,9 @@ public class OutputReducer extends Reducer<RuleWritable, FeaturePair, Text, Null
 
   protected void setup(Context context) throws IOException, InterruptedException {
     Configuration conf = context.getConfiguration();
-    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
-    Vocabulary.read(conf, vocabulary_path);
-
+    String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+    Vocabulary.initialize(conf, vocabulary_path);
+    
     label = conf.getBoolean("thrax.label-feature-scores", true);
     sparse = conf.getBoolean("thrax.sparse-feature-vectors", false);
 
@@ -40,11 +40,11 @@ public class OutputReducer extends Reducer<RuleWritable, FeaturePair, Text, Null
 
   protected void reduce(RuleWritable key, Iterable<FeaturePair> values, Context context)
       throws IOException, InterruptedException {
-    Map<Text, Writable> features = new TreeMap<Text, Writable>();
+    Map<String, Writable> features = new TreeMap<String, Writable>();
     for (FeaturePair fp : values)
-      features.put(new Text(fp.key.toString()), fp.val.get());
+      features.put(Vocabulary.word(fp.key), fp.val.get());
     for (SimpleFeature feature : simpleFeatures)
-      feature.score(key, features);
+      features.put(feature.getLabel(), feature.score(key));
     context.write(FormatUtils.ruleToText(key, features, label, sparse), NullWritable.get());
   }
 }

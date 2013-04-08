@@ -34,9 +34,8 @@ public class WordLexicalProbabilityCalculator extends Configured {
 
     protected void setup(Context context) throws IOException, InterruptedException {
       Configuration conf = context.getConfiguration();
-
-      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
-      Vocabulary.read(conf, vocabulary_path);
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+      Vocabulary.initialize(conf, vocabulary_path);
 
       sourceParsed = conf.getBoolean("thrax.source-is-parsed", false);
       targetParsed = conf.getBoolean("thrax.target-is-parsed", false);
@@ -93,8 +92,8 @@ public class WordLexicalProbabilityCalculator extends Configured {
       Configuration conf = context.getConfiguration();
       
       // TODO: remove unnecessary vocabulary loads?
-      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-r-00000";
-      Vocabulary.read(conf, vocabulary_path);
+      String vocabulary_path = conf.getRaw("thrax.work-dir") + "vocabulary/part-*";
+      Vocabulary.initialize(conf, vocabulary_path);
     }
 
     protected void reduce(LongWritable key, Iterable<IntWritable> values, Context context)
