@@ -24,6 +24,7 @@ import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
 import edu.jhu.thrax.util.FormatUtils;
 import edu.jhu.thrax.util.Vocabulary;
+import edu.jhu.thrax.util.BackwardsCompatibility;
 import edu.jhu.thrax.util.exceptions.MalformedInputException;
 import edu.jhu.thrax.util.io.InputUtilities;
 
@@ -37,7 +38,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
   private int defaultLabel;
   private int fullSentenceLabel;
   private int spanLimit;
-  private boolean allowDefaultLHSOnNonlexicalRules;
+  private AllowDefaultLabelPolicy allowDefaultLabel;
 
   private HierarchicalRuleExtractor extractor;
 
@@ -53,9 +54,20 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     defaultLabel = Vocabulary.id(FormatUtils.markup(conf.get("thrax.default-nt", "X")));
     fullSentenceLabel = Vocabulary.id(FormatUtils.markup(conf.get("thrax.full-sentence-nt", "_S")));
     spanLimit = conf.getInt("thrax.initial-phrase-length", 10);
-    allowDefaultLHSOnNonlexicalRules = conf.getBoolean("thrax.allow-nonlexical-x", true);
+		setDefaultLabelPolicy(conf);
     extractor = getExtractor(conf);
   }
+
+	private void setDefaultLabelPolicy(Configuration conf) {
+		String policy;
+		if (conf.get("thrax.allow-nonlexical-x") != null) {
+			// allow-nonlexical-x was set to some value, so respect that
+			policy = BackwardsCompatibility.defaultLabelPolicy(conf.getBoolean("thrax.allow-nonlexical-x", true));
+		} else {
+			policy = conf.get("thrax.allow-default-nt", "always");
+		}
+		allowDefaultLabel = AllowDefaultLabelPolicy.fromString(policy);
+	}
 
   private static HierarchicalRuleExtractor getExtractor(Configuration conf) {
     int arity = conf.getInt("thrax.arity", 2);
@@ -95,7 +107,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     if (labeler instanceof HieroLabeler) {
       // If this is false, we won't extract any rules, because the LHS label
       // is the default for Hiero.
-      allowDefaultLHSOnNonlexicalRules = true;
+      allowDefaultLabel = AllowDefaultLabelPolicy.ALWAYS;
     }
     for (HierarchicalRule r : rules) {
       RuleWritable rule = toRuleWritable(r, labeler, source, target);
@@ -121,7 +133,7 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     }
     int[] src = r.sourceSide(source, spanLabeler, sourceLabels);
     int[] tgt = r.targetSide(target, spanLabeler, sourceLabels);
-    if (!isValidLabeling(lhs, src, tgt)) return null;
+    if (!isValidUseOfDefaultLabel(lhs, src, tgt)) return null;
     RuleWritable rw = new RuleWritable(lhs, src, tgt, r.monotonic());
     return rw;
   }
@@ -156,13 +168,19 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
     }
   }
 
-  private boolean isValidLabeling(int lhs, int[] source, int[] target) {
-    if (!allowDefaultLHSOnNonlexicalRules) {
+  private boolean isValidUseOfDefaultLabel(int lhs, int[] source, int[] target) {
+		if (allowDefaultLabel == AllowDefaultLabelPolicy.ALWAYS) {
+			return true;
+		} else if (allowDefaultLabel == AllowDefaultLabelPolicy.PHRASES) {
       if (defaultLabel == lhs && hasNonterminal(source) && hasNonterminal(target))
         return false;
       else
         return !(hasNonterminal(source, defaultLabel) || hasNonterminal(target, defaultLabel));
-    }
+    } else if (allowDefaultLabel == AllowDefaultLabelPolicy.NEVER) {
+			return lhs != defaultLabel
+				&& !hasNonterminal(source, defaultLabel)
+				&& !hasNonterminal(target, defaultLabel);
+		}
     return true;
   }
 
@@ -177,4 +195,20 @@ public class HierarchicalRuleWritableExtractor implements RuleWritableExtractor 
       if (w == nt) return true;
     return false;
   }
+
+	private enum AllowDefaultLabelPolicy {
+		ALWAYS, PHRASES, NEVER;
+
+		public static AllowDefaultLabelPolicy fromString(String s) {
+			if (s.equalsIgnoreCase("always")) {
+				return ALWAYS;
+			} else if (s.equalsIgnoreCase("phrases")) {
+				return PHRASES;
+			} else if (s.equalsIgnoreCase("never")) {
+				return NEVER;
+			} else {
+				return ALWAYS;
+			}
+		}
+	}
 }

@@ -26,4 +26,12 @@ public class BackwardsCompatibility {
 
     return features;
   }
+
+	public static String defaultLabelPolicy(boolean allow_nonlexical_x) {
+		if (allow_nonlexical_x) {
+			return "always";
+		} else {
+			return "phrases";
+		}
+	}
 }
