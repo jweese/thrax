@@ -3,7 +3,6 @@ package edu.jhu.thrax.util;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Map;
 
 import edu.jhu.thrax.util.io.LineReader;
 
@@ -25,11 +24,9 @@ public class CreateGlueGrammar {
 
   public static void main(String[] argv) throws IOException {
     String grammar_file_name = null;
-    if (argv.length > 0) {
-      Map<String, String> opts = ConfFileParser.parse(argv[0]);
-      if (opts.containsKey("goal-symbol")) GOAL = opts.get("goal-symbol");
-      if (opts.containsKey("grammar")) GOAL = opts.get("grammar");
-    }
+    if (argv.length > 0) grammar_file_name = argv[0];
+    if (argv.length > 1) GOAL = argv[1];
+
     if (grammar_file_name == null) {
       System.err.println("No grammar specified.");
       System.exit(1);
