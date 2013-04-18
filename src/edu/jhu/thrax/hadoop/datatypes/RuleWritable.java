@@ -147,6 +147,13 @@ public class RuleWritable implements WritableComparable<RuleWritable> {
       return (key.hashCode() & Integer.MAX_VALUE) % numPartitions;
     }
   }
+  
+  public static class FirstWordPartitioner extends Partitioner<RuleWritable, Writable> {
+    public int getPartition(RuleWritable key, Writable value, int numPartitions) {
+      if (key.source.length == 0) return 0;
+      return (key.source[0] & Integer.MAX_VALUE) % numPartitions;
+    }
+  }
 
   static {
     WritableComparator.define(RuleWritable.class, new YieldComparator());
