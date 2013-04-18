@@ -52,7 +52,7 @@ public class OutputJob implements ThraxJob {
     job.setOutputValueClass(NullWritable.class);
 
     job.setSortComparatorClass(RuleWritable.YieldComparator.class);
-    job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
+    job.setPartitionerClass(RuleWritable.FirstWordPartitioner.class);
 
     // Output is always running alone, so give it as many
     // reduce tasks as possible.

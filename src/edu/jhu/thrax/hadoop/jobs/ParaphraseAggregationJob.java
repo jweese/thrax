@@ -40,7 +40,8 @@ public class ParaphraseAggregationJob implements ThraxJob {
     job.setOutputKeyClass(Text.class);
     job.setOutputValueClass(NullWritable.class);
 
-    job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
+    job.setSortComparatorClass(RuleWritable.YieldComparator.class);
+    job.setPartitionerClass(RuleWritable.FirstWordPartitioner.class);
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "pivoted"));
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
