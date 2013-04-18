@@ -42,7 +42,7 @@ public class CreateGlueGrammar {
       Vocabulary.read(grammar_file_name + File.separator + "vocabulary");
       for (int i = 0; i < Vocabulary.size(); ++i) {
         String token = Vocabulary.word(i);
-        if (Vocabulary.nt(token)) nts.add(token.substring(1, token.length()));
+        if (Vocabulary.nt(token)) nts.add(token.substring(1, token.length() - 1));
       }
     } else {
       LineReader reader = new LineReader(grammar_file_name);
