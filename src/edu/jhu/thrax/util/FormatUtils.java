@@ -99,6 +99,7 @@ public class FormatUtils {
   public static Text ruleToText(RuleWritable r, Map<String, Writable> fs, boolean label,
       boolean sparse) {
     if (r == null) throw new IllegalArgumentException("Cannot convert a null rule to text.");
+    String alignment = null;    
     StringBuilder sb = new StringBuilder();
     sb.append(Vocabulary.word(r.lhs));
     sb.append(DELIM);
@@ -137,7 +138,8 @@ public class FormatUtils {
       } else if (val instanceof Text) {
         score = ((Text) fs.get(t)).toString();
       } else if (val instanceof AlignmentWritable) {
-        score = ((AlignmentWritable) val).toString(":");
+        alignment = ((AlignmentWritable) val).toString(" ");
+        continue;
       } else {
         throw new RuntimeException("Expecting float, integer, or string feature values.");
       }
@@ -146,6 +148,8 @@ public class FormatUtils {
       else
         sb.append(String.format("%s ", score));
     }
+    if (alignment != null)
+      sb.append(DELIMITER + " ").append(alignment + " ");
     return new Text(sb.substring(0, sb.length() - 1));
   }
 
