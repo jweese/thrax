@@ -10,24 +10,14 @@
     <property name="hadoop-src" value="edu/jhu/thrax/hadoop"/>
 
     <property name="testng" value="${lib}/testng-5.8-jdk15.jar"/>
-    <property name="jarfiles" value="${lib}/jerboa.jar:${lib}/commons-lang3-3.1.jar:${env.HADOOP}/hadoop-core-${env.HADOOP_VERSION}.jar:${env.AWS_SDK}/lib/aws-java-sdk-${env.AWS_VERSION}.jar"/> 
+    <property name="jarfiles" value="${lib}/jerboa.jar:${lib}/commons-lang3-3.1.jar:${lib}/hadoop-common-2.5.2.jar:${lib}/hadoop-mapreduce-client-core-2.5.2.jar:${lib}/aws-java-sdk-1.1.3.jar"/> 
 
     <target name="init">
         <tstamp/>
         <mkdir dir="${build}"/>
     </target>
 
-    <target name="init-hadoop">
-        <fail message="Please set the $HADOOP environment variable to point to your Hadoop installation." unless="env.HADOOP"/>
-        <fail message="Please set the $HADOOP_VERSION environment variable to identify to your Hadoop version." unless="env.HADOOP_VERSION"/>
-    </target>
-
-    <target name="init-amazon">
-        <fail message="Please set the $AWS_SDK environment variable to point to your Amazon Web Services SDK installation." unless="env.AWS_SDK"/>
-        <fail message="Please set the $AWS_VERSION environment variable to identify to your Amazon Web Services SDK version." unless="env.AWS_VERSION"/>
-    </target>
-
-    <target name="compile" depends="init,init-hadoop,init-amazon">
+    <target name="compile" depends="init">
         <javac srcdir="${src}" destdir="${build}"
             classpath="${jarfiles}"
             debug="on" includeantruntime="false">
