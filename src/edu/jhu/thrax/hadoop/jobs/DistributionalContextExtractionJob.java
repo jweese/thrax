@@ -38,7 +38,7 @@ public class DistributionalContextExtractionJob implements ThraxJob {
 
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-    int numReducers = conf.getInt("thrax.reducers", 4);
+    int numReducers = conf.getInt("thrax.reducers", conf.getInt("mapreduce.job.reduces", DefaultValues.DEFAULT_NUM_REDUCERS));
     job.setNumReduceTasks(numReducers);
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.input-file")));

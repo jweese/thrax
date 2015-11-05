@@ -60,7 +60,7 @@ public class FeatureCollectionJob implements ThraxJob {
 
     job.setPartitionerClass(RuleWritable.YieldPartitioner.class);
 
-    int numReducers = conf.getInt("thrax.reducers", 4);
+    int numReducers = conf.getInt("thrax.reducers", conf.getInt("mapreduce.job.reduces", DefaultValues.DEFAULT_NUM_REDUCERS));
     job.setNumReduceTasks(numReducers);
 
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);

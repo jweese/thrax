@@ -60,6 +60,24 @@ public class TrieLexprobTable extends SequenceFileLexprobTable {
     }
     cdrs[i] = intArray(cdrList);
     values[i] = floatArray(valueList);
+    checkIntegrity();
+  }
+
+  private void checkIntegrity() {
+    for (int i = 0; i < cars.length-1; i++) {
+      if (cars[i] > cars[i+1]) {
+        final String msg = String.format("Failed loading TrieLexprobTable. Entries must be sorted ascendingly, but cars[%d]=%d > cars[%d]=%d",
+            i, cars[i], i+1, cars[i+1]);
+        throw new RuntimeException(msg);
+      }
+      for (int j = 0; j < cdrs[i].length-1; j++) {
+        if (cdrs[i][j] > cdrs[i][j+1]) {
+          final String msg = String.format("Failed loading TrieLexprobTable. Entries must be sorted ascendingly, but cdrs[%d][%d]=%d > cdrs[%d][%d]=%d",
+              i, j, cdrs[i][j], i+1, j+1, cdrs[i][j+1]);
+          throw new RuntimeException(msg);
+        }
+      }
+    }
   }
 
   private static float[] floatArray(List<Float> list) {

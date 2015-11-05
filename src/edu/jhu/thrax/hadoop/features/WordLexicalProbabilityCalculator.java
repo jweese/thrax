@@ -120,7 +120,19 @@ public class WordLexicalProbabilityCalculator extends Configured {
 
   public static class Partition extends Partitioner<LongWritable, IntWritable> {
     public int getPartition(LongWritable key, IntWritable value, int numPartitions) {
-      return ((int) (key.get() >> 32) & Integer.MAX_VALUE) % numPartitions;
+      // ids range from 0 to size-1
+      // we partition like this:
+      // partition 1: 0 to num_elements_per_partition-1
+      // partition 2: num_elements_per_partition to 2*num_elements_per_partition-1
+      // ...
+      // partition numPartitions: num_elements_per_partition*(numPartitions-1) to num_elements_per_partition*numPartitions-1 = size-1
+      final int max_trg_plus_one = Vocabulary.size();
+      final int num_elements_per_partition = (int) Math.ceil(max_trg_plus_one / (1.0 * numPartitions));
+      int trg = ((int) (key.get() >> 32) & Integer.MAX_VALUE);
+      if (trg < 0 || trg >= max_trg_plus_one) {
+        throw new RuntimeException(String.format("Word id %d out of range %d %d", trg, 0, max_trg_plus_one-1));
+      }
+      return trg / num_elements_per_partition;
     }
   }
 }

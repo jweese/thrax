@@ -56,7 +56,7 @@ public class OutputJob implements ThraxJob {
 
     // Output is always running alone, so give it as many
     // reduce tasks as possible.
-    int numReducers = conf.getInt("thrax.reducers", 4);
+    int numReducers = conf.getInt("thrax.reducers", conf.getInt("mapreduce.job.reduces", DefaultValues.DEFAULT_NUM_REDUCERS));
     job.setNumReduceTasks(numReducers);
 
     boolean annotation_features = false;

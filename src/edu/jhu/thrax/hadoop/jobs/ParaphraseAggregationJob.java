@@ -47,7 +47,7 @@ public class ParaphraseAggregationJob implements ThraxJob {
     int maxSplitSize = conf.getInt("thrax.max-split-size", 0);
     if (maxSplitSize != 0) FileInputFormat.setMaxInputSplitSize(job, maxSplitSize * 20);
 
-    int numReducers = conf.getInt("thrax.reducers", 4);
+    int numReducers = conf.getInt("thrax.reducers", conf.getInt("mapreduce.job.reduces", DefaultValues.DEFAULT_NUM_REDUCERS));
     job.setNumReduceTasks(numReducers);
 
     String outputPath = conf.get("thrax.outputPath", "");
