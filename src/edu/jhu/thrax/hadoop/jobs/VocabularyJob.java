@@ -51,7 +51,7 @@ public class VocabularyJob implements ThraxJob {
 
     FileOutputFormat.setOutputPath(job, new Path(conf.get("thrax.work-dir") + "vocabulary"));
 
-    int num_reducers = conf.getInt("thrax.reducers", 4);
+    int num_reducers = conf.getInt("thrax.reducers", conf.getInt("mapreduce.job.reduces", DefaultValues.DEFAULT_NUM_REDUCERS));
     job.setNumReduceTasks(num_reducers);
 
     return job;

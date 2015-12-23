@@ -38,11 +38,14 @@ import edu.jhu.thrax.util.ConfFileParser;
 public class Thrax extends Configured implements Tool {
   private Scheduler scheduler;
   private Configuration conf;
+  
+  private final int RETURN_CODE_FAILED = 1;
+  private final int RETURN_CODE_SUCCESS = 0;
 
   public synchronized int run(String[] argv) throws Exception {
     if (argv.length < 1) {
       System.err.println("usage: Thrax <conf file> [output path]");
-      return 1;
+      return RETURN_CODE_FAILED;
     }
     // do some setup of configuration
     conf = getConf();
@@ -81,8 +84,10 @@ public class Thrax extends Configured implements Tool {
       System.err.println("To retrieve grammar:");
       System.err.println("hadoop fs -getmerge " + conf.get("thrax.outputPath", "")
           + " <destination>");
+      return RETURN_CODE_SUCCESS;
+    } else {
+      return RETURN_CODE_FAILED;
     }
-    return 0;
   }
 
   // Schedule all the jobs required for grammar extraction. We
@@ -166,8 +171,8 @@ public class Thrax extends Configured implements Tool {
   }
 
   public static void main(String[] argv) throws Exception {
-    ToolRunner.run(null, new Thrax(), argv);
-    return;
+    int returnCode = ToolRunner.run(null, new Thrax(), argv);
+    System.exit(returnCode);
   }
 
   protected synchronized void workerDone(Class<? extends ThraxJob> theClass, boolean success) {

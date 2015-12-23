@@ -16,6 +16,7 @@ import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat;
 import edu.jhu.thrax.hadoop.datatypes.Annotation;
 import edu.jhu.thrax.hadoop.datatypes.FeaturePair;
 import edu.jhu.thrax.hadoop.datatypes.RuleWritable;
+import edu.jhu.thrax.hadoop.jobs.DefaultValues;
 import edu.jhu.thrax.hadoop.jobs.ExtractionJob;
 import edu.jhu.thrax.hadoop.jobs.ThraxJob;
 
@@ -61,7 +62,7 @@ public class AnnotationFeatureJob implements ThraxJob {
     job.setOutputValueClass(FeaturePair.class);
     job.setOutputFormatClass(SequenceFileOutputFormat.class);
 
-    int num_reducers = conf.getInt("thrax.reducers", 4);
+    int num_reducers = conf.getInt("thrax.reducers", conf.getInt("mapreduce.job.reduces", DefaultValues.DEFAULT_NUM_REDUCERS));
     job.setNumReduceTasks(num_reducers);
 
     FileInputFormat.setInputPaths(job, new Path(conf.get("thrax.work-dir") + "rules"));

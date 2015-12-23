@@ -43,6 +43,9 @@ public abstract class WordLexprobJob implements ThraxJob {
 
     job.setMapOutputKeyClass(LongWritable.class);
     job.setMapOutputValueClass(IntWritable.class);
+    
+    int numReducers = conf.getInt("thrax.reducers", conf.getInt("mapreduce.job.reduces", DefaultValues.DEFAULT_NUM_REDUCERS));
+    job.setNumReduceTasks(numReducers);
 
     job.setOutputKeyClass(LongWritable.class);
     job.setOutputValueClass(FloatWritable.class);
