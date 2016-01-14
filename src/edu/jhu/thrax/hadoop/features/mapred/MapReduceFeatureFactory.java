@@ -24,6 +24,10 @@ public class MapReduceFeatureFactory {
       return new TargetPhraseGivenLHSFeature();
     else if (name.equals(LhsGivenTargetPhraseFeature.NAME))
       return new LhsGivenTargetPhraseFeature();
+    else if (name.equals(SourceCountFeature.NAME))
+      return new SourceCountFeature();
+    else if (name.equals(TargetCountFeature.NAME))
+      return new TargetCountFeature();
 
     return null;
   }
